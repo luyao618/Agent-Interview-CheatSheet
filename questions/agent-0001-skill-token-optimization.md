@@ -5,7 +5,7 @@ category: agent
 tags: [skill, token-optimization, context-engineering, progressive-disclosure, cost]
 difficulty: medium
 role: engineer
-contributor: 尧哥
+contributor: 佚名
 source: 腾讯面试题
 status: published
 updated: 2026-06-18
@@ -21,9 +21,9 @@ answers:
 
 如何设计 Skill（Agent Skill）来降低 Token 消耗？请说明设计思路与关键手段。
 
-## 答案 · Claude-Opus-4.8
+## 答案
 
-> 🤖 AI 答案 · 模型：Claude-Opus-4.8 · 回答 2026-06-18
+> 🤖 AI 答案 · 模型：Claude-Opus-4.8 · 日期 2026-06-18
 
 核心思想：让 Skill 遵循「渐进式披露（progressive disclosure）」，把上下文按需分层加载，绝大多数 token 只在真正触发时才进入窗口。
 
