@@ -23,6 +23,22 @@
       "updated": "2026-06-18",
       "answers_count": 1,
       "source": "腾讯面试题"
+    },
+    {
+      "id": "rag-0001",
+      "title": "RAG 里 Chunk 是怎么切的：固定、语义还是自适应",
+      "file": "rag-0001-chunking-strategies.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": ["rag", "chunking", "retrieval", "embedding", "semantic-chunking", "overlap"],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-18",
+      "answers_count": 1,
+      "source": "未知"
     }
   ]
 }
