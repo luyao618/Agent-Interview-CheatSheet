@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "categories": [
+    {"id": "llm", "label": "大模型基础与原理", "sort": 10},
+    {"id": "agent", "label": "Agent 架构与编排", "sort": 20},
+    {"id": "rag", "label": "检索增强生成", "sort": 30},
+    {"id": "engineering", "label": "工程化、部署、性能、成本", "sort": 40},
+    {"id": "product", "label": "AI 产品经理方向", "sort": 50}
+  ],
+  "questions": []
+}

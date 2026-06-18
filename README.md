@@ -28,46 +28,82 @@
 
 ## 特性
 
-- 🗂 **分类组织**：按方向（LLM / Agent / RAG / 工程化 / 产品 …）和子分类分目录存放，便于定位。
+- 🗂 **扁平存放 + 索引分类**：所有题目平铺在 `questions/` 根目录下，分类（LLM / Agent / RAG / 工程化 / 产品 …）由单题 frontmatter 与统一的 `questions/index.json` 索引承载，便于定位与机器解析。
 - 🔎 **检索能力**：每题带统一的元数据字段（标签 / 难度 / 方向 / 更新时间），可按字段过滤、搜索，并为后续站点检索打基础。
 - 🏷 **题目元数据**：标准化的 frontmatter，记录 `id`、`category`、`tags`、`difficulty`、`role`、`contributor`、`updated` 等字段。
 - 💬 **多答案 + 署名**：一题可挂多条答案，默认带一条署名模型名的 AI 答案，人类答案可自由署名；每条答案各自记录回答日期与更新日期。
 - 🌐 **中文优先、双语演进**：先沉淀中文内容，**语言由文件后缀区分**——中文原文为 `.md`，英文翻译为同名 `.en.md`，互不阻塞。
-- 📈 **可持续增长**：统一的单题模板，方便批量录入、机器解析与自动生成索引。
+- 📈 **可持续增长**：统一的单题模板，方便批量录入、机器解析与维护索引。
 - 🚀 **面向静态站**：数据结构从一开始就对齐 GitHub Pages 展示需求，避免后期返工。
 
 ---
 
 ## 目录结构
 
-题库按「方向 / 分类」分目录存放，建议采用如下约定（随题量增长可细化）：
+题库采用**扁平结构**：所有题目 Markdown 直接平铺在 `questions/` 根目录下，不再按分类建子目录；分类与检索能力由单一索引文件 `questions/index.json` 承载。
 
 ```
 AI-Interview-CheatSheet/
 ├── README.md                  # 项目说明（本文件）
 ├── LICENSE
-├── questions/                 # 题库主目录，所有 Q&A 存放于此
-│   ├── llm/                   # 大模型基础与原理
-│   │   ├── attention-mechanism.md
-│   │   └── tokenization.md
-│   ├── agent/                 # Agent 架构与编排
-│   │   └── react-vs-plan-execute.md
-│   ├── rag/                   # 检索增强生成
-│   │   └── chunking-strategies.md
-│   ├── engineering/           # 工程化、部署、性能、成本
-│   │   └── inference-optimization.md
-│   └── product/               # AI 产品经理方向
-│       └── ai-product-metrics.md
+├── questions/                 # 题库主目录，所有 Q&A 与索引存放于此
+│   ├── index.json             # 检索索引 + category registry（唯一索引来源）
+│   ├── llm-0001-attention-mechanism.md       # 中文题目
+│   ├── llm-0001-attention-mechanism.en.md    # 对应英文翻译
+│   ├── agent-0001-react-vs-plan-execute.md
+│   └── rag-0001-chunking-strategies.md
 ├── assets/                    # 图片、图表等静态资源
 └── docs/                      # 未来 GitHub Pages 站点的构建产物 / 配置
 ```
 
 约定说明：
 
-- **一题一文件**：每道题目独立成 `.md` 文件，文件名使用英文小写短横线命名（kebab-case），如 `attention-mechanism.md`，便于检索与 URL 友好。
-- **目录即分类**：所在子目录代表其主分类（`category`），文件内 frontmatter 再补充更细粒度的 `tags`。
-- **归类原则**：**技术题一律按技术方向归目录**（如 RAG 评估题进 `rag/`），再用 `role` 字段标注视角（`engineer` / `pm` / `both`）；`product/` 目录**只放纯产品方法论题**（如需求拆解、商业化、指标体系），避免与 `role: pm` 语义重叠。
-- **语言区分**：语言由文件后缀区分——中文原文为 `.md`，英文翻译为同名 `.en.md`，存放于同一目录，如 `attention-mechanism.en.md`。
+- **一题一文件、根目录平铺**：每道题目独立成 `.md` 文件，直接放在 `questions/` 根目录下，**不创建分类子目录**。
+- **文件命名**：`questions/<id>-<slug>.md`。`<id>` 为 `方向-四位序号`（如 `rag-0003`）；`<slug>` 使用英文小写短横线命名（lowercase ASCII kebab-case），语义清晰、URL 友好，如 `llm-0001-attention-mechanism.md`。
+- **分类来自索引而非目录**：题目的主分类由 frontmatter 的 `category` 字段显式承载，并在 `questions/index.json` 中重复登记；`index.json` 的 `categories` 是分类的权威 registry（含中文 label 与排序），不再靠文件夹路径表达 `category`。
+- **归类原则**：**技术题一律按技术方向归类**（`llm` / `agent` / `rag` / `engineering`），即使 `role: pm` 也按技术方向归类，再用 `role` 字段标注视角（`engineer` / `pm` / `both`）；`product` 分类**只放纯产品方法论题**（如需求拆解、商业化、指标体系），避免与 `role: pm` 语义重叠。更细粒度先用 `tags`，暂不引入 `subcategory`。
+- **语言区分**：语言由文件后缀区分——中文原文为 `questions/<id>-<slug>.md`，英文翻译为同 basename 加 `.en.md`，同样平铺在 `questions/` 根目录，如 `llm-0001-attention-mechanism.en.md`。
+
+### 索引文件 `questions/index.json`
+
+`questions/index.json` 是题库的唯一检索索引与 category registry，必须是合法 JSON。当前仓库尚无真实题目，因此 `questions` 先落为空数组 `[]`，分类 registry 则预置五个固定分类：
+
+```json
+{
+  "schema_version": 1,
+  "categories": [
+    {"id": "llm", "label": "大模型基础与原理", "sort": 10},
+    {"id": "agent", "label": "Agent 架构与编排", "sort": 20},
+    {"id": "rag", "label": "检索增强生成", "sort": 30},
+    {"id": "engineering", "label": "工程化、部署、性能、成本", "sort": 40},
+    {"id": "product", "label": "AI 产品经理方向", "sort": 50}
+  ],
+  "questions": []
+}
+```
+
+每个 `questions[]` entry 的字段约定：
+
+| 字段 | 必填 | 说明 |
+| --- | :---: | --- |
+| `id` | ✅ | 全局唯一 ID，`方向-四位序号`，与文件名前缀一致 |
+| `title` | ✅ | 题目标题 |
+| `file` | ✅ | 中文源文件名（root-level，如 `llm-0001-attention-mechanism.md`） |
+| `language` | ✅ | 源文件语言，通常为 `zh` |
+| `category` | ✅ | 主分类，须匹配 `id` 前缀与 `categories` 中某个 `id` |
+| `category_label` | ✅ | 分类中文 label，与 `categories` 中对应项一致 |
+| `tags` | ✅ | 标签数组 |
+| `difficulty` | ✅ | `easy` / `medium` / `hard` |
+| `role` | ✅ | `engineer` / `pm` / `both` |
+| `status` | ✅ | `draft` / `published` |
+| `contributor` | ✅ | 题目提供人，默认 `佚名` |
+| `updated` | ✅ | 题目条目最后变更日期，`YYYY-MM-DD` |
+| `answers_count` | ✅ | 答案条数 |
+| `source` | ⬜ | 可选，题目来源（公司 / 渠道） |
+| `translations` | ⬜ | 可选，翻译映射，如 `{"en": "llm-0001-attention-mechanism.en.md"}` |
+
+> 索引**不复制**完整题干或答案正文——Markdown 文件始终是内容的 source of truth，`index.json` 只承载用于检索/分类/排序的元数据。
+> 一致性约束：每个 root-level `questions/*.md` 都必须有对应的 index entry，且每个 index entry 的 `file` 都必须指向真实存在的 root-level 文件。
 
 ---
 
@@ -81,9 +117,9 @@ AI-Interview-CheatSheet/
 
 ```markdown
 ---
-id: llm-0001                      # 全局唯一 ID，"方向-四位序号"，与目录/category 前缀一致
+id: llm-0001                      # 全局唯一 ID，"方向-四位序号"，与文件名前缀一致
 title: 简述 Transformer 中的自注意力机制     # 题目标题
-category: llm                     # 主分类，与所在目录一致
+category: llm                     # 主分类，须匹配 id 前缀和 index.json 中的某个 category
 tags: [transformer, attention, 原理]   # 细粒度标签，便于检索
 difficulty: medium                # easy | medium | hard
 role: engineer                    # engineer | pm | both
@@ -138,9 +174,9 @@ answers:                          # 多答案列表，至少一条
 
 | 字段 | 必填 | 说明 |
 | --- | :---: | --- |
-| `id` | ✅ | 全局唯一标识，`方向-四位序号`（如 `agent-0007`），前缀与目录/`category` 一致 |
+| `id` | ✅ | 全局唯一标识，`方向-四位序号`（如 `agent-0007`），前缀与文件名/`category` 一致 |
 | `title` | ✅ | 题目标题，用于索引与站点展示 |
-| `category` | ✅ | 主分类，与所在目录保持一致 |
+| `category` | ✅ | 主分类，须匹配 `id` 前缀和 `index.json` 中的某个 category，**不再与所在目录绑定** |
 | `tags` | ✅ | 标签数组，支撑多维检索 |
 | `difficulty` | ✅ | 难度：`easy` / `medium` / `hard` |
 | `role` | ✅ | 适配岗位：`engineer` / `pm` / `both` |
@@ -157,15 +193,15 @@ answers:                          # 多答案列表，至少一条
 
 > **`updated` 的两个层级**：题目级 `updated` 是「整条题目最后一次变更」，用于站点排序与「最近更新」；每条答案的 `answers[].updated` 是「这条答案自身最后一次修订」。改动某条答案时，同时更新该答案的 `updated` 和题目级 `updated`。
 
-> 统一的 frontmatter 是后续**自动生成索引、检索过滤、GitHub Pages 展示**的基础，请新增题目时务必填写完整。
+> 统一的 frontmatter 是后续**维护索引、检索过滤、GitHub Pages 展示**的基础，请新增题目时务必填写完整，并在 `questions/index.json` 中同步登记对应 entry。
 
 ---
 
 ## 路线图 (Roadmap)
 
-- [x] **阶段一 · 中文题库**：搭建目录结构与单题模板，持续录入中文 Q&A。
+- [x] **阶段一 · 中文题库**：搭建扁平目录结构与单题模板，持续录入中文 Q&A。
 - [ ] **阶段二 · 英文翻译**：为已发布题目补充 `*.en.md` 英文版本，形成双语题库。
-- [ ] **阶段三 · 检索 / 分类完善**：基于元数据自动生成分类索引、标签云与全文检索。
+- [ ] **阶段三 · 检索 / 分类完善**：基于 `index.json` 与元数据完善分类索引、标签云与全文检索。
 - [ ] **阶段四 · GitHub Pages 静态站**：将结构化题库渲染为可检索、可分类浏览的静态站点对外展示。
 
 ---
@@ -174,28 +210,29 @@ answers:                          # 多答案列表，至少一条
 
 欢迎一起完善这份题库！新增一条 Q&A 的流程：
 
-1. **确定分类**：在 `questions/<方向>/` 下选择或新建合适的子目录（技术题按技术方向归目录，纯产品方法论题进 `product/`）。
-2. **新建文件**：复制上文「单题格式约定」中的模板，文件名使用英文 kebab-case，如 `tool-calling-design.md`。
-3. **填写元数据**：完整填写 frontmatter（`id` / `category` / `tags` / `difficulty` / `role` / `contributor` / `status` / `updated` 以及 `answers` 列表），`id` 不要与已有题目冲突；不填 `contributor` 时按 `佚名` 处理。
+1. **确定分类**：选定题目的主分类（`llm` / `agent` / `rag` / `engineering` / `product` 之一，须是 `index.json` 中已登记的 category；技术题按技术方向归类，纯产品方法论题归 `product`）。
+2. **新建文件**：复制上文「单题格式约定」中的模板，在 `questions/` 根目录下新建文件，文件名为 `<id>-<slug>.md`，`<slug>` 用英文 kebab-case，如 `agent-0007-tool-calling-design.md`。**不要创建分类子目录。**
+3. **填写元数据**：完整填写 frontmatter（`id` / `category` / `tags` / `difficulty` / `role` / `contributor` / `status` / `updated` 以及 `answers` 列表），`id` 不要与已有题目冲突，且 `category` 须匹配 `id` 前缀与某个 index category；不填 `contributor` 时按 `佚名` 处理。
 4. **撰写内容**：问题描述清晰；至少提供一条答案，**默认带一条署名模型名的 AI 答案**，每条答案在正文区写成 `## 答案 · <author>` 小节，并在 frontmatter `answers` 中补齐该答案的 `author` / `type` / `model` / `answered` / `updated`。
 5. **新增/修订答案**：在 `answers` 列表追加或修改对应条目，更新该答案的 `updated`，并同步刷新题目级 `updated`。
-6. **提交 PR**：遵循下方命名与提交规范。
+6. **登记索引**：在 `questions/index.json` 的 `questions` 数组中新增/更新对应 entry（字段见上文「索引文件」），确保 `file` 指向新建的 Markdown 文件。
+7. **提交 PR**：遵循下方命名与提交规范。
 
 **命名规范**
 
-- 文件名：英文小写 + 短横线（kebab-case），语义清晰，例如 `kv-cache-explained.md`。
-- 题目 `id`：`方向-四位序号`，前缀与目录/`category` 一致，如 `rag-0003`、`product-0012`。
+- 文件名：`questions/<id>-<slug>.md`，`<slug>` 用英文小写 + 短横线（kebab-case），语义清晰，例如 `llm-0002-kv-cache-explained.md`。
+- 题目 `id`：`方向-四位序号`，前缀与文件名/`category` 一致，如 `rag-0003`、`product-0012`。
 - 答案署名 `author`：AI 答案统一填回答模型名（如 `GPT-5.5`、`Claude-Opus-4.8`），人类答案填自取的名字。
-- 英文版：同名加 `.en.md` 后缀，置于同一目录。
+- 英文版：同 basename 加 `.en.md` 后缀，同样平铺在 `questions/` 根目录，如 `llm-0002-kv-cache-explained.en.md`。
 
 **提交（Commit / PR）规范**
 
 - 提交信息建议遵循 [Conventional Commits](https://www.conventionalcommits.org/)：
   - `docs: add llm question about kv-cache`（新增题目）
-  - `docs: fix answer in agent/react-vs-plan-execute`（修正内容）
-  - `chore: restructure rag directory`（结构调整）
+  - `docs: fix answer in agent-0001-react-vs-plan-execute`（修正内容）
+  - `chore: update questions/index.json`（索引调整）
 - 一个 PR 聚焦一类改动，便于 review。
-- 提交前请自检：frontmatter 字段完整、`id` 唯一、Markdown 渲染正常。
+- 提交前请自检：frontmatter 字段完整、`id` 唯一、`index.json` 已同步登记且能被 JSON parser 解析、Markdown 渲染正常。
 
 ---
 
