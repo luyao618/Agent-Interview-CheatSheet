@@ -1,7 +1,8 @@
 # AI-Interview-CheatSheet
 
-> 面向 **AI / LLM / Agent 开发工程师** 与 **AI 产品经理** 的中文面试题库。
-> 持续迭代、不断新增题目，中文先行、后补英文翻译。
+> 面向 **AI / LLM / Agent 开发工程师** 与 **AI 产品经理** 的面试题库。
+> 没到底会用头部的大模型的回答作为default回答。
+> 持续迭代、不断新增题目，欢迎补充。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#贡献指南)
@@ -11,36 +12,21 @@
 
 ## 项目简介
 
-本项目收集并整理 **AI / LLM / Agent 方向**在面试中真实遇到的问题与答案，覆盖两类典型岗位：
+本项目收集并整理 **AI / LLM / Agent 方向**在面试中真实遇到的问题，包括但不限于：
 
 - **工程师视角**：模型原理、训练与推理、Prompt 工程、RAG、Agent 架构、工程化与部署、性能与成本优化等。
 - **产品经理视角**：AI 产品定义、需求拆解、评估指标、数据飞轮、合规与伦理、商业化与落地等。
 
-题库的核心定位：
+对于每个问题会用头部大模型回答面试问题作为"Defualt Answer"。
+每个问题一个markdown文件，包含元数据，目录包含所有问题方便检索。
 
-- **中文先行**：前期以中文 Q&A 为主，逐步补齐英文翻译。
-- **持续迭代**：题目与答案不断更新、不断新增，是一个长期维护的活文档。
-- **结构化**：每道题都带**分类**与**元数据**，便于后续**检索、筛选与静态站展示**。
-
-> 长期目标：当题量与质量达到一定程度后，基于这些结构化数据用 **GitHub Pages** 构建一个可检索、可分类浏览的静态站点。
-
----
-
-## 特性
-
-- 🗂 **扁平存放 + 索引分类**：所有题目平铺在 `questions/` 根目录下，分类（LLM / Agent / RAG / 工程化 / 产品 …）由单题 frontmatter 与统一的 `questions/index.json` 索引承载，便于定位与机器解析。
-- 🔎 **检索能力**：每题带统一的元数据字段（标签 / 难度 / 方向 / 更新时间），可按字段过滤、搜索，并为后续站点检索打基础。
-- 🏷 **题目元数据**：标准化的 frontmatter，记录 `id`、`category`、`tags`、`difficulty`、`role`、`contributor`、`updated` 等字段。
-- 💬 **多答案 + 署名**：一题可挂多条答案，默认带一条署名模型名的 AI 答案，人类答案可自由署名；每条答案各自记录回答日期与更新日期。
-- 🌐 **中文优先、双语演进**：先沉淀中文内容，**语言由文件后缀区分**——中文原文为 `.md`，英文翻译为同名 `.en.md`，互不阻塞。
-- 📈 **可持续增长**：统一的单题模板，方便批量录入、机器解析与维护索引。
-- 🚀 **面向静态站**：数据结构从一开始就对齐 GitHub Pages 展示需求，避免后期返工。
+> 未来目标：当题量与质量达到一定程度后，基于这些结构化数据用 **GitHub Pages** 构建一个可检索、可分类浏览的静态站点。
 
 ---
 
 ## 目录结构
 
-题库采用**扁平结构**：所有题目 Markdown 直接平铺在 `questions/` 根目录下，不再按分类建子目录；分类与检索能力由单一索引文件 `questions/index.json` 承载。
+所有题目 Markdown在 `questions/` 根目录下；分类与检索能力由单一索引文件 `questions/index.json` 承载。
 
 ```
 AI-Interview-CheatSheet/
@@ -58,9 +44,9 @@ AI-Interview-CheatSheet/
 
 约定说明：
 
-- **一题一文件、根目录平铺**：每道题目独立成 `.md` 文件，直接放在 `questions/` 根目录下，**不创建分类子目录**。
+- **一题一文件、根目录平铺**：每道题目独立成 `.md` 文件，直接放在 `questions/` 根目录下。
 - **文件命名**：`questions/<id>-<slug>.md`。`<id>` 为 `方向-四位序号`（如 `rag-0003`）；`<slug>` 使用英文小写短横线命名（lowercase ASCII kebab-case），语义清晰、URL 友好，如 `llm-0001-attention-mechanism.md`。
-- **分类来自索引而非目录**：题目的主分类由 frontmatter 的 `category` 字段显式承载，并在 `questions/index.json` 中重复登记；`index.json` 的 `categories` 是分类的权威 registry（含中文 label 与排序），不再靠文件夹路径表达 `category`。
+- **分类来自索引而非目录**：题目的主分类由 frontmatter 的 `category` 字段显式承载，并在 `questions/index.json` 中重复登记；`index.json` 的 `categories` 是分类的权威 registry（含中文 label 与排序），不靠文件夹路径表达 `category`。
 - **归类原则**：**技术题一律按技术方向归类**（`llm` / `agent` / `rag` / `engineering`），即使 `role: pm` 也按技术方向归类，再用 `role` 字段标注视角（`engineer` / `pm` / `both`）；`product` 分类**只放纯产品方法论题**（如需求拆解、商业化、指标体系），避免与 `role: pm` 语义重叠。更细粒度先用 `tags`，暂不引入 `subcategory`。
 - **语言区分**：语言由文件后缀区分——中文原文为 `questions/<id>-<slug>.md`，英文翻译为同 basename 加 `.en.md`，同样平铺在 `questions/` 根目录，如 `llm-0001-attention-mechanism.en.md`。
 
