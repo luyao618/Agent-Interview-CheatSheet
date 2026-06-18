@@ -6,6 +6,7 @@ tags: [rag, chunking, retrieval, embedding, semantic-chunking, overlap]
 difficulty: medium
 role: engineer
 contributor: 佚名
+source: 未知
 status: published
 updated: 2026-06-18
 answers:
@@ -65,4 +66,4 @@ RAG 里 Chunk 是怎么切的？固定、语义还是自适应？为什么？
 - LangChain Docs，*Text Splitters*（RecursiveCharacterTextSplitter / chunk_overlap）：https://python.langchain.com/docs/concepts/text_splitters/
 - LlamaIndex Docs，*Node Parsers / SemanticSplitterNodeParser*：https://docs.llamaindex.ai/en/stable/module_guides/loading/node_parsers/
 - Pinecone Learn，*Chunking Strategies for LLM Applications*：https://www.pinecone.io/learn/chunking-strategies/
-- LlamaIndex，*Parent Document / Small-to-Big Retrieval*（父子多粒度检索）
+- LlamaIndex Docs，*Parent Document / Small-to-Big Retrieval*（父子多粒度检索）：https://docs.llamaindex.ai/en/stable/examples/retrievers/auto_merging_retriever/
