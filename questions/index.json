@@ -31,7 +31,7 @@
       "language": "zh",
       "category": "agent",
       "category_label": "Agent 架构与编排",
-      "tags": ["agent", "architecture", "planning", "memory", "tool-use", "orchestration"],
+      "tags": ["agent", "architecture", "planning", "memory", "tool-use", "orchestration", "guardrails", "safety"],
       "difficulty": "medium",
       "role": "engineer",
       "status": "published",
