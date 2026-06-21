@@ -516,6 +516,28 @@
       "updated": "2026-06-21",
       "answers_count": 1,
       "source": "京东"
+    },
+    {
+      "id": "engineering-0008",
+      "title": "双十一/双十二订单查询有上千万 QPS，从系统设计和大促筹备角度怎么支撑峰值流量",
+      "file": "engineering-0008-peak-qps-system-design.md",
+      "language": "zh",
+      "category": "engineering",
+      "category_label": "工程化、部署、性能、成本",
+      "tags": [
+        "engineering",
+        "system-design",
+        "high-qps",
+        "caching",
+        "scalability"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-21",
+      "answers_count": 1,
+      "source": "虾皮"
     }
   ]
 }
