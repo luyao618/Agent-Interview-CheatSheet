@@ -538,6 +538,28 @@
       "updated": "2026-06-21",
       "answers_count": 1,
       "source": "虾皮"
+    },
+    {
+      "id": "rag-0020",
+      "title": "有医疗/法律等专业领域知识，要做智能助手，RAG 链路会怎么搭建",
+      "file": "rag-0020-domain-rag-pipeline.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": [
+        "rag",
+        "domain-specific",
+        "pipeline",
+        "evaluation",
+        "safety"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-21",
+      "answers_count": 1,
+      "source": "字节跳动/豆包"
     }
   ]
 }
