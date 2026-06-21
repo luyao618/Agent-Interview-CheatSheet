@@ -87,6 +87,22 @@
       "updated": "2026-06-21",
       "answers_count": 1,
       "source": "快手 · AI Agent 开发一面"
+    },
+    {
+      "id": "rag-0003",
+      "title": "为什么在检索阶段引入 BM25",
+      "file": "rag-0003-bm25-in-retrieval.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": ["rag", "bm25", "sparse-retrieval", "hybrid-search", "keyword-matching"],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-21",
+      "answers_count": 1,
+      "source": "快手"
     }
   ]
 }
