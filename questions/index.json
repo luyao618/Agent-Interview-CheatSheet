@@ -1,11 +1,31 @@
 {
   "schema_version": 1,
   "categories": [
-    {"id": "llm", "label": "大模型基础与原理", "sort": 10},
-    {"id": "agent", "label": "Agent 架构与编排", "sort": 20},
-    {"id": "rag", "label": "检索增强生成", "sort": 30},
-    {"id": "engineering", "label": "工程化、部署、性能、成本", "sort": 40},
-    {"id": "product", "label": "AI 产品经理方向", "sort": 50}
+    {
+      "id": "llm",
+      "label": "大模型基础与原理",
+      "sort": 10
+    },
+    {
+      "id": "agent",
+      "label": "Agent 架构与编排",
+      "sort": 20
+    },
+    {
+      "id": "rag",
+      "label": "检索增强生成",
+      "sort": 30
+    },
+    {
+      "id": "engineering",
+      "label": "工程化、部署、性能、成本",
+      "sort": 40
+    },
+    {
+      "id": "product",
+      "label": "AI 产品经理方向",
+      "sort": 50
+    }
   ],
   "questions": [
     {
@@ -15,7 +35,13 @@
       "language": "zh",
       "category": "agent",
       "category_label": "Agent 架构与编排",
-      "tags": ["skill", "token-optimization", "context-engineering", "progressive-disclosure", "cost"],
+      "tags": [
+        "skill",
+        "token-optimization",
+        "context-engineering",
+        "progressive-disclosure",
+        "cost"
+      ],
       "difficulty": "medium",
       "role": "engineer",
       "status": "published",
@@ -31,7 +57,16 @@
       "language": "zh",
       "category": "agent",
       "category_label": "Agent 架构与编排",
-      "tags": ["agent", "architecture", "planning", "memory", "tool-use", "orchestration", "guardrails", "safety"],
+      "tags": [
+        "agent",
+        "architecture",
+        "planning",
+        "memory",
+        "tool-use",
+        "orchestration",
+        "guardrails",
+        "safety"
+      ],
       "difficulty": "medium",
       "role": "engineer",
       "status": "published",
@@ -47,7 +82,14 @@
       "language": "zh",
       "category": "agent",
       "category_label": "Agent 架构与编排",
-      "tags": ["agent", "definition", "autonomy", "tool-use", "planning", "llm"],
+      "tags": [
+        "agent",
+        "definition",
+        "autonomy",
+        "tool-use",
+        "planning",
+        "llm"
+      ],
       "difficulty": "easy",
       "role": "both",
       "status": "published",
@@ -63,7 +105,14 @@
       "language": "zh",
       "category": "rag",
       "category_label": "检索增强生成",
-      "tags": ["rag", "chunking", "retrieval", "embedding", "semantic-chunking", "overlap"],
+      "tags": [
+        "rag",
+        "chunking",
+        "retrieval",
+        "embedding",
+        "semantic-chunking",
+        "overlap"
+      ],
       "difficulty": "medium",
       "role": "engineer",
       "status": "published",
@@ -79,7 +128,13 @@
       "language": "zh",
       "category": "rag",
       "category_label": "检索增强生成",
-      "tags": ["rag", "retrieval", "parent-child-index", "small-to-big", "indexing"],
+      "tags": [
+        "rag",
+        "retrieval",
+        "parent-child-index",
+        "small-to-big",
+        "indexing"
+      ],
       "difficulty": "medium",
       "role": "engineer",
       "status": "published",
@@ -95,7 +150,13 @@
       "language": "zh",
       "category": "rag",
       "category_label": "检索增强生成",
-      "tags": ["rag", "bm25", "sparse-retrieval", "hybrid-search", "keyword-matching"],
+      "tags": [
+        "rag",
+        "bm25",
+        "sparse-retrieval",
+        "hybrid-search",
+        "keyword-matching"
+      ],
       "difficulty": "medium",
       "role": "engineer",
       "status": "published",
@@ -111,7 +172,13 @@
       "language": "zh",
       "category": "rag",
       "category_label": "检索增强生成",
-      "tags": ["rag", "rerank", "topk", "truncation", "cross-encoder"],
+      "tags": [
+        "rag",
+        "rerank",
+        "topk",
+        "truncation",
+        "cross-encoder"
+      ],
       "difficulty": "medium",
       "role": "engineer",
       "status": "published",
@@ -127,7 +194,13 @@
       "language": "zh",
       "category": "rag",
       "category_label": "检索增强生成",
-      "tags": ["rag", "evaluation", "retrieval-metrics", "generation-metrics", "ragas"],
+      "tags": [
+        "rag",
+        "evaluation",
+        "retrieval-metrics",
+        "generation-metrics",
+        "ragas"
+      ],
       "difficulty": "medium",
       "role": "engineer",
       "status": "published",
@@ -143,7 +216,13 @@
       "language": "zh",
       "category": "rag",
       "category_label": "检索增强生成",
-      "tags": ["rag", "evaluation", "dataset", "ground-truth", "golden-set"],
+      "tags": [
+        "rag",
+        "evaluation",
+        "dataset",
+        "ground-truth",
+        "golden-set"
+      ],
       "difficulty": "easy",
       "role": "engineer",
       "status": "published",
@@ -159,7 +238,13 @@
       "language": "zh",
       "category": "rag",
       "category_label": "检索增强生成",
-      "tags": ["rag", "relevance", "hybrid-search", "rerank", "query-rewrite"],
+      "tags": [
+        "rag",
+        "relevance",
+        "hybrid-search",
+        "rerank",
+        "query-rewrite"
+      ],
       "difficulty": "medium",
       "role": "engineer",
       "status": "published",
@@ -175,7 +260,13 @@
       "language": "zh",
       "category": "rag",
       "category_label": "检索增强生成",
-      "tags": ["rag", "chunking", "embedding", "context-window", "retrieval"],
+      "tags": [
+        "rag",
+        "chunking",
+        "embedding",
+        "context-window",
+        "retrieval"
+      ],
       "difficulty": "medium",
       "role": "engineer",
       "status": "published",
@@ -191,7 +282,13 @@
       "language": "zh",
       "category": "rag",
       "category_label": "检索增强生成",
-      "tags": ["rag", "chunking", "overlap", "boundary", "retrieval"],
+      "tags": [
+        "rag",
+        "chunking",
+        "overlap",
+        "boundary",
+        "retrieval"
+      ],
       "difficulty": "medium",
       "role": "engineer",
       "status": "published",
@@ -207,7 +304,13 @@
       "language": "zh",
       "category": "rag",
       "category_label": "检索增强生成",
-      "tags": ["rag", "dense-vector", "sparse-vector", "bm25", "hybrid-search"],
+      "tags": [
+        "rag",
+        "dense-vector",
+        "sparse-vector",
+        "bm25",
+        "hybrid-search"
+      ],
       "difficulty": "medium",
       "role": "engineer",
       "status": "published",
@@ -223,7 +326,13 @@
       "language": "zh",
       "category": "rag",
       "category_label": "检索增强生成",
-      "tags": ["rag", "topk", "context-dilution", "noise", "latency"],
+      "tags": [
+        "rag",
+        "topk",
+        "context-dilution",
+        "noise",
+        "latency"
+      ],
       "difficulty": "medium",
       "role": "engineer",
       "status": "published",
@@ -239,7 +348,35 @@
       "language": "zh",
       "category": "rag",
       "category_label": "检索增强生成",
-      "tags": ["rag", "rerank", "cross-encoder", "recall-precision", "retrieval"],
+      "tags": [
+        "rag",
+        "rerank",
+        "cross-encoder",
+        "recall-precision",
+        "retrieval"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-21",
+      "answers_count": 1,
+      "source": "字节跳动"
+    },
+    {
+      "id": "rag-0013",
+      "title": "文档发生局部更新时，如何通过增量索引避免全量重新向量化",
+      "file": "rag-0013-incremental-indexing.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": [
+        "rag",
+        "incremental-index",
+        "embedding",
+        "document-update",
+        "versioning"
+      ],
       "difficulty": "medium",
       "role": "engineer",
       "status": "published",
