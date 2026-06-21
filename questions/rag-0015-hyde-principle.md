@@ -58,5 +58,5 @@ HyDE：query ──► LLM 生成假设答案 ──embed──► 向量 ──
 ## 参考
 
 - Gao et al., *Precise Zero-Shot Dense Retrieval without Relevance Labels (HyDE)*, 2022：https://arxiv.org/abs/2212.10496
-- LangChain Docs，*Hypothetical Document Embeddings (HyDE)*：https://python.langchain.com/docs/how_to/hyde/
+- LangChain Docs，*Hypothetical Document Embeddings (HyDE) Retriever*：https://docs.langchain.com/oss/javascript/integrations/retrievers/hyde
 - LlamaIndex Docs，*Query Transform Cookbook（含 HyDE Query Transform）*：https://docs.llamaindex.ai/en/stable/examples/query_transformations/query_transform_cookbook/
