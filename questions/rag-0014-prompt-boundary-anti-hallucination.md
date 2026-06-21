@@ -72,6 +72,6 @@ answers:
 
 ## 参考
 
-- OpenAI Help，*Retrieval-Augmented Generation and hallucination 最佳实践*：https://platform.openai.com/docs/guides/retrieval-augmented-generation
+- OpenAI Docs，*Optimizing LLM Accuracy（RAG grounding 降低幻觉）*：https://developers.openai.com/api/docs/guides/optimizing-llm-accuracy
 - Anthropic Docs，*Reduce hallucinations（grounding / allow "I don't know"）*：https://docs.anthropic.com/en/docs/build-with-claude/reduce-hallucinations
 - Gao et al., *Retrieval-Augmented Generation for Large Language Models: A Survey*, 2023：https://arxiv.org/abs/2312.10997
