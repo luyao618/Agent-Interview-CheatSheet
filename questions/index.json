@@ -167,6 +167,22 @@
       "updated": "2026-06-21",
       "answers_count": 1,
       "source": "快手"
+    },
+    {
+      "id": "rag-0008",
+      "title": "向量化之前为什么要对长文档切片？不切片会怎样",
+      "file": "rag-0008-why-chunk-long-docs.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": ["rag", "chunking", "embedding", "context-window", "retrieval"],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-21",
+      "answers_count": 1,
+      "source": "字节跳动"
     }
   ]
 }
