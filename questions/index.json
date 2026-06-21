@@ -151,6 +151,22 @@
       "updated": "2026-06-21",
       "answers_count": 1,
       "source": "快手"
+    },
+    {
+      "id": "rag-0007",
+      "title": "如果要提升检索相关度，你会怎么做",
+      "file": "rag-0007-improve-relevance.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": ["rag", "relevance", "hybrid-search", "rerank", "query-rewrite"],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-21",
+      "answers_count": 1,
+      "source": "快手"
     }
   ]
 }
