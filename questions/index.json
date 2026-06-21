@@ -119,6 +119,22 @@
       "updated": "2026-06-21",
       "answers_count": 1,
       "source": "快手"
+    },
+    {
+      "id": "rag-0005",
+      "title": "RAG 系统如何评测",
+      "file": "rag-0005-rag-evaluation.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": ["rag", "evaluation", "retrieval-metrics", "generation-metrics", "ragas"],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-21",
+      "answers_count": 1,
+      "source": "快手"
     }
   ]
 }
