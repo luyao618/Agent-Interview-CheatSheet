@@ -1330,6 +1330,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "百度"
+    },
+    {
+      "id": "rag-0033",
+      "title": "RAG 输出错误，怎么判断是检索错了还是生成错了？有做过归因实验吗？",
+      "file": "rag-0033-retrieval-vs-generation-attribution.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": [
+        "rag",
+        "attribution",
+        "debugging",
+        "faithfulness",
+        "evaluation"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "百度"
     }
   ]
 }
