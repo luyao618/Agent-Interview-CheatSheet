@@ -956,6 +956,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "淘天/阿里"
+    },
+    {
+      "id": "agent-0011",
+      "title": "Agent 的 long-term memory 与 short-term memory 如何设计",
+      "file": "agent-0011-long-short-term-memory.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "memory",
+        "long-term",
+        "short-term",
+        "vector-store"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "淘天/阿里"
     }
   ]
 }
