@@ -692,6 +692,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "淘天/阿里"
+    },
+    {
+      "id": "rag-0027",
+      "title": "如何评估 RAG 检索质量",
+      "file": "rag-0027-evaluate-retrieval-quality.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": [
+        "rag",
+        "retrieval-evaluation",
+        "recall",
+        "ndcg",
+        "mrr"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "淘天/阿里"
     }
   ]
 }
