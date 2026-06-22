@@ -1088,6 +1088,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "淘天/阿里"
+    },
+    {
+      "id": "agent-0017",
+      "title": "Prompt 注入攻击如何防御",
+      "file": "agent-0017-prompt-injection-defense.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "prompt-injection",
+        "security",
+        "sandbox",
+        "guardrails"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "快手"
     }
   ]
 }
