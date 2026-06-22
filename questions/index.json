@@ -1374,6 +1374,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "百度"
+    },
+    {
+      "id": "rag-0035",
+      "title": "如果不用图数据库，能实现真正的 GraphRAG 吗？为什么？",
+      "file": "rag-0035-graphrag-without-graphdb.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": [
+        "rag",
+        "graphrag",
+        "graph-database",
+        "knowledge-graph",
+        "architecture"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "百度"
     }
   ]
 }
