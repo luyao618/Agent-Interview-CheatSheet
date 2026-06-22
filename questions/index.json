@@ -1264,6 +1264,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "快手"
+    },
+    {
+      "id": "agent-0021",
+      "title": "如何确保 Agent 返回标准 JSON？如果模型输出多余说明文字，后端如何提取？",
+      "file": "agent-0021-structured-json-output.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "structured-output",
+        "json",
+        "function-calling",
+        "parsing"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "字节跳动"
     }
   ]
 }
