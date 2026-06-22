@@ -804,6 +804,28 @@
       "source": "快手"
     },
     {
+      "id": "agent-0006",
+      "title": "Agent 如何处理 token 限制并把短期/长期记忆注入提示词",
+      "file": "agent-0006-memory-token-limit-injection.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "memory",
+        "token-limit",
+        "context-injection",
+        "summarization"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "京东"
+    },
+    {
       "id": "engineering-0001",
       "title": "多 Agent 协作并发操作业务实体时，用 Redis 分布式锁如何避免主从切换导致锁丢失",
       "file": "engineering-0001-redis-distributed-lock-failover.md",
