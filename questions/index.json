@@ -846,6 +846,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "京东"
+    },
+    {
+      "id": "agent-0007",
+      "title": "LLM 用 MCP 调用内部系统接口的完整生命周期，大模型能直接调接口吗",
+      "file": "agent-0007-mcp-call-lifecycle.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "mcp",
+        "tool-use",
+        "lifecycle",
+        "protocol"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "京东"
     }
   ]
 }
