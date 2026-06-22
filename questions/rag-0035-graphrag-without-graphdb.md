@@ -32,7 +32,7 @@ answers:
 ```
             存什么：nodes(实体) / edges(关系) / communities(社区摘要)
 关系库(PG)  ─ nodes表 + edges(src,dst)表，多跳=递归CTE/反复JOIN
-文件(parquet) ─ 离线建好的节点/边/社区，查询期加载（微软 GraphRAG 默认）
+文件(parquet) ─ 离线建好的节点/边/社区(DataFrame)，查询期加载（微软 GraphRAG 默认）
 内存(networkx)─ 直接建图对象，进程内 BFS/社区检测，适合中小规模
 图数据库(Neo4j)─ 原生邻接 + Cypher，多跳/可视化最省力
 ```
@@ -40,7 +40,7 @@ answers:
 **为什么不用图数据库也成立**
 
 - GraphRAG 的关键算子是：实体抽取 → 建边 → **k 跳子图遍历** → 社区检测(Leiden) → 社区摘要 → Local/Global Search。这些都是算法层的事，与底层存哪无关。
-- 微软开源的 GraphRAG 参考实现，默认就把图建成 **parquet 文件**、用 networkx 在内存里跑社区检测，并不强依赖图数据库。这本身就证明了可行性。
+- 微软开源的 GraphRAG 参考实现，默认就把图建成 **parquet/DataFrame 输出**、社区检测走**内存里的 Leiden**（graspologic 的 `hierarchical_leiden`，底层是 Rust 的 `graspologic_native`；NetworkX 主要用于图结构表达，非默认聚类后端），全程不强依赖图数据库。这本身就证明了可行性。
 
 **各方案的代价（核心权衡）**
 
@@ -61,6 +61,6 @@ answers:
 
 ## 参考
 
-- Microsoft Research, *GraphRAG*（默认 parquet + networkx 实现）：https://github.com/microsoft/graphrag
+- Microsoft Research, *GraphRAG*（parquet/DataFrame 输出 + 内存 Leiden 聚类，graspologic）：https://github.com/microsoft/graphrag
 - Microsoft Research Blog, *GraphRAG: Unlocking LLM discovery on narrative private data*：https://www.microsoft.com/en-us/research/blog/graphrag-unlocking-llm-discovery-on-narrative-private-data/
 - Neo4j, *What is GraphRAG?*：https://neo4j.com/blog/what-is-graphrag/
