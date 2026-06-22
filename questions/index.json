@@ -934,6 +934,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "淘天/阿里"
+    },
+    {
+      "id": "agent-0010",
+      "title": "为什么 Agent 比普通 chatbot 更复杂",
+      "file": "agent-0010-agent-vs-chatbot-complexity.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "chatbot",
+        "complexity",
+        "tool-use",
+        "state"
+      ],
+      "difficulty": "easy",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "淘天/阿里"
     }
   ]
 }
