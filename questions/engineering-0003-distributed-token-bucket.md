@@ -40,15 +40,19 @@ answers:
 **核心难点：原子性。** "补桶 + 取令牌"是读-改-写复合操作，并发下必须原子，否则会超发。直接用多条命令有竞态，**标准做法是 Redis + Lua 脚本**：脚本在 Redis 单线程里原子执行，一次完成「按时间差补令牌→判断够不够→扣减→回写」。惰性补桶（lazy refill）是关键技巧——不开后台定时器，每次请求时按 `min(capacity, tokens + (now - last) × rate)` 现算应补的量，省去定时任务。
 
 ```lua
--- KEYS[1]=bucket  ARGV: rate, capacity, now, requested
+-- KEYS[1]=bucket   ARGV: rate, capacity, requested
+local rate      = tonumber(ARGV[1])
+local capacity  = tonumber(ARGV[2])
+local requested = tonumber(ARGV[3])
+local now = tonumber(redis.call('TIME')[1])   -- 服务端秒级时间，全局统一，避免客户端时钟漂移
 local b = redis.call('HMGET', KEYS[1], 'tokens', 'ts')
 local tokens = tonumber(b[1]) or capacity
 local last   = tonumber(b[2]) or now
-tokens = math.min(capacity, tokens + (now - last) * rate)  -- 惰性补桶
+tokens = math.min(capacity, tokens + (now - last) * rate)   -- 惰性补桶
 local ok = tokens >= requested
 if ok then tokens = tokens - requested end
 redis.call('HMSET', KEYS[1], 'tokens', tokens, 'ts', now)
-redis.call('PEXPIRE', KEYS[1], ttl)        -- 冷 key 自动回收
+redis.call('PEXPIRE', KEYS[1], math.ceil(capacity / rate * 1000))  -- 补满整桶所需时长后冷 key 自动回收
 return ok and 1 or 0
 ```
 
