@@ -1396,6 +1396,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "百度"
+    },
+    {
+      "id": "rag-0036",
+      "title": "RAG 你们怎么优化的：chunk size / overlap 怎么设，要不要加 rerank",
+      "file": "rag-0036-rag-optimization-practices.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": [
+        "rag",
+        "optimization",
+        "chunk-size",
+        "overlap",
+        "rerank"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "美团"
     }
   ]
 }
