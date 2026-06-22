@@ -29,7 +29,7 @@ answers:
 
 ```
 query → [embed] → [ANN 召回] → [rerank] → [拼 prompt] → [LLM 生成]
-         ~10ms     ~10-50ms     ~50ms       -            占 60%+（TTFT 大头）
+         ~10ms     ~10-50ms     ~50ms       -            占 60%+（TTFT + decode）
 ```
 
 **1. 检索段优化**
@@ -41,7 +41,7 @@ query → [embed] → [ANN 召回] → [rerank] → [拼 prompt] → [LLM 生成
 
 **2. rerank 取舍**
 
-cross-encoder rerank 精度高但慢。可缩小 rerank 候选数（先粗排 top-50 再精排 top-5）、用更小的 rerank 模型，或对延迟敏感场景直接砍掉 rerank 用向量分兜底。
+cross-encoder rerank 精度高但慢。可缩小 rerank 候选数（先粗排 top-50 再精排 top-5）、用更小的 rerank 模型，或对延迟敏感场景直接砍掉 rerank 用向量分数兜底。
 
 **3. 生成段优化（收益最大）**
 
