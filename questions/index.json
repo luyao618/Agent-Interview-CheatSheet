@@ -648,6 +648,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "淘天/阿里"
+    },
+    {
+      "id": "rag-0025",
+      "title": "RAG 中 Chunk size 如何选择",
+      "file": "rag-0025-chunk-size-selection.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": [
+        "rag",
+        "chunk-size",
+        "embedding",
+        "retrieval",
+        "tuning"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "淘天/阿里"
     }
   ]
 }
