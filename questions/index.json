@@ -1044,6 +1044,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "淘天/阿里"
+    },
+    {
+      "id": "agent-0015",
+      "title": "Agent 如何避免无限循环调用工具",
+      "file": "agent-0015-avoid-infinite-tool-loop.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "loop-prevention",
+        "stop-condition",
+        "budget",
+        "guardrails"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "淘天/阿里"
     }
   ]
 }
