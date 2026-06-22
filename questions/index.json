@@ -626,6 +626,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "淘天/阿里"
+    },
+    {
+      "id": "rag-0024",
+      "title": "如何设计一个 100M 文档规模的 RAG 系统",
+      "file": "rag-0024-100m-doc-rag-design.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": [
+        "rag",
+        "scalability",
+        "vector-db",
+        "sharding",
+        "ann"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "淘天/阿里"
     }
   ]
 }
