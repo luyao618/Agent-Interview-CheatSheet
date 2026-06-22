@@ -1132,6 +1132,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "快手"
+    },
+    {
+      "id": "agent-0019",
+      "title": "Prompt Engineering 和 Context Engineering 有什么区别",
+      "file": "agent-0019-prompt-vs-context-engineering.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "prompt-engineering",
+        "context-engineering",
+        "context-window",
+        "rag"
+      ],
+      "difficulty": "medium",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "字节跳动"
     }
   ]
 }
