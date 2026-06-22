@@ -30,14 +30,16 @@ answers:
 **实现一：滑动日志（Sliding Log）—— Redis ZSET。** 精确但重。每个限流 key 一个有序集合，member 是请求 ID、score 是时间戳；每次请求先剔除过期成员、再数窗口内还剩多少。
 
 ```lua
--- KEYS[1]=key  ARGV: now(ms), window(ms), limit, member
-local now    = tonumber(ARGV[1])
-local window = tonumber(ARGV[2])
-local limit  = tonumber(ARGV[3])
+-- KEYS[1]=key  ARGV: window(ms), limit, member
+local window = tonumber(ARGV[1])
+local limit  = tonumber(ARGV[2])
+local t   = redis.call('TIME')                           -- 服务端时间，全局统一，避免客户端时钟漂移
+local now = t[1] * 1000 + math.floor(t[2] / 1000)        -- 秒+微秒 → 毫秒
 redis.call('ZREMRANGEBYSCORE', KEYS[1], 0, now - window) -- 清掉窗口外的旧请求
 local cnt = redis.call('ZCARD', KEYS[1])
 if cnt < limit then
-  redis.call('ZADD', KEYS[1], now, ARGV[4])              -- 记录本次请求
+  -- member 须唯一（如 now-请求ID），同毫秒并发不会相互覆盖
+  redis.call('ZADD', KEYS[1], now, ARGV[3])              -- 记录本次请求
   redis.call('PEXPIRE', KEYS[1], window)                 -- 冷 key 自动回收
   return 1                                                -- 放行
 end
@@ -60,7 +62,7 @@ estimated = curr_count + prev_count × (1 - elapsed_in_curr / window)
         权重 (1-elapsed/T)=0.25      30 + 80×0.25 = 50
 ```
 
-内存从「O(QPS×T)」降到「O(桶数)」甚至两个整数，代价是假设流量在窗口内均匀分布、有约 0.x% 的估算误差。
+内存从「O(QPS×T)」降到「O(桶数)」甚至两个整数，代价是它是**近似法**：把上一窗口当成均匀分布来加权，与真实分布不符时就有误差。误差大小不是固定值，取决于流量分布与桶粒度——**桶越细误差越小**，流量越均匀越准；分布极端（如全压在窗口边界）时误差会明显放大。Cloudflare 在其大规模限流实践中观测到误差通常很小（约 0.003% 的请求被错误放行/拦截），但那是特定业务流量下的经验值，不是算法保证。
 
 **精度 / 内存权衡（高频追问）。**
 - **ZSET 滑动日志**：精确、可审计每条请求，但内存/网络开销大，适合限额小、要求严格的场景（如支付、敏感接口）。
