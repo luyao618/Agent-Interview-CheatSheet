@@ -1110,6 +1110,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "快手"
+    },
+    {
+      "id": "agent-0018",
+      "title": "有哪些 RAG/Agent 评测维度",
+      "file": "agent-0018-rag-agent-eval-dimensions.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "evaluation",
+        "rag",
+        "metrics",
+        "task-success"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "快手"
     }
   ]
 }
