@@ -1022,6 +1022,28 @@
       "updated": "2026-06-22",
       "answers_count": 1,
       "source": "淘天/阿里"
+    },
+    {
+      "id": "agent-0014",
+      "title": "如何设计 Agent 的 tool registry",
+      "file": "agent-0014-tool-registry-design.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "tool-registry",
+        "schema",
+        "discovery",
+        "scalability"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "淘天/阿里"
     }
   ]
 }
