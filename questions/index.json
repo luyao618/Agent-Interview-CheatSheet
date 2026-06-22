@@ -870,6 +870,28 @@
       "source": "京东"
     },
     {
+      "id": "agent-0008",
+      "title": "Agent 与 Workflow automation 的区别是什么",
+      "file": "agent-0008-agent-vs-workflow.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "workflow",
+        "autonomy",
+        "control-flow",
+        "orchestration"
+      ],
+      "difficulty": "easy",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-22",
+      "answers_count": 1,
+      "source": "淘天/阿里"
+    },
+    {
       "id": "engineering-0002",
       "title": "专家级 Agent 主动操作底层命令或行为时，架构上如何保证指令幂等与分布式事务回滚",
       "file": "engineering-0002-idempotency-distributed-transaction.md",
