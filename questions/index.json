@@ -582,6 +582,28 @@
       "updated": "2026-06-21",
       "answers_count": 1,
       "source": "XTransfer"
+    },
+    {
+      "id": "rag-0022",
+      "title": "搜索触发条件如何设计？如何优化检索质量",
+      "file": "rag-0022-search-trigger-and-quality.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": [
+        "rag",
+        "search-trigger",
+        "routing",
+        "retrieval-quality",
+        "agentic-rag"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-21",
+      "answers_count": 1,
+      "source": "XTransfer"
     }
   ]
 }
