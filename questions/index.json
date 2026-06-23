@@ -1484,6 +1484,28 @@
       "updated": "2026-06-23",
       "answers_count": 1,
       "source": "腾讯"
+    },
+    {
+      "id": "agent-0024",
+      "title": "MCP 和 Function Calling 的区别与优势是什么",
+      "file": "agent-0024-mcp-vs-function-calling.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "mcp",
+        "function-calling",
+        "protocol",
+        "interoperability"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-23",
+      "answers_count": 1,
+      "source": "腾讯"
     }
   ]
 }
