@@ -20,20 +20,23 @@
 对于每个问题会用头部大模型回答面试问题作为"Defualt Answer"。
 每个问题一个markdown文件，包含元数据，目录包含所有问题方便检索。
 
+> 📖 **题目目录**：[index.md](./index.md) —— 按分类 + 序号排列，点击即可跳转到对应题目。
+
 > 未来目标：当题量与质量达到一定程度后，基于这些结构化数据用 **GitHub Pages** 构建一个可检索、可分类浏览的静态站点。
 
 ---
 
 ## 目录结构
 
-所有题目 Markdown在 `questions/` 根目录下；分类与检索能力由单一索引文件 `questions/index.json` 承载。
+所有题目 Markdown在 `questions/` 根目录下；分类与检索能力由仓库根目录的单一索引文件 `index.json` 承载，根目录 `index.md` 是面向用户的可点击目录页。
 
 ```
 AI-Interview-CheatSheet/
 ├── README.md                  # 项目说明（本文件）
 ├── LICENSE
-├── questions/                 # 题库主目录，所有 Q&A 与索引存放于此
-│   ├── index.json             # 检索索引 + category registry（唯一索引来源）
+├── index.json                 # 检索索引 + category registry（唯一索引来源，仓库根目录）
+├── index.md                   # 目录页：按分类 + 序号排列，点击跳转到对应题目
+├── questions/                 # 题库主目录，所有 Q&A Markdown 存放于此
 │   ├── llm-0001-attention-mechanism.md       # 中文题目
 │   ├── llm-0001-attention-mechanism.en.md    # 对应英文翻译
 │   ├── agent-0001-react-vs-plan-execute.md
@@ -46,13 +49,13 @@ AI-Interview-CheatSheet/
 
 - **一题一文件、根目录平铺**：每道题目独立成 `.md` 文件，直接放在 `questions/` 根目录下。
 - **文件命名**：`questions/<id>-<slug>.md`。`<id>` 为 `方向-四位序号`（如 `rag-0003`）；`<slug>` 使用英文小写短横线命名（lowercase ASCII kebab-case），语义清晰、URL 友好，如 `llm-0001-attention-mechanism.md`。
-- **分类来自索引而非目录**：题目的主分类由 frontmatter 的 `category` 字段显式承载，并在 `questions/index.json` 中重复登记；`index.json` 的 `categories` 是分类的权威 registry（含中文 label 与排序），不靠文件夹路径表达 `category`。
+- **分类来自索引而非目录**：题目的主分类由 frontmatter 的 `category` 字段显式承载，并在根目录 `index.json` 中重复登记；`index.json` 的 `categories` 是分类的权威 registry（含中文 label 与排序），不靠文件夹路径表达 `category`。
 - **归类原则**：**技术题一律按技术方向归类**（`llm` / `agent` / `rag` / `engineering`），即使 `role: pm` 也按技术方向归类，再用 `role` 字段标注视角（`engineer` / `pm` / `both`）；`product` 分类**只放纯产品方法论题**（如需求拆解、商业化、指标体系），避免与 `role: pm` 语义重叠。更细粒度先用 `tags`，暂不引入 `subcategory`。
 - **语言区分**：语言由文件后缀区分——中文原文为 `questions/<id>-<slug>.md`，英文翻译为同 basename 加 `.en.md`，同样平铺在 `questions/` 根目录，如 `llm-0001-attention-mechanism.en.md`。
 
-### 索引文件 `questions/index.json`
+### 索引文件 `index.json`
 
-`questions/index.json` 是题库的唯一检索索引与 category registry，必须是合法 JSON。当前仓库尚无真实题目，因此 `questions` 先落为空数组 `[]`，分类 registry 则预置五个固定分类：
+`index.json`（位于仓库根目录）是题库的唯一检索索引与 category registry，必须是合法 JSON。分类 registry 预置五个固定分类：
 
 ```json
 {
@@ -179,7 +182,7 @@ answers:                          # 多答案列表，至少一条
 
 > **`updated` 的两个层级**：题目级 `updated` 是「整条题目最后一次变更」，用于站点排序与「最近更新」；每条答案的 `answers[].updated` 是「这条答案自身最后一次修订」。改动某条答案时，同时更新该答案的 `updated` 和题目级 `updated`。
 
-> 统一的 frontmatter 是后续**维护索引、检索过滤、GitHub Pages 展示**的基础，请新增题目时务必填写完整，并在 `questions/index.json` 中同步登记对应 entry。
+> 统一的 frontmatter 是后续**维护索引、检索过滤、GitHub Pages 展示**的基础，请新增题目时务必填写完整，并在 `index.json` 中同步登记对应 entry。
 
 ---
 
@@ -201,7 +204,7 @@ answers:                          # 多答案列表，至少一条
 3. **填写元数据**：完整填写 frontmatter（`id` / `category` / `tags` / `difficulty` / `role` / `contributor` / `status` / `updated` 以及 `answers` 列表），`id` 不要与已有题目冲突，且 `category` 须匹配 `id` 前缀与某个 index category；不填 `contributor` 时按 `佚名` 处理。
 4. **撰写内容**：问题描述清晰；至少提供一条答案，**默认带一条署名模型名的 AI 答案**，每条答案在正文区写成 `## 答案 · <author>` 小节，并在 frontmatter `answers` 中补齐该答案的 `author` / `type` / `model` / `answered` / `updated`。
 5. **新增/修订答案**：在 `answers` 列表追加或修改对应条目，更新该答案的 `updated`，并同步刷新题目级 `updated`。
-6. **登记索引**：在 `questions/index.json` 的 `questions` 数组中新增/更新对应 entry（字段见上文「索引文件」），确保 `file` 指向新建的 Markdown 文件。
+6. **登记索引**：在 `index.json` 的 `questions` 数组中新增/更新对应 entry（字段见上文「索引文件」），确保 `file` 指向新建的 Markdown 文件。
 7. **提交 PR**：遵循下方命名与提交规范。
 
 **命名规范**
@@ -216,7 +219,7 @@ answers:                          # 多答案列表，至少一条
 - 提交信息建议遵循 [Conventional Commits](https://www.conventionalcommits.org/)：
   - `docs: add llm question about kv-cache`（新增题目）
   - `docs: fix answer in agent-0001-react-vs-plan-execute`（修正内容）
-  - `chore: update questions/index.json`（索引调整）
+  - `chore: update index.json`（索引调整）
 - 一个 PR 聚焦一类改动，便于 review。
 - 提交前请自检：frontmatter 字段完整、`id` 唯一、`index.json` 已同步登记且能被 JSON parser 解析、Markdown 渲染正常。
 
