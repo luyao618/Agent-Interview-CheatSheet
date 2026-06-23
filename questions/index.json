@@ -1288,6 +1288,28 @@
       "source": "字节跳动"
     },
     {
+      "id": "agent-0022",
+      "title": "Prompt 和 MCP 为什么要抽象？换模型是否需要重调提示词？",
+      "file": "agent-0022-prompt-mcp-abstraction.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "mcp",
+        "prompt",
+        "abstraction",
+        "portability"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-23",
+      "answers_count": 1,
+      "source": "腾讯"
+    },
+    {
       "id": "rag-0031",
       "title": "GraphRAG 系统整体流程是怎样的？从用户提问到最终生成答案，哪些模块是你独立负责的？",
       "file": "rag-0031-graphrag-overall-flow.md",
