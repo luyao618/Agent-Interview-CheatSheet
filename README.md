@@ -1,7 +1,7 @@
 # AI-Interview-CheatSheet
 
 > 面向 **AI / LLM / Agent 开发工程师** 与 **AI 产品经理** 的面试题库。
-> 没到底会用头部的大模型的回答作为default回答。
+> 每道题会用头部的大模型的回答作为default回答。
 > 持续迭代、不断新增题目，欢迎补充。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
