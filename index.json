@@ -1550,6 +1550,27 @@
       "updated": "2026-06-23",
       "answers_count": 1,
       "source": "美团"
+    },
+    {
+      "id": "rag-0037",
+      "title": "Deep Research 是什么？还算不算 RAG",
+      "file": "rag-0037-deep-research-vs-rag.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": [
+        "deep-research",
+        "rag",
+        "agent",
+        "multi-step-retrieval",
+        "report-generation"
+      ],
+      "difficulty": "medium",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-27",
+      "answers_count": 1
     }
   ]
 }

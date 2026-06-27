@@ -2,14 +2,14 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：69** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：70** ｜ 索引来源：[`index.json`](index.json)
 
 ## 分类总览
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
 | 🤖 Agent 架构与编排 | 25 | [查看 ↓](#-agent-架构与编排) |
-| 🔍 检索增强生成 | 36 | [查看 ↓](#-检索增强生成) |
+| 🔍 检索增强生成 | 37 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 8 | [查看 ↓](#-工程化部署性能成本) |
 
 ---
@@ -50,7 +50,7 @@
 
 ## 🔍 检索增强生成
 
-<sub>分类 ID：`rag` ｜ 共 36 题</sub>
+<sub>分类 ID：`rag` ｜ 共 37 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -90,6 +90,7 @@
 | 34 | [Chunk 划分策略对 RAG 效果影响大吗？用过哪些优化方式](questions/rag-0034-chunk-strategy-impact.md) | 🟡 进阶 |
 | 35 | [如果不用图数据库，能实现真正的 GraphRAG 吗？为什么？](questions/rag-0035-graphrag-without-graphdb.md) | 🔴 困难 |
 | 36 | [RAG 你们怎么优化的：chunk size / overlap 怎么设，要不要加 rerank](questions/rag-0036-rag-optimization-practices.md) | 🟡 进阶 |
+| 37 | [Deep Research 是什么？还算不算 RAG](questions/rag-0037-deep-research-vs-rag.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
