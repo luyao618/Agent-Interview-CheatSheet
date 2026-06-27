@@ -1508,6 +1508,28 @@
       "source": "腾讯"
     },
     {
+      "id": "agent-0025",
+      "title": "ReAct 模式的工作原理是什么",
+      "file": "agent-0025-react-pattern-working-principle.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "react",
+        "reasoning",
+        "tool-use",
+        "prompting"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-27",
+      "answers_count": 1,
+      "source": "未知"
+    },
+    {
       "id": "engineering-0007",
       "title": "字段提取任务里如何评估标注数据质量、合格标准与数据混合策略",
       "file": "engineering-0007-annotation-quality-eval.md",

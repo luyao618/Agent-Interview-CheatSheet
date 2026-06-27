@@ -2,13 +2,13 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：68** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：69** ｜ 索引来源：[`index.json`](index.json)
 
 ## 分类总览
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
-| 🤖 Agent 架构与编排 | 24 | [查看 ↓](#-agent-架构与编排) |
+| 🤖 Agent 架构与编排 | 25 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 36 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 8 | [查看 ↓](#-工程化部署性能成本) |
 
@@ -16,7 +16,7 @@
 
 ## 🤖 Agent 架构与编排
 
-<sub>分类 ID：`agent` ｜ 共 24 题</sub>
+<sub>分类 ID：`agent` ｜ 共 25 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -44,6 +44,7 @@
 | 22 | [Prompt 和 MCP 为什么要抽象？换模型是否需要重调提示词？](questions/agent-0022-prompt-mcp-abstraction.md) | 🟡 进阶 |
 | 23 | [超长上下文怎么处理？记忆模块怎么设计](questions/agent-0023-long-context-memory-module.md) | 🟡 进阶 |
 | 24 | [MCP 和 Function Calling 的区别与优势是什么](questions/agent-0024-mcp-vs-function-calling.md) | 🟡 进阶 |
+| 25 | [ReAct 模式的工作原理是什么](questions/agent-0025-react-pattern-working-principle.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
