@@ -1,0 +1,6 @@
+# Local agent / tooling session artifacts (not part of the question bank)
+.omc/
+.multica/
+
+# OS / editor cruft
+.DS_Store
