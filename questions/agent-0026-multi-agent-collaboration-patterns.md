@@ -41,12 +41,18 @@ answers:
 7. **Group Chat / Blackboard（群聊–黑板）**：所有 Agent 读写共享上下文，由一个 speaker-selector 决定谁发言，灵活但 token 成本高。
 
 ```
-Supervisor（集中控制）              Pipeline（串行接力）
-        ┌─ Supervisor ─┐          检索 Agent
-        ▼      ▼       ▼              │
-    workerA workerB workerC ──►   写作 Agent
-        └──── 汇总 ─────┘              │
-                                   审校 Agent
+Supervisor（集中控制）
+       ┌── Supervisor ──┐
+       ▼       ▼        ▼
+   workerA  workerB  workerC
+       └───────┼────────┘
+               ▼
+             汇总
+```
+
+```
+Pipeline（串行接力）
+  检索 Agent ──► 写作 Agent ──► 审校 Agent
 ```
 
 **三、选型要点**
