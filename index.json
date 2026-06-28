@@ -1552,6 +1552,28 @@
       "source": "未知"
     },
     {
+      "id": "agent-0027",
+      "title": "单 Agent 遇瓶颈时，为什么需要 Multi-Agent",
+      "file": "agent-0027-why-multi-agent.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "multi-agent",
+        "orchestration",
+        "context-engineering",
+        "collaboration"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-28",
+      "answers_count": 1,
+      "source": "未知"
+    },
+    {
       "id": "engineering-0007",
       "title": "字段提取任务里如何评估标注数据质量、合格标准与数据混合策略",
       "file": "engineering-0007-annotation-quality-eval.md",
