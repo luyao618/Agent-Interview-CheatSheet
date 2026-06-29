@@ -1574,6 +1574,28 @@
       "source": "未知"
     },
     {
+      "id": "agent-0028",
+      "title": "两个 Skill 内容不同但 description 相似导致 Agent 加载错 Skill，怎么解决",
+      "file": "agent-0028-skill-description-collision.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "skill",
+        "tool-selection",
+        "routing",
+        "disambiguation",
+        "retrieval"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-29",
+      "answers_count": 1,
+      "source": "腾讯"
+    },
+    {
       "id": "engineering-0007",
       "title": "字段提取任务里如何评估标注数据质量、合格标准与数据混合策略",
       "file": "engineering-0007-annotation-quality-eval.md",
