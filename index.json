@@ -1638,6 +1638,28 @@
       "updated": "2026-06-29",
       "answers_count": 1,
       "source": "未知"
+    },
+    {
+      "id": "agent-0029",
+      "title": "Agent 设计里，你觉得最重要的部分是什么",
+      "file": "agent-0029-most-important-part-of-agent-design.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "context-engineering",
+        "architecture",
+        "reliability",
+        "design"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-29",
+      "answers_count": 1,
+      "source": "未知"
     }
   ]
 }
