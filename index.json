@@ -1683,6 +1683,29 @@
       "updated": "2026-06-29",
       "answers_count": 1,
       "source": "未知"
+    },
+    {
+      "id": "agent-0031",
+      "title": "上下文工程有哪些需要注意的点",
+      "file": "agent-0031-context-engineering-key-points.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "context-engineering",
+        "context-window",
+        "memory",
+        "compaction",
+        "rag"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-29",
+      "answers_count": 1,
+      "source": "腾讯"
     }
   ]
 }
