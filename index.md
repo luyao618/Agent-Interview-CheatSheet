@@ -2,13 +2,13 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：72** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：73** ｜ 索引来源：[`index.json`](index.json)
 
 ## 分类总览
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
-| 🤖 Agent 架构与编排 | 27 | [查看 ↓](#-agent-架构与编排) |
+| 🤖 Agent 架构与编排 | 28 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 37 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 8 | [查看 ↓](#-工程化部署性能成本) |
 
@@ -16,7 +16,7 @@
 
 ## 🤖 Agent 架构与编排
 
-<sub>分类 ID：`agent` ｜ 共 27 题</sub>
+<sub>分类 ID：`agent` ｜ 共 28 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -47,6 +47,7 @@
 | 25 | [ReAct 模式的工作原理是什么](questions/agent-0025-react-pattern-working-principle.md) | 🟡 进阶 |
 | 26 | [常见的 Multi-Agent 协作模式有哪些](questions/agent-0026-multi-agent-collaboration-patterns.md) | 🟡 进阶 |
 | 27 | [单 Agent 遇瓶颈时，为什么需要 Multi-Agent](questions/agent-0027-why-multi-agent.md) | 🟡 进阶 |
+| 28 | [两个 Skill 内容不同但 description 相似导致 Agent 加载错 Skill，怎么解决](questions/agent-0028-skill-description-collision.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
