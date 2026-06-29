@@ -1615,6 +1615,29 @@
       "contributor": "佚名",
       "updated": "2026-06-27",
       "answers_count": 1
+    },
+    {
+      "id": "agent-0028",
+      "title": "如何设计 Agent 长期记忆的写回策略、衰减策略与冲突消解",
+      "file": "agent-0028-long-term-memory-writeback-decay-conflict.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "memory",
+        "long-term",
+        "write-back",
+        "decay",
+        "conflict-resolution"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-29",
+      "answers_count": 1,
+      "source": "未知"
     }
   ]
 }
