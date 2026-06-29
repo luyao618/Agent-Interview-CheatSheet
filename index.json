@@ -1660,6 +1660,29 @@
       "updated": "2026-06-29",
       "answers_count": 1,
       "source": "未知"
+    },
+    {
+      "id": "agent-0030",
+      "title": "MCP、A2A、普通 Function Calling 三者有什么本质区别？工程里怎么选？",
+      "file": "agent-0030-mcp-a2a-function-calling.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "mcp",
+        "a2a",
+        "function-calling",
+        "protocol",
+        "interoperability"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-29",
+      "answers_count": 1,
+      "source": "未知"
     }
   ]
 }
