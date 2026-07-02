@@ -1729,6 +1729,29 @@
       "updated": "2026-06-29",
       "answers_count": 1,
       "source": "未知"
+    },
+    {
+      "id": "agent-0033",
+      "title": "Agent 工程师需要具备哪些技能和能力",
+      "file": "agent-0033-agent-engineer-skills.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "career",
+        "skills",
+        "engineering",
+        "context-engineering",
+        "evaluation"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-07-02",
+      "answers_count": 1,
+      "source": "未知"
     }
   ]
 }
