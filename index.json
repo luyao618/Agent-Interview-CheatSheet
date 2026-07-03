@@ -1754,6 +1754,28 @@
       "source": "未知"
     },
     {
+      "id": "agent-0034",
+      "title": "两个 Skill 内容不同但 description 相似导致 Agent 加载错 Skill，怎么解决",
+      "file": "agent-0034-skill-description-collision.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "skill",
+        "tool-selection",
+        "routing",
+        "disambiguation",
+        "retrieval"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-06-29",
+      "answers_count": 1,
+      "source": "腾讯"
+    },
+    {
       "id": "llm-0001",
       "title": "什么是 LoRA 微调，LoRA 的核心思想是什么",
       "file": "llm-0001-lora-fine-tuning.md",
