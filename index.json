@@ -1752,6 +1752,27 @@
       "updated": "2026-07-02",
       "answers_count": 1,
       "source": "未知"
+    },
+    {
+      "id": "llm-0001",
+      "title": "什么是 LoRA 微调，LoRA 的核心思想是什么",
+      "file": "llm-0001-lora-fine-tuning.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "lora",
+        "fine-tuning",
+        "peft",
+        "low-rank",
+        "微调"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-07-03",
+      "answers_count": 1
     }
   ]
 }
