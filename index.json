@@ -1799,6 +1799,31 @@
       "source": "未知"
     },
     {
+      "id": "agent-0036",
+      "title": "你怎么理解最近比较火的 loop 工程和 graph 工程",
+      "file": "agent-0036-loop-vs-graph-engineering.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent",
+        "react",
+        "loop",
+        "graph",
+        "langgraph",
+        "orchestration",
+        "control-flow",
+        "state-machine"
+      ],
+      "difficulty": "medium",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-07-28",
+      "answers_count": 1,
+      "source": "未知"
+    },
+    {
       "id": "llm-0001",
       "title": "什么是 LoRA 微调，LoRA 的核心思想是什么",
       "file": "llm-0001-lora-fine-tuning.md",
