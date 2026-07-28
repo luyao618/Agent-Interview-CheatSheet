@@ -2,14 +2,14 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：81** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：82** ｜ 索引来源：[`index.json`](index.json)
 
 ## 分类总览
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
 | 🧠 大模型基础与原理 | 1 | [查看 ↓](#-大模型基础与原理) |
-| 🤖 Agent 架构与编排 | 35 | [查看 ↓](#-agent-架构与编排) |
+| 🤖 Agent 架构与编排 | 36 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 37 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 8 | [查看 ↓](#-工程化部署性能成本) |
 
@@ -27,7 +27,7 @@
 
 ## 🤖 Agent 架构与编排
 
-<sub>分类 ID：`agent` ｜ 共 35 题</sub>
+<sub>分类 ID：`agent` ｜ 共 36 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -66,6 +66,7 @@
 | 33 | [Agent 工程师需要具备哪些技能和能力](questions/agent-0033-agent-engineer-skills.md) | 🟡 进阶 |
 | 34 | [两个 Skill 内容不同但 description 相似导致 Agent 加载错 Skill，怎么解决](questions/agent-0034-skill-description-collision.md) | 🟡 进阶 |
 | 35 | [LLM 应用开发为什么不能仅调用大模型 API，会遇到哪些问题](questions/agent-0035-why-not-just-call-llm-api.md) | 🟡 进阶 |
+| 36 | [你怎么理解最近比较火的 loop 工程和 graph 工程](questions/agent-0036-loop-vs-graph-engineering.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
