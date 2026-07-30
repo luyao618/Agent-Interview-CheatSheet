@@ -1843,6 +1843,28 @@
       "contributor": "佚名",
       "updated": "2026-07-03",
       "answers_count": 1
+    },
+    {
+      "id": "agent-0037",
+      "title": "如何做一个多人对话的 Agent：识别每个人的发言并编排回复",
+      "file": "agent-0037-multi-user-conversation-orchestration.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "multi-user",
+        "speaker-diarization",
+        "orchestration",
+        "turn-taking",
+        "conversation"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-07-30",
+      "answers_count": 1,
+      "source": "未知"
     }
   ]
 }
