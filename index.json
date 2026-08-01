@@ -1865,6 +1865,28 @@
       "updated": "2026-07-30",
       "answers_count": 1,
       "source": "未知"
+    },
+    {
+      "id": "agent-0038",
+      "title": "Agent 节省 Token 成本，有哪些思路和方法",
+      "file": "agent-0038-reduce-agent-token-cost.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "token-optimization",
+        "cost",
+        "prompt-caching",
+        "context-engineering",
+        "model-routing"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-01",
+      "answers_count": 1,
+      "source": "未知"
     }
   ]
 }
