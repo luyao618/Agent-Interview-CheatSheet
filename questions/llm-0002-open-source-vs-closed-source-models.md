@@ -1,0 +1,64 @@
+---
+id: llm-0002
+title: 你怎么看开源模型和闭源模型？开源模型有哪些优势？
+category: llm
+tags: [open-source, open-weight, closed-source, 模型选型, 私有化部署]
+difficulty: easy
+role: both
+contributor: 佚名
+source: 未知
+status: published
+updated: 2026-08-03
+answers:
+  - author: Claude-Opus-4.8
+    type: ai
+    model: Claude-Opus-4.8
+    answered: 2026-08-03
+    updated: 2026-08-03
+---
+
+## 问题
+
+你怎么看开源模型和闭源模型？开源模型有哪些优势？
+
+## 答案
+
+> 🤖 AI 答案 · 模型：Claude-Opus-4.8 · 日期 2026-08-03
+
+**先厘清概念**：业界常说的「开源模型」，严格讲多数是**开放权重（open-weight）**——权重公开可下载（如 Llama、Qwen、DeepSeek、Mistral），但训练数据与完整流程未必开源；「闭源模型」指只经 API 访问、权重不公开的托管模型（如 GPT、Claude、Gemini）。二者不是优劣对立，而是**不同的工程与商业 trade-off**，选型取决于场景。需注意，Llama 等常见「开源模型」的许可证通常**并非 OSI-approved open source license**，本质是 open-weight + 附带使用限制（如 Llama 的月活门槛、限定用途条款），与 OSI 定义的「开源」有边界差异，商用前务必核对 License。
+
+| 维度 | 闭源（API） | 开源 / 开放权重 |
+| --- | --- | --- |
+| 能力天花板 | 顶级、开箱即用 | 追赶中，差距在缩小 |
+| 数据合规 | 默认数据出域、需信任厂商；enterprise / 区域化 / private endpoint 等部署可缓解，具体看厂商协议 | 可私有化，数据不出域 |
+| 成本 | 按 token 计费，规模越大越贵 | 前期投入高，边际成本低 |
+| 定制 | 仅 API 层微调 / 提示 | 可自由 SFT / LoRA / 蒸馏 / 量化 |
+| 自主可控 | 受厂商涨价 / 下线 / 限流约束 | 权重在手，无供应商锁定 |
+| 运维 | 厂商托管，零运维 | 自建推理与 GPU，自负 SLA |
+
+**开源模型的核心优势：**
+
+1. **数据私有与合规**：可本地 / 私有化部署，数据不出域，满足金融、医疗、政务等强监管场景。
+2. **成本可控**：一次部署后推理边际成本低，高并发或长期使用比按量 API 更划算。
+3. **深度可定制**：拿到权重即可微调、蒸馏、量化，深度适配垂直领域，还能压到边缘设备。
+4. **自主可控、无锁定**：不受 API 变更、涨价、下线影响，长期演进由自己掌握。
+5. **透明与生态**：结构 / 权重可审计，社区繁荣、迭代快，衍生模型与工具链丰富。
+
+**但「开源 ≠ 免费省事」**：需自建推理服务、GPU 资源、安全对齐与运维，且顶级能力目前仍是闭源略领先。
+
+**我的实践观点**：不做二选一，而用**混合分层**——闭源负责高难度推理与兜底，开源承接高频、敏感、需深度定制的场景，中间用**模型路由**按任务 / 成本 / 合规动态调度，兼顾效果、成本与可控性。
+
+## 延伸 / 追问
+
+**追问：企业私有化落地时，开源模型选型你会重点看哪些指标？如何弥补与闭源的能力差距？**
+
+选型先看**四条硬指标**：① 许可证能否商用（Llama 有月活限制，Qwen / DeepSeek / Mistral 多为 Apache / MIT 更宽松）；② 参数规模与 GPU 显存 / 预算是否匹配（7B~14B 适合单卡，70B+ 需多卡或量化）；③ 目标语言与领域的实测表现（别只看榜单，用自建业务集评测）；④ 上下文长度、工具调用 / 结构化输出等工程能力。
+
+弥补差距的手段：**领域微调（SFT / LoRA）** 补专业知识；**RAG** 注入实时 / 私有知识、抑制幻觉；**量化（GPTQ / AWQ / NF4）** 降显存换吞吐；**蒸馏**用闭源大模型造数据训小模型；叠加 **推理优化**（vLLM、投机解码）压延迟。关键场景保留闭源兜底，形成「开源为主、闭源补位」的组合。
+
+## 参考
+
+- Meta, *Llama 3.1*：https://ai.meta.com/llama/
+- Qwen Technical Report：https://github.com/QwenLM/Qwen
+- DeepSeek-V3 / R1：https://github.com/deepseek-ai
+- Stanford CRFM, *Foundation Model Transparency Index*：https://crfm.stanford.edu/fmti/

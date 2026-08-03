@@ -1845,6 +1845,28 @@
       "answers_count": 1
     },
     {
+      "id": "llm-0002",
+      "title": "你怎么看开源模型和闭源模型？开源模型有哪些优势？",
+      "file": "llm-0002-open-source-vs-closed-source-models.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "open-source",
+        "open-weight",
+        "closed-source",
+        "模型选型",
+        "私有化部署"
+      ],
+      "difficulty": "easy",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-03",
+      "answers_count": 1,
+      "source": "未知"
+    },
+    {
       "id": "agent-0037",
       "title": "如何做一个多人对话的 Agent：识别每个人的发言并编排回复",
       "file": "agent-0037-multi-user-conversation-orchestration.md",
