@@ -25,33 +25,34 @@ answers:
 
 > 🤖 AI 答案 · 模型：Claude-Opus-4.8 · 日期 2026-08-06
 
-**先分清「谁的思考、什么时候」——这不是三选一，而是分层。** `reasoning_content` 是推理模型（DeepSeek-R1、QwQ、o1 系）在最终 `content` 之外单独产出的思考轨迹，长度常是答案的 3~10 倍。关键前提：R1/QwQ 的 **chat template 与官方 API 本身就把「历史轮」的 reasoning 剥掉**，只把 `content` 拼回下一轮——因为模型训练时没见过「上一轮的思考」，硬喂回去属于**分布外（OOD）**，既涨 token 又可能让它锚死在陈旧推理上。
+**先分清 provider 契约，再谈分层——这不是三选一。** `reasoning_content` 是**字段约定**而非通用标准：DeepSeek-R1、Qwen 兼容 API 把思考轨迹单列到该字段；OpenAI o1 则**不返回原始 CoT**，只给隐藏/摘要版。以官方资料为准：DeepSeek API **不**把上一轮 `reasoning_content` 拼回下一轮；QwQ README 要求多轮 history 只留 final output、`apply_chat_template` 已实现该剥离。硬回灌历史思考会**偏离官方推荐 template 与输入分布、可能引发性能退化**（是「偏离分布」的经验论断，不是有直接证据的「训练没见过」）。
 
 ```
-┌──────────── 一次 ReAct 轮次 ────────────┐
-│ 当前步思考  reason→act 交替，最终答案未出   ← 必须【保留】
-├──────────────────────────────────────┤
-│ 历史轮思考  已产出最终 content 的旧轮次     ← 原始轨迹【剥离】
-│           但其承载决策的结论            ← 【压缩】进 content/状态块
-└──────────────────────────────────────┘
+┌──────────── 按「轮是否已完成」分层 ────────────┐
+│ 未完成 request 内  同一请求的 multi-step tool-use  ← 依 provider 契约【保留】
+├──────────────────────────────────────────────┤
+│ 已完成的对话轮    final output 已产出的旧 turn     ← 原始轨迹【剥离】
+│                但其承载决策的结论              ← 【压缩】提取校验后写入状态
+└──────────────────────────────────────────────┘
 ```
 
-**1. 保留（当前步内）。** 同一轮里模型靠自己的思考交替「推理—行动」，chat template 在本轮最终答案出来前必须留着当前思考，否则 ReAct 断链。这是刚需，不是可选项。
+**1. 保留（同一 request、尚未收尾）。** request 内的 multi-step tool-use，reasoning 往往**必须留**：Qwen3 官方 template 保留 last query 之后的 reasoning，丢掉会损害 multi-step tool use。「保留」边界不是笼统「当前一句」，而是**跟随具体 model/provider 的 tool-call replay contract**，别按「一律丢」实现。
 
-**2. 剥离（跨轮 / 跨任务）。** 旧轮的原始 reasoning 一律丢——对齐模型训练分布、省下最大头的 token、KV Cache 也不膨胀。这是推理模型多轮对话的**官方默认**做法。代价：模型「想清楚但没写进最终答案」的理由随之消失，可能重新推导甚至自相矛盾。
+**2. 剥离（已完成的对话轮之间）。** user turn 结束、final output 已出，其原始 reasoning 按官方默认剥掉——对齐推荐 template、省 token、KV Cache 不膨胀。剥的是**已完成轮**，非同一 request 内仍在推进的 tool-use 链。代价：没写进 final output 的理由消失，可能重推甚至自相矛盾。
 
-**3. 压缩（保住命脉）。** 剥离不等于「把想清楚的东西也扔了」：思考里那些后续步骤依赖的结论（选定的方案、排除的选项、推导出的关键事实）必须**提升进可见的 `content` 或状态块**，而不是随原始轨迹一起蒸发。代价是摘要有损、且多一步成本，须护住关键字段别压错。
+**3. 压缩（保住命脉）。** 剥离 ≠ 连结论一起扔：后续依赖的结论（选定方案、排除项及原因、关键约束）要**提取校验后写入可见 `content` 或状态块**，而非随轨迹蒸发。代价是摘要有损、须护住关键字段。
 
-**一句话落地：当前步保留，跨轮剥离原始轨迹，把承载决策的结论压缩进持久状态。** 这样既守住 chat template 的契约与成本，又不丢「为什么这么做」。
+**落地：同一 request 未收尾时按 provider 契约保留，已完成轮剥离原始轨迹，把决策结论提取校验后写入持久状态。**
 
 ## 延伸 / 追问
 
-**追问：如果为了 agent 调试或复用长链推理，一定要在历史里留部分思考，怎么降低信息损失又不踩 OOD？**
+**追问：如果为了 agent 调试或复用长链推理，一定要在历史里留部分思考，怎么降低信息损失又不偏离官方输入分布？**
 
-四条工程手法：① **双通道**——给模型看的 context 走「剥离 + 结论压缩」，给人 / 日志看的完整 trace 全量落外部存储、按轮次 id 可回取；调试需求用后者满足，别塞进模型输入。② **改写而非回灌**——真要复用某段长推理，不要把原始 `reasoning_content` 原样喂回（OOD），而是改写成普通 `content`（正式结论 / 中间引理形式），以模型训练见过的格式呈现。③ **护住命脉字段**——选定方案、被排除项及原因、推导出的数值 / 约束，校验后再写入；高风险决策保留可回溯的原始 trace 引用。④ **低频对齐边界**——压缩落在语义边界（一个子任务结束）低频做，别每轮摘要，省得反复付成本又累积失真。
+四条工程手法：① **双通道**——给模型看的 context 走「按契约剥离 + 结论状态化」，给人 / 日志看的完整 trace 全量落外部存储、按轮次 id 可回取；调试需求用后者满足，别塞进模型输入。② **提取结论，而非复述 CoT**——不要把已完成轮的原始 `reasoning_content` 原样或近似回灌（偏离推荐 template / 输入分布），而是**从 trace 中提取决策结论与约束、校验后写入状态块**（正式结论形式），以官方 template 见过的格式呈现，不暗示复述隐藏思考。③ **护住命脉字段**——选定方案、被排除项及原因、推导出的数值 / 约束，校验后再写入；高风险决策保留可回溯的原始 trace 引用。④ **低频对齐边界**——压缩落在语义边界（一个子任务结束）低频做，别每轮摘要，省得反复付成本又累积失真。
 
 ## 参考
 
-- DeepSeek API Docs, *Reasoning Model（多轮对话须剥离 reasoning_content）*：https://api-docs.deepseek.com/guides/reasoning_model
-- Qwen Team, *QwQ / Qwen3 Thinking Mode*：https://qwenlm.github.io/blog/qwq-32b/
+- DeepSeek API Docs, *Reasoning Model（多轮对话不把上一轮 reasoning_content 拼回）*：https://api-docs.deepseek.com/guides/reasoning_model
+- Qwen Team, *QwQ Usage Guidelines（No Thinking Content in History；apply_chat_template）*：https://github.com/QwenLM/QwQ#usage-guidelines
+- OpenAI, *Reasoning models（o1 不返回原始 CoT）*：https://platform.openai.com/docs/guides/reasoning
 - Yao et al., *ReAct: Synergizing Reasoning and Acting in Language Models*, 2022：https://arxiv.org/abs/2210.03629
