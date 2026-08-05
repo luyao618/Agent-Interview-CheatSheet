@@ -1953,6 +1953,28 @@
       "updated": "2026-08-05",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 1 章"
+    },
+    {
+      "id": "agent-0041",
+      "title": "如何为 Agent 工具调用设计动态风险评估，而不是只按工具名分级",
+      "file": "agent-0041-dynamic-tool-risk-assessment.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "tool-use",
+        "guardrails",
+        "risk-assessment",
+        "authorization",
+        "human-in-the-loop"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-05",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 1、4 章"
     }
   ]
 }
