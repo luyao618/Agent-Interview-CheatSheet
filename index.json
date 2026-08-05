@@ -2085,6 +2085,28 @@
       "updated": "2026-08-06",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 2 章"
+    },
+    {
+      "id": "agent-0046",
+      "title": "Skills 渐进式披露依赖模型“知道自己不知道”，这个元认知问题怎么解决",
+      "file": "agent-0046-skill-progressive-disclosure-metacognition.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "skills",
+        "progressive-disclosure",
+        "routing",
+        "metacognition",
+        "tool-discovery"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-06",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 2、4 章"
     }
   ]
 }
