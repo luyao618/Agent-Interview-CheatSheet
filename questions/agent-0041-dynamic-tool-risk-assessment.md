@@ -48,7 +48,7 @@ tool_call(name, args, ctx)
 
 1. **参数级分类器。** 用规则/policy（OPA、JSON-Schema 断言、正则/AST 解析 SQL 与路径）从 `args` 抽因子；规则覆盖不了的模糊场景再交 LLM 打辅助分。规则优先，快、可解释、可测试。
 
-2. **dry-run 预演。** 高危动作先「只算不改」估影响面：SQL 优先用**不执行语句**的 `EXPLAIN`（非 `EXPLAIN ANALYZE`）、同谓词 `SELECT COUNT(*)` 或数据库原生 preview；文件删除先列清单、转账先返回预览。切忌把「执行 DML 再 rollback」当成无副作用——`EXPLAIN ANALYZE` 会真正执行，事务回滚也消不掉 sequence 自增、trigger、外部调用等非事务副作用，还可能持锁。把预估影响回给评分与审批，让「删 3 行」和「删 30 万行」走不同路径。
+2. **dry-run 预演。** 高危动作先「只算不改」估影响面：SQL 优先用**不执行语句**的 `EXPLAIN`（非 `EXPLAIN ANALYZE`）、同谓词 `SELECT COUNT(*)` 或数据库原生 preview；文件删除先列清单、转账先返回预览。切忌把「执行 DML 再 rollback」当成无副作用——`EXPLAIN ANALYZE` 会真正执行，事务回滚也未必覆盖 sequence，以及 trigger/存储过程触发的外部 I/O、通知等非事务副作用，还可能持锁。把预估影响回给评分与审批，让「删 3 行」和「删 30 万行」走不同路径。
 
 3. **回滚与恢复设计。** 写操作包在事务里，或先做快照/软删除（标记而非物理删），保留 undo 令牌与 TTL。不可逆的外部副作用（转账、发邮件）无法真正回滚：用**前置审批降低发生概率**，再叠加 idempotency key、额度/目标 allowlist、延迟提交（可撤回窗口），以及退款/撤回等 compensating action 与对账 reconciliation 兜底——审批不等于回滚，也不能作为唯一恢复手段。
 
