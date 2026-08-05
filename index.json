@@ -1997,6 +1997,28 @@
       "updated": "2026-08-05",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 1 章"
+    },
+    {
+      "id": "agent-0043",
+      "title": "如何设计既不破坏 KV Cache、又能避免重复工具调用的上下文压缩策略",
+      "file": "agent-0043-kv-cache-friendly-context-compression.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "context-compression",
+        "kv-cache",
+        "tool-use",
+        "memory",
+        "prompt-caching"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-06",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 2 章"
     }
   ]
 }
