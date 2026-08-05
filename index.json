@@ -1909,6 +1909,28 @@
       "updated": "2026-08-01",
       "answers_count": 1,
       "source": "未知"
+    },
+    {
+      "id": "agent-0039",
+      "title": "ReAct 轨迹变长后，如何在不丢关键状态的前提下降低上下文成本",
+      "file": "agent-0039-react-trajectory-context-cost.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "react",
+        "context-engineering",
+        "trajectory",
+        "compaction",
+        "kv-cache"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-05",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 1、2 章"
     }
   ]
 }
