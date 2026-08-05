@@ -1975,6 +1975,28 @@
       "updated": "2026-08-05",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 1、4 章"
+    },
+    {
+      "id": "agent-0042",
+      "title": "Agent 需要人工接管但用户不在线或指令模糊时，系统该怎么设计",
+      "file": "agent-0042-human-handoff-when-user-unavailable.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "human-in-the-loop",
+        "handoff",
+        "autonomy",
+        "fallback",
+        "safety"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-05",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 1 章"
     }
   ]
 }
