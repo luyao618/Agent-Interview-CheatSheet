@@ -2041,6 +2041,28 @@
       "updated": "2026-08-06",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 2 章"
+    },
+    {
+      "id": "agent-0044",
+      "title": "Agent 状态栏如何设计，才能增强轨迹管理而不引入新的错误来源？",
+      "file": "agent-0044-agent-status-bar-design.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "status-bar",
+        "state-management",
+        "trajectory",
+        "metadata",
+        "reliability"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-06",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 2 章"
     }
   ]
 }
