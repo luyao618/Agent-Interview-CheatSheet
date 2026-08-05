@@ -2107,6 +2107,28 @@
       "updated": "2026-08-06",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 2、4 章"
+    },
+    {
+      "id": "agent-0047",
+      "title": "频繁变化的工具集如何布局上下文，才能最大化 Prompt Cache 命中率",
+      "file": "agent-0047-tool-context-layout-for-prompt-cache.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "prompt-caching",
+        "tools",
+        "context-layout",
+        "mcp",
+        "cost"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-06",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 2、4 章"
     }
   ]
 }
