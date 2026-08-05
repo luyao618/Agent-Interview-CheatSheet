@@ -1931,6 +1931,28 @@
       "updated": "2026-08-05",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 1、2 章"
+    },
+    {
+      "id": "agent-0040",
+      "title": "当“模型即 Agent”越来越强，Harness 工程为什么仍然重要",
+      "file": "agent-0040-model-as-agent-harness-engineering.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "harness",
+        "model-as-agent",
+        "orchestration",
+        "guardrails",
+        "observability"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-05",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 1 章"
     }
   ]
 }
