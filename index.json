@@ -2239,6 +2239,28 @@
       "updated": "2026-08-06",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 3、10 章"
+    },
+    {
+      "id": "agent-0049",
+      "title": "MCP 未来要支持流式输出、双向通信和有状态会话，该怎么扩展？",
+      "file": "agent-0049-mcp-streaming-bidirectional-stateful-sessions.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "mcp",
+        "tools",
+        "streaming",
+        "stateful-session",
+        "protocol-design"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-06",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 4 章"
     }
   ]
 }
