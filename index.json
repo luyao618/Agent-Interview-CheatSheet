@@ -1617,6 +1617,28 @@
       "answers_count": 1
     },
     {
+      "id": "rag-0038",
+      "title": "上下文感知检索会放大原文错误时，如何在检索阶段加入信息质量信号",
+      "file": "rag-0038-contextual-retrieval-information-quality.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": [
+        "rag",
+        "contextual-retrieval",
+        "data-quality",
+        "conflict-detection",
+        "ranking"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-06",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 3 章"
+    },
+    {
       "id": "agent-0028",
       "title": "如何设计 Agent 长期记忆的写回策略、衰减策略与冲突消解",
       "file": "agent-0028-long-term-memory-writeback-decay-conflict.md",
