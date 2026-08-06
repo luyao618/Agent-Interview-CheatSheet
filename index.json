@@ -2217,6 +2217,28 @@
       "updated": "2026-08-06",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 3 章"
+    },
+    {
+      "id": "rag-0041",
+      "title": "文件系统式知识库相比向量数据库 RAG，有哪些优势和边界？",
+      "file": "rag-0041-filesystem-knowledge-base-vs-vector-rag.md",
+      "language": "zh",
+      "category": "rag",
+      "category_label": "检索增强生成",
+      "tags": [
+        "rag",
+        "filesystem",
+        "knowledge-organization",
+        "indexing",
+        "agentic-rag"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-06",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 3、10 章"
     }
   ]
 }
