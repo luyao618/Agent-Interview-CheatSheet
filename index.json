@@ -2327,6 +2327,28 @@
       "updated": "2026-08-06",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 4 章"
+    },
+    {
+      "id": "agent-0052",
+      "title": "异步事件堆积时，如何把工具结果、用户消息和系统提醒组织给模型？",
+      "file": "agent-0052-async-event-presentation-to-model.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "async-agent",
+        "event-queue",
+        "context-engineering",
+        "summarization",
+        "state-management"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-06",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 4 章"
     }
   ]
 }
