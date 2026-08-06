@@ -2305,6 +2305,28 @@
       "updated": "2026-08-06",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 4 章"
+    },
+    {
+      "id": "agent-0051",
+      "title": "Agent 对外办事时，应使用虚拟身份还是用户本人身份？",
+      "file": "agent-0051-agent-virtual-identity-vs-user-identity.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "identity",
+        "authorization",
+        "trust",
+        "privacy",
+        "external-actions"
+      ],
+      "difficulty": "hard",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-06",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 4 章"
     }
   ]
 }
