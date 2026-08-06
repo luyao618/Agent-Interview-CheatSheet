@@ -31,7 +31,7 @@ answers:
 
 - **新鲜度 recency**：用内容 `effective_date`/`updated`（非索引时间）算时间衰减因子，过期内容打 stale。
 - **来源可信度 authority**：按源分级（官方 > 内部 wiki > UGC/网页）预打权威分。
-- **冲突检测 conflict**：对近重复聚类内的片段跑 NLI 或一次 LLM 判「矛盾」，给冲突组打 flag，少数派、被 `superseded_by` 的降权。
+- **冲突检测 conflict**：对近重复聚类内的片段跑 NLI 或一次 LLM 判「矛盾」，给冲突组打 flag，缺少权威来源、版本适配或时效支持的冲突项（及被 `superseded_by` 标记的）降权。
 - **质量评分 quality**：噪声比、字段完整度、是否 `deprecated`、被引用/采纳率，合成 0–1 质量分。
 
 **二、把信号融进检索的三个位置**
