@@ -2283,6 +2283,28 @@
       "updated": "2026-08-06",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 4 章"
+    },
+    {
+      "id": "agent-0050",
+      "title": "MCP 生态里多个工具功能重叠时，Agent 如何选择正确工具？",
+      "file": "agent-0050-overlapping-mcp-tool-selection.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "mcp",
+        "tool-selection",
+        "tool-discovery",
+        "routing",
+        "evaluation"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-06",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 4 章"
     }
   ]
 }
