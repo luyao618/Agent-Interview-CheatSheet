@@ -25,7 +25,9 @@ answers:
 
 > 🤖 AI 答案 · 模型：Claude-Opus-4.8 · 回答 2026-08-10
 
-**核心风险：把「自我复制」误当「自我改进」。** Agent 造 Agent 是一条**无外部真值的反馈闭环**：G_n 用自己的输出与判断去生成并评判 G_{n+1}，父代的模板缺陷、prompt 偏置、工具误选被子代继承并放大，而评测又由同源模型打分——如同 model collapse，误差单调累积、分布方差收窄（多样性塌缩），最终在一个**漂移的代理目标**上自嗨，而非真实任务。
+**核心风险：把「自我复制」误当「自我改进」。** Agent 造 Agent 是一条**无外部真值的反馈闭环**：G_n 用自己的输出与判断去生成并评判 G_{n+1}，父代的模板缺陷、prompt 偏置、工具选择策略被子代继承，而评测又由同源模型打分——最终可能在一个**漂移的代理目标**上自嗨，而非真实任务。
+
+这里可**类比** model collapse，但要划清边界：Shumailov 的 model collapse 是 **training data recursion / 模型训练**语境（拿自生成数据反复训练导致分布退化）；本题是 **template、prompt、tool policy、evaluator 同源**造成的**生成与评测闭环漂移**，机制不同，只能作为「类似风险形态」借用——常见表现是分布方差收窄、多样性下降，但**不必然单调累积**，取决于闭环是否引入外部真值与纠偏。
 
 关键是切断「自证」，给闭环钉一个**外部信任根**。
 
@@ -58,10 +60,9 @@ answers:
 
 **追问：怎么早期发现「悄悄退化」——指标没崩但能力在退？**
 
-盯趋势而非单点。① **代际基线回归**：每代固定评测集必须 ≥ 父代，用留出集算 regression，任一核心维度下滑即拦。② **分布 / 多样性监控**：跟踪输出多样性、工具调用分布、答案长度熵——model collapse 的先兆是方差收窄、模式趋同，比准确率更早暴露。③ **真值锚定探针**：混入一组人工标注的 canary 任务，其通过率是不可被生成器优化的硬指标。④ **血缘审计**：沿 provenance 回放，定位退化从哪一代、哪个模板 / prompt 变更引入。⑤ **人审抽样**：对晋升样本做定期盲审，防止评测被 Goodhart 蚀空。一句话：把「代际曲线 + 留出真值 + 多样性熵」做成看板，退化是趋势问题，要用趋势指标抓。
+盯趋势而非单点。① **代际基线回归**：每代固定评测集必须 ≥ 父代，用留出集算 regression，任一核心维度下滑即拦。② **分布 / 多样性监控**：跟踪输出多样性、工具调用分布、答案长度熵——Agent 自举中对应的「类似 collapse」先兆是方差收窄、模式趋同，比准确率更早暴露。③ **真值锚定探针**：混入一组人工标注的 canary 任务，其通过率是不可被生成器优化的硬指标。④ **血缘审计**：沿 provenance 回放，定位退化从哪一代、哪个模板 / prompt 变更引入。⑤ **人审抽样**：对晋升样本做定期盲审，防止评测被 Goodhart 蚀空。一句话：把「代际曲线 + 留出真值 + 多样性熵」做成看板，退化是趋势问题，要用趋势指标抓。
 
 ## 参考
 
-- Shumailov et al., *The Curse of Recursion: Training on Generated Data Makes Models Forget*, 2023：https://arxiv.org/abs/2305.17493
-- Shumailov et al., *AI models collapse when trained on recursively generated data*, Nature 2024：https://www.nature.com/articles/s41586-024-07566-y
+- Shumailov et al., *AI models collapse when trained on recursively generated data*, Nature 2024（earlier preprint: *The Curse of Recursion*, arXiv:2305.17493）：https://www.nature.com/articles/s41586-024-07566-y
 - Anthropic Engineering, *Building Effective Agents*：https://www.anthropic.com/engineering/building-effective-agents
