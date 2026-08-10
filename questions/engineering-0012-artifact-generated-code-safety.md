@@ -40,7 +40,7 @@ Artifact 模式下，Agent 会生成 SQL / HTML / JS / 可视化代码，直接�
   沙箱 iframe+独立域   只读副本+只读角色
   +CSP 收口出站       +AST 白名单(仅 SELECT)
   +postMessage 单通道 +租户/RLS/列脱敏
-  +Worker 超时限额    +timeout/LIMIT/行数上限
+  +超时销毁+资源限额  +timeout/LIMIT/行数上限
               │            │
        防 XSS/外传    防破坏/越权/资源滥用
 ```
@@ -50,7 +50,7 @@ Artifact 模式下，Agent 会生成 SQL / HTML / JS / 可视化代码，直接�
 1. **独立源隔离。** artifact 一律在**沙箱 iframe** 渲染：`sandbox="allow-scripts"` 但**不给 allow-same-origin**，并托管在**独立沙箱域名**（非主站 origin）。这样脚本读不到主站 DOM、cookie、localStorage 与 token，即便被诱导也偷不走会话。
 2. **CSP 收口出站。** `default-src 'none'`，只放必要的 `connect-src / img-src` 白名单，掐断 `fetch` 到攻击者域名的外传通道；禁 top-navigation、禁向外站提交 form。
 3. **单通道通信。** 父子只走 `postMessage`，父窗口对消息做 schema 校验，绝不 `eval` / `innerHTML` 直插子窗口内容。
-4. **资源限额。** 渲染放 Web Worker + 超时，长跑 / 死循环 / 挖矿直接 kill。
+4. **资源限额。** 通用 HTML/DOM 渲染仍在 **sandbox iframe / 独立进程**里（Worker 摸不到 DOM，不能渲染 HTML）；只把 **CPU-heavy / 不可信计算**丢进 **Web Worker**（Canvas 场景可选 OffscreenCanvas）。统一加**超时销毁 iframe/worker** + 消息与内存兜底，长跑 / 死循环 / 挖矿直接 kill。
 
 **数据库面（SQL）——防破坏性操作与越权读：**
 
