@@ -2393,6 +2393,28 @@
       "updated": "2026-08-06",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 5 章"
+    },
+    {
+      "id": "agent-0053",
+      "title": "Agent 自举生成新 Agent 时，如何防止能力退化和错误累积？",
+      "file": "agent-0053-agent-bootstrapping-degradation-control.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "agent-bootstrap",
+        "self-improvement",
+        "evaluation",
+        "governance",
+        "safety"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-10",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 5、8 章"
     }
   ]
 }
