@@ -2503,6 +2503,28 @@
       "updated": "2026-08-12",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 6 章"
+    },
+    {
+      "id": "llm-0004",
+      "title": "多轮 Agent 后训练中，最终成败如何归因到中间工具调用决策？",
+      "file": "llm-0004-agent-rl-credit-assignment.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "reinforcement-learning",
+        "agent-training",
+        "credit-assignment",
+        "tool-use",
+        "rewards"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-12",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 7 章"
     }
   ]
 }
