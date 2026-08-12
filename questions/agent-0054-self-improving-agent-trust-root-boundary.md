@@ -67,5 +67,5 @@ answers:
 
 - NIST CSRC Glossary, *Trusted Computing Base (TCB)*（TCB 的标准定义：承担安全策略实施的保护机制总和）：https://csrc.nist.gov/glossary/term/trusted_computing_base
 - Saltzer & Schroeder, *The Protection of Information in Computer Systems*, 1975（least privilege 与 economy of mechanism 两条设计原则，是「TCB 越小越可信」的思想来源，而非该术语出处）：https://web.mit.edu/Saltzer/www/publications/protection/
-- SLSA v1.2 Source track（受保护分支的技术控制；Source L4 要求两人复核所有变更）：https://slsa.dev/spec/v1.2/source-requirements
+- SLSA v1.2 Source track（受保护分支的技术控制；Source L4 要求 protected-branch 变更经 two-party agreement——提交前须由两名及以上 trusted person 同意，「上传者 + 复核者」即为一种合规组合）：https://slsa.dev/spec/v1.2/source-requirements
 - SLSA v1.2 Build track（provenance 生成于可信控制面、用户构建步骤不可篡改，及 isolation strength）：https://slsa.dev/spec/v1.2/build-requirements
