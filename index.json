@@ -2547,6 +2547,28 @@
       "updated": "2026-08-12",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 7 章"
+    },
+    {
+      "id": "agent-0054",
+      "title": "Agent 能自我更新工具和验证器时，如何隔离不能被它修改的信任根？",
+      "file": "agent-0054-self-improving-agent-trust-root-boundary.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "self-improvement",
+        "trust-root",
+        "governance",
+        "verifier",
+        "safety"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-13",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 8 章"
     }
   ]
 }
