@@ -25,7 +25,7 @@ answers:
 
 > 🤖 AI 答案 · 模型：Claude-Opus-4.8 · 日期 2026-08-12
 
-**SFT 教「形」，RL 教「神」**：SFT 是行为克隆，把输出格式、工具调用协议、轨迹骨架灌进去；RL 优化决策质量——该调哪个工具、何时停、错了怎么回。顺序不能反的硬机制是：策略梯度只能放大**已被采样到**的行为，轨迹连解析都过不了、reward 全零时，GRPO 组内 advantage 恒零，梯度为零，训练只是烧钱。至于更强的说法「RL 带不来 base 之外的新能力」，**只是一条窄结论**：Yue et al. 观察到当前 RLVR 在数学/代码 benchmark 上多是把 base 已有行为集中化、pass@大k 未必超过 base；它未覆盖所有 RL 方法与 multi-turn tool Agent，别当定律。
+**SFT 教「形」，RL 教「神」**：SFT 是行为克隆，把输出格式、工具调用协议、轨迹骨架灌进去；RL 优化决策质量——该调哪个工具、何时停、错了怎么回。实践中通常先 SFT，因为策略梯度的学习信号来自已采样轨迹；若轨迹均无法解析、reward 全零，GRPO 组内 advantage 恒零，无法学习。至于更强的说法「RL 带不来 base 之外的新能力」，**只是一条窄结论**：Yue et al. 观察到当前 RLVR 在数学/代码 benchmark 上多是把 base 已有行为集中化、pass@大k 未必超过 base；它未覆盖所有 RL 方法与 multi-turn tool Agent，别当定律。
 
 ```
 SFT(形) ───── gate ─────► RL(神)
@@ -44,7 +44,7 @@ SFT(形) ───── gate ─────► RL(神)
 
 1. **格式与协议合格率**：必须在 RL 真实使用的采样温度下统计，greedy 好看没有意义。schema 合法率、工具名存在性、停止符正确率是硬门槛。
 2. **端到端可执行率**：rollout 跑到终局的比例，决定 RL 的有效样本率。
-3. **存在可优化的成功轨迹**——最关键。对 GRPO 这类组内取 baseline 的算法，**最直接的信号是「多少比例的 prompt 能在组内采出 reward 方差（至少一条成功 rollout）」**：全组同分则 advantage 恒零，对训练零贡献。`pass@k − pass@1` 只是 **coverage proxy**，便宜好算，但聚合会掩盖「哪些 prompt 有信号」。两者都低说明能力不在分布里，补数据 / RFT / 换 base 都比硬上 RL 划算。
+3. **存在可优化的成功轨迹**——最关键。对 GRPO 这类组内取 baseline 的算法，**最直接的信号是「多少比例的 prompt 能在组内采出 reward 方差（例如至少一条成功且一条失败）」**：全组同分则 advantage 恒零，对训练零贡献。`pass@k − pass@1` 只是 **coverage proxy**，便宜好算，但聚合会掩盖「哪些 prompt 有信号」。两者都低说明能力不在分布里，补数据 / RFT / 换 base 都比硬上 RL 划算。
 4. **SFT 收益递减且未过拟合**：验证集不再涨、train/val 劈叉就停；同时盯熵——坍缩说明 SFT 灌过头了。
 
 **两侧风险**
