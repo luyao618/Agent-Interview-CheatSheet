@@ -2525,6 +2525,28 @@
       "updated": "2026-08-12",
       "answers_count": 1,
       "source": "《深入理解 AI Agent：设计原理与工程实践》第 7 章"
+    },
+    {
+      "id": "llm-0005",
+      "title": "Agent 训练中如何判断 SFT 已经足够，应该切换到 RL？",
+      "file": "questions/llm-0005-agent-training-sft-to-rl-switch.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "sft",
+        "reinforcement-learning",
+        "post-training",
+        "agentic-model",
+        "evaluation"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-08-12",
+      "answers_count": 1,
+      "source": "《深入理解 AI Agent：设计原理与工程实践》第 7 章"
     }
   ]
 }
