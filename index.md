@@ -2,33 +2,37 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：85** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：116** ｜ 索引来源：[`index.json`](index.json)
 
 ## 分类总览
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
-| 🧠 大模型基础与原理 | 2 | [查看 ↓](#-大模型基础与原理) |
-| 🤖 Agent 架构与编排 | 38 | [查看 ↓](#-agent-架构与编排) |
-| 🔍 检索增强生成 | 37 | [查看 ↓](#-检索增强生成) |
-| ⚙️ 工程化、部署、性能、成本 | 8 | [查看 ↓](#-工程化部署性能成本) |
+| 🧠 大模型基础与原理 | 6 | [查看 ↓](#-大模型基础与原理) |
+| 🤖 Agent 架构与编排 | 54 | [查看 ↓](#-agent-架构与编排) |
+| 🔍 检索增强生成 | 41 | [查看 ↓](#-检索增强生成) |
+| ⚙️ 工程化、部署、性能、成本 | 15 | [查看 ↓](#-工程化部署性能成本) |
 
 ---
 
 ## 🧠 大模型基础与原理
 
-<sub>分类 ID：`llm` ｜ 共 2 题</sub>
+<sub>分类 ID：`llm` ｜ 共 6 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
 | 1 | [什么是 LoRA 微调，LoRA 的核心思想是什么](questions/llm-0001-lora-fine-tuning.md) | 🟡 进阶 |
 | 2 | [你怎么看开源模型和闭源模型？开源模型有哪些优势？](questions/llm-0002-open-source-vs-closed-source-models.md) | 🟢 入门 |
+| 3 | [Chat Template 中 reasoning_content 应该保留、剥离还是压缩？](questions/llm-0003-chat-template-reasoning-content-retention.md) | 🔴 困难 |
+| 4 | [多轮 Agent 后训练中，最终成败如何归因到中间工具调用决策？](questions/llm-0004-agent-rl-credit-assignment.md) | 🔴 困难 |
+| 5 | [Agent 训练中如何判断 SFT 已经足够，应该切换到 RL？](questions/llm-0005-agent-training-sft-to-rl-switch.md) | 🔴 困难 |
+| 6 | [什么是 Speculative Decoding？它如何在不改变输出分布的前提下加速 LLM 推理？](questions/llm-0006-speculative-decoding.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
 ## 🤖 Agent 架构与编排
 
-<sub>分类 ID：`agent` ｜ 共 38 题</sub>
+<sub>分类 ID：`agent` ｜ 共 54 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -70,12 +74,28 @@
 | 36 | [你怎么理解最近比较火的 loop 工程和 graph 工程](questions/agent-0036-loop-vs-graph-engineering.md) | 🟡 进阶 |
 | 37 | [如何做一个多人对话的 Agent：识别每个人的发言并编排回复](questions/agent-0037-multi-user-conversation-orchestration.md) | 🟡 进阶 |
 | 38 | [Agent 节省 Token 成本，有哪些思路和方法](questions/agent-0038-reduce-agent-token-cost.md) | 🟡 进阶 |
+| 39 | [ReAct 轨迹变长后，如何在不丢关键状态的前提下降低上下文成本](questions/agent-0039-react-trajectory-context-cost.md) | 🔴 困难 |
+| 40 | [当“模型即 Agent”越来越强，Harness 工程为什么仍然重要](questions/agent-0040-model-as-agent-harness-engineering.md) | 🟡 进阶 |
+| 41 | [如何为 Agent 工具调用设计动态风险评估，而不是只按工具名分级](questions/agent-0041-dynamic-tool-risk-assessment.md) | 🔴 困难 |
+| 42 | [Agent 需要人工接管但用户不在线或指令模糊时，系统该怎么设计](questions/agent-0042-human-handoff-when-user-unavailable.md) | 🟡 进阶 |
+| 43 | [如何设计既不破坏 KV Cache、又能避免重复工具调用的上下文压缩策略](questions/agent-0043-kv-cache-friendly-context-compression.md) | 🔴 困难 |
+| 44 | [Agent 状态栏如何设计，才能增强轨迹管理而不引入新的错误来源？](questions/agent-0044-agent-status-bar-design.md) | 🟡 进阶 |
+| 45 | [多人长期维护系统提示词时，如何防止 Prompt 熵增？](questions/agent-0045-system-prompt-entropy-control.md) | 🟡 进阶 |
+| 46 | [Skills 渐进式披露依赖模型“知道自己不知道”，这个元认知问题怎么解决](questions/agent-0046-skill-progressive-disclosure-metacognition.md) | 🔴 困难 |
+| 47 | [频繁变化的工具集如何布局上下文，才能最大化 Prompt Cache 命中率](questions/agent-0047-tool-context-layout-for-prompt-cache.md) | 🔴 困难 |
+| 48 | [用户记忆出现冲突时，Agent 应该覆盖、合并还是追问？](questions/agent-0048-user-memory-conflict-resolution.md) | 🟡 进阶 |
+| 49 | [MCP 未来要支持流式输出、双向通信和有状态会话，该怎么扩展？](questions/agent-0049-mcp-streaming-bidirectional-stateful-sessions.md) | 🔴 困难 |
+| 50 | [MCP 生态里多个工具功能重叠时，Agent 如何选择正确工具？](questions/agent-0050-overlapping-mcp-tool-selection.md) | 🟡 进阶 |
+| 51 | [Agent 对外办事时，应使用虚拟身份还是用户本人身份？](questions/agent-0051-agent-virtual-identity-vs-user-identity.md) | 🔴 困难 |
+| 52 | [异步事件堆积时，如何把工具结果、用户消息和系统提醒组织给模型？](questions/agent-0052-async-event-presentation-to-model.md) | 🟡 进阶 |
+| 53 | [Agent 自举生成新 Agent 时，如何防止能力退化和错误累积？](questions/agent-0053-agent-bootstrapping-degradation-control.md) | 🔴 困难 |
+| 54 | [Agent 能自我更新工具和验证器时，如何隔离不能被它修改的信任根？](questions/agent-0054-self-improving-agent-trust-root-boundary.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
 ## 🔍 检索增强生成
 
-<sub>分类 ID：`rag` ｜ 共 37 题</sub>
+<sub>分类 ID：`rag` ｜ 共 41 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -116,12 +136,16 @@
 | 35 | [如果不用图数据库，能实现真正的 GraphRAG 吗？为什么？](questions/rag-0035-graphrag-without-graphdb.md) | 🔴 困难 |
 | 36 | [RAG 你们怎么优化的：chunk size / overlap 怎么设，要不要加 rerank](questions/rag-0036-rag-optimization-practices.md) | 🟡 进阶 |
 | 37 | [Deep Research 是什么？还算不算 RAG](questions/rag-0037-deep-research-vs-rag.md) | 🟡 进阶 |
+| 38 | [上下文感知检索会放大原文错误时，如何在检索阶段加入信息质量信号](questions/rag-0038-contextual-retrieval-information-quality.md) | 🔴 困难 |
+| 39 | [多模态图表转文字后丢失空间关系，RAG 应如何保留视觉结构](questions/rag-0039-multimodal-rag-spatial-structure.md) | 🟡 进阶 |
+| 40 | [RAPTOR 和 GraphRAG 分别适合回答什么类型的问题？](questions/rag-0040-raptor-vs-graphrag-query-types.md) | 🟡 进阶 |
+| 41 | [文件系统式知识库相比向量数据库 RAG，有哪些优势和边界？](questions/rag-0041-filesystem-knowledge-base-vs-vector-rag.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
 ## ⚙️ 工程化、部署、性能、成本
 
-<sub>分类 ID：`engineering` ｜ 共 8 题</sub>
+<sub>分类 ID：`engineering` ｜ 共 15 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -133,6 +157,13 @@
 | 6 | [AI 应用项目里的监控怎么设计](questions/engineering-0006-ai-app-monitoring.md) | 🟡 进阶 |
 | 7 | [字段提取任务里如何评估标注数据质量、合格标准与数据混合策略](questions/engineering-0007-annotation-quality-eval.md) | 🟡 进阶 |
 | 8 | [双十一/双十二订单查询有上千万 QPS，从系统设计和大促筹备角度怎么支撑峰值流量](questions/engineering-0008-peak-qps-system-design.md) | 🔴 困难 |
+| 9 | [异步 Agent 的事件队列优先级，应该由规则还是 LLM 判断？](questions/engineering-0009-async-agent-event-priority.md) | 🟡 进阶 |
+| 10 | [“执行后自动验证”除了写代码跑测试，还能应用在哪些 Agent 工具场景？](questions/engineering-0010-execute-verify-feedback-loop.md) | 🟡 进阶 |
+| 11 | [Agent 生成代码并执行时，如何在沙盒安全与能力开放之间取平衡？](questions/engineering-0011-agent-code-execution-sandbox-tradeoff.md) | 🔴 困难 |
+| 12 | [Artifact 模式下让浏览器或数据库执行 Agent 生成代码，安全边界怎么设计？](questions/engineering-0012-artifact-generated-code-safety.md) | 🔴 困难 |
+| 13 | [LLM-as-a-Judge 有系统性偏差时，如何发现和校准？](questions/engineering-0013-llm-as-judge-bias-calibration.md) | 🟡 进阶 |
+| 14 | [Benchmark 数据公开后会被训练污染，如何设计抗泄漏的 Agent 评估？](questions/engineering-0014-agent-benchmark-leakage-resistant-evaluation.md) | 🔴 困难 |
+| 15 | [用 LLM 模拟用户评估 Agent 时，如何验证模拟用户本身可靠？](questions/engineering-0015-llm-user-simulator-quality.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
