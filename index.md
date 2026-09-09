@@ -30,14 +30,14 @@
 | 层级 | 能力 | 入口 | 目标 |
 | :---: | :--- | :--- | :--- |
 | **L0** | AI 场景判断 | [AI 场景优先级](questions/product-0001-ai-scenario-prioritization.md) | [AI 需求拆解](questions/product-0002-ai-prd-requirements.md) |
-| **L1** | 模型与知识基础 | [AI 产品指标](questions/product-0003-ai-product-metrics.md) | [风险与人工介入](questions/product-0005-human-in-the-loop-risk.md) |
-| **L2** | AI 应用构建 | [失败恢复体验](questions/product-0004-ai-ux-failure-recovery.md) | [落地迭代闭环](questions/product-0006-ai-product-iteration-loop.md) |
+| **L1** | 模型与知识基础 | [模型选型与能力边界](questions/llm-0002-open-source-vs-closed-source-models.md) | [Prompt / Context engineering](questions/agent-0019-prompt-vs-context-engineering.md) |
+| **L2** | AI 应用构建 | [RAG pipeline 全流程](questions/rag-0023-rag-pipeline-full-flow.md) | [Function Calling 工具链](questions/agent-0004-function-calling-design.md) |
 | **L3** | 生产化与治理 | [AI 产品指标](questions/product-0003-ai-product-metrics.md) | [失败恢复体验](questions/product-0004-ai-ux-failure-recovery.md) |
 | **L4** | 产品交付与业务闭环 | [上线评测闭环](questions/product-0006-ai-product-iteration-loop.md) | [AI 需求拆解](questions/product-0002-ai-prd-requirements.md) |
 
-**共同入口**：`agent-0008` / `agent-0035` / `agent-0019` / `product-0001` / `product-0003`，用来建立 AI 适用边界和业务落地的共同起点。
+**共同入口**：[`agent-0008`](questions/agent-0008-agent-vs-workflow.md) / [`agent-0035`](questions/agent-0035-why-not-just-call-llm-api.md) / [`agent-0019`](questions/agent-0019-prompt-vs-context-engineering.md) / [`product-0001`](questions/product-0001-ai-scenario-prioritization.md) / [`product-0003`](questions/product-0003-ai-product-metrics.md)，用来建立 AI 适用边界和业务落地的共同起点。
 
-**Agent 内容映射**：`agent-0008`、`agent-0035`、`agent-0019`、`agent-0021` 作为 L0/L1/L2 的串联入口；`agent-0042`、`agent-0051`、`agent-0054` 聚焦 L3 与权责边界治理。
+**Agent 内容映射**：[`agent-0008`](questions/agent-0008-agent-vs-workflow.md)、[`agent-0035`](questions/agent-0035-why-not-just-call-llm-api.md)、[`agent-0019`](questions/agent-0019-prompt-vs-context-engineering.md)、[`agent-0021`](questions/agent-0021-structured-json-output.md) 作为 L0/L1/L2 的串联入口；[`agent-0042`](questions/agent-0042-human-handoff-when-user-unavailable.md)、[`agent-0051`](questions/agent-0051-agent-virtual-identity-vs-user-identity.md)、[`agent-0054`](questions/agent-0054-self-improving-agent-trust-root-boundary.md) 聚焦 L3 与权责边界治理。
 
 ## 分类总览
 

@@ -43,16 +43,16 @@
 | 路径 | 入口 | 目标（实际可点击） |
 | :--- | :--- | :--- |
 | **Developer** | [L0 AI-native 基础判断](./questions/agent-0008-agent-vs-workflow.md) | [Agent vs workflow](./questions/agent-0008-agent-vs-workflow.md) → [为什么不能只调大模型 API](./questions/agent-0035-why-not-just-call-llm-api.md) → [RAG pipeline](./questions/rag-0023-rag-pipeline-full-flow.md) → [AI 应用监控](./questions/engineering-0006-ai-app-monitoring.md) |
-| **PM** | [L0 AI 场景判断](./questions/product-0001-ai-scenario-prioritization.md) | [AI 场景优先级](./questions/product-0001-ai-scenario-prioritization.md) → [AI PRD 拆解](./questions/product-0002-ai-prd-requirements.md) → [质量/成本/业务指标](./questions/product-0003-ai-product-metrics.md) → [产品失败体验](./questions/product-0004-ai-ux-failure-recovery.md) → [上线评测闭环](./questions/product-0006-ai-product-iteration-loop.md) |
+| **PM** | [L0 AI 场景判断](./questions/product-0001-ai-scenario-prioritization.md) | [AI 场景优先级](./questions/product-0001-ai-scenario-prioritization.md) → [模型选型与能力边界](./questions/llm-0002-open-source-vs-closed-source-models.md) → [Prompt / Context engineering](./questions/agent-0019-prompt-vs-context-engineering.md) → [RAG pipeline 全流程](./questions/rag-0023-rag-pipeline-full-flow.md) → [Function Calling 工具链](./questions/agent-0004-function-calling-design.md) → [上线评测闭环](./questions/product-0006-ai-product-iteration-loop.md) |
 
 ### 共同入口与 Agent 内容映射
 
-- **共同入口**：`agent-0008` / `agent-0035` / `agent-0019` / `product-0001` / `product-0003` 用于建立「AI 能力边界 + 业务落地」视角的共同起点。
+- **共同入口**：[`agent-0008`](./questions/agent-0008-agent-vs-workflow.md) / [`agent-0035`](./questions/agent-0035-why-not-just-call-llm-api.md) / [`agent-0019`](./questions/agent-0019-prompt-vs-context-engineering.md) / [`product-0001`](./questions/product-0001-ai-scenario-prioritization.md) / [`product-0003`](./questions/product-0003-ai-product-metrics.md) 用于建立「AI 能力边界 + 业务落地」视角的共同起点。
 - **Agent 题库映射**：
-  - **L0/L2**：`agent-0008` / `agent-0009` / `agent-0010` / `agent-0035` / `agent-0036`：AI-native 方案判断、workflow versus Agent、何时不该只调 API。
-  - **L1/L2**：`agent-0001` / `agent-0002` / `agent-0019` / `agent-0021` / `agent-0025`：skill、架构、context engineering 与 tool 设计。
-  - **L2/L3**：`agent-0028` / `agent-0032` / `agent-0040` / `agent-0041` / `agent-0047`：可扩展性、并发、评测、风险控制与上下文优化。
-  - **L3**：`agent-0042` / `agent-0049` / `agent-0051` / `agent-0054`：人工接管、权限边界、trust root 与治理。
+  - **L0/L2**：[`agent-0008`](./questions/agent-0008-agent-vs-workflow.md) / [`agent-0009`](./questions/agent-0009-agent-vs-rpa.md) / [`agent-0010`](./questions/agent-0010-agent-vs-chatbot-complexity.md) / [`agent-0035`](./questions/agent-0035-why-not-just-call-llm-api.md) / [`agent-0036`](./questions/agent-0036-loop-vs-graph-engineering.md)：AI-native 方案判断、workflow versus Agent、何时不该只调 API。
+  - **L1/L2**：[`agent-0001`](./questions/agent-0001-skill-token-optimization.md) / [`agent-0002`](./questions/agent-0002-agent-architecture-components.md) / [`agent-0019`](./questions/agent-0019-prompt-vs-context-engineering.md) / [`agent-0021`](./questions/agent-0021-structured-json-output.md) / [`agent-0025`](./questions/agent-0025-react-pattern-working-principle.md)：skill、架构、context engineering 与 tool 设计。
+  - **L2/L3**：[`agent-0028`](./questions/agent-0028-long-term-memory-writeback-decay-conflict.md) / [`agent-0032`](./questions/agent-0032-parallel-tool-calling.md) / [`agent-0040`](./questions/agent-0040-model-as-agent-harness-engineering.md) / [`agent-0041`](./questions/agent-0041-dynamic-tool-risk-assessment.md) / [`agent-0047`](./questions/agent-0047-tool-context-layout-for-prompt-cache.md)：可扩展性、并发、评测、风险控制与上下文优化。
+  - **L3**：[`agent-0042`](./questions/agent-0042-human-handoff-when-user-unavailable.md) / [`agent-0049`](./questions/agent-0049-mcp-streaming-bidirectional-stateful-sessions.md) / [`agent-0051`](./questions/agent-0051-agent-virtual-identity-vs-user-identity.md) / [`agent-0054`](./questions/agent-0054-self-improving-agent-trust-root-boundary.md)：人工接管、权限边界、trust root 与治理。
 
 每道题仍保持独立 Q&A 文件，不扩展为完整课程、API 手册或泛 AI 教材。
 
