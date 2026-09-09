@@ -23,7 +23,7 @@
     },
     {
       "id": "product",
-      "label": "AI 产品经理方向",
+      "label": "AI 产品与落地",
       "sort": 50
     }
   ],
@@ -2590,6 +2590,126 @@
       "updated": "2026-09-03",
       "answers_count": 1,
       "source": "Leviathan et al., ICML 2023"
+    },
+    {
+      "id": "product-0001",
+      "title": "如何判断一个业务场景是否适合引入 AI？",
+      "file": "product-0001-ai-scenario-prioritization.md",
+      "language": "zh",
+      "category": "product",
+      "category_label": "AI 产品与落地",
+      "tags": [
+        "ai-product",
+        "scenario-selection",
+        "prioritization",
+        "roi"
+      ],
+      "difficulty": "medium",
+      "role": "pm",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-09",
+      "answers_count": 1
+    },
+    {
+      "id": "product-0002",
+      "title": "AI 产品的 PRD 需求应该如何拆解？",
+      "file": "product-0002-ai-prd-requirements.md",
+      "language": "zh",
+      "category": "product",
+      "category_label": "AI 产品与落地",
+      "tags": [
+        "ai-product",
+        "prd",
+        "requirements",
+        "workflow"
+      ],
+      "difficulty": "medium",
+      "role": "pm",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-09",
+      "answers_count": 1
+    },
+    {
+      "id": "product-0003",
+      "title": "AI 产品如何设计质量、成本和业务指标？",
+      "file": "product-0003-ai-product-metrics.md",
+      "language": "zh",
+      "category": "product",
+      "category_label": "AI 产品与落地",
+      "tags": [
+        "ai-product",
+        "metrics",
+        "evaluation",
+        "cost"
+      ],
+      "difficulty": "medium",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-09",
+      "answers_count": 1
+    },
+    {
+      "id": "product-0004",
+      "title": "AI 产品如何设计不确定性与失败体验？",
+      "file": "product-0004-ai-ux-failure-recovery.md",
+      "language": "zh",
+      "category": "product",
+      "category_label": "AI 产品与落地",
+      "tags": [
+        "ai-product",
+        "ux",
+        "uncertainty",
+        "failure-recovery"
+      ],
+      "difficulty": "medium",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-09",
+      "answers_count": 1
+    },
+    {
+      "id": "product-0005",
+      "title": "AI 产品如何设计人工介入和风险分级？",
+      "file": "product-0005-human-in-the-loop-risk.md",
+      "language": "zh",
+      "category": "product",
+      "category_label": "AI 产品与落地",
+      "tags": [
+        "ai-product",
+        "human-in-the-loop",
+        "risk",
+        "governance"
+      ],
+      "difficulty": "hard",
+      "role": "pm",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-09",
+      "answers_count": 1
+    },
+    {
+      "id": "product-0006",
+      "title": "AI 产品上线后如何建立评测与迭代闭环？",
+      "file": "product-0006-ai-product-iteration-loop.md",
+      "language": "zh",
+      "category": "product",
+      "category_label": "AI 产品与落地",
+      "tags": [
+        "ai-product",
+        "evaluation",
+        "experimentation",
+        "iteration"
+      ],
+      "difficulty": "hard",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-09",
+      "answers_count": 1
     }
   ]
 }

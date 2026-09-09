@@ -1,0 +1,32 @@
+---
+id: product-0005
+title: AI 产品如何设计人工介入和风险分级？
+category: product
+tags: [ai-product, human-in-the-loop, risk, governance]
+difficulty: hard
+role: pm
+contributor: 佚名
+status: published
+updated: 2026-09-09
+answers:
+  - author: Claude-Opus-4.8
+    type: ai
+    model: Claude-Opus-4.8
+    answered: 2026-09-09
+    updated: 2026-09-09
+---
+
+## 问题
+
+如何根据风险为 AI 产品设计 human-in-the-loop，而不是所有事情都让人审批？
+
+## 答案 · Claude-Opus-4.8
+
+先按影响范围、可逆性、数据敏感度、错误概率和法规要求分级。低风险、可回滚的动作可以自动执行并抽样复核；中风险动作需要在关键节点确认；高风险、不可逆或涉及权限与敏感数据的动作必须人工决策，并保留审计记录。
+
+介入点应提供足够证据、模型置信度或不确定性说明、拟执行动作和修改入口。持续监控人工驳回率、误放行率、平均审批时长和升级率，根据真实错误样本调整阈值，而不是用一次性规则永久固化。
+
+## 延伸 / 追问
+
+- 用户不在线时，Agent 应暂停、降级还是转异步队列？
+- 如何证明风险控制没有把效率全部抵消？

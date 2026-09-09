@@ -1,6 +1,6 @@
 # Agent-Interview-CheatSheet
 
-> 面向 **AI / LLM / Agent 开发工程师** 与 **AI 产品经理** 的面试题库。
+> 面向希望具备 **AI-native** 能力的开发者与产品经理的 AI 面试题库。
 > 每道题会用头部的大模型的回答作为default回答。
 > 持续迭代、不断新增题目，欢迎补充。
 
@@ -12,15 +12,33 @@
 
 ## 项目简介
 
-本项目收集并整理 **AI / LLM / Agent 方向**在面试中真实遇到的问题，包括但不限于：
+本项目收集并整理开发者与产品经理在 AI 面试中真实遇到的问题，目标不是泛 AI 教材，而是提供可复用的面试问法、答题框架和追问路径：
 
-- **工程师视角**：模型原理、训练与推理、Prompt 工程、RAG、Agent 架构、工程化与部署、性能与成本优化等。
-- **产品经理视角**：AI 产品定义、需求拆解、评估指标、数据飞轮、合规与伦理、商业化与落地等。
+- **Developer 视角**：模型原理、Prompt/Context、RAG、Agent 架构、工具调用、工程化、评测、安全、可靠性与成本优化。
+- **PM 视角**：AI 场景识别、需求拆解、体验与失败处理、评估指标、人工介入、合规、商业化与落地。
+- **共同能力**：判断 AI 适用边界，把问题拆成可验证任务，并建立从质量到业务价值的迭代闭环。
 
 对于每个问题会用头部大模型回答面试问题作为"Defualt Answer"。
 每个问题一个markdown文件，包含元数据，目录包含所有问题方便检索。
 
-> 📖 **题目目录**：[index.md](./index.md) —— 按分类 + 序号排列，点击即可跳转到对应题目。
+> 📖 **题目目录**：[index.md](./index.md) —— 支持按技术分类和 AI-native 能力路径浏览。
+
+### AI-native 能力地图
+
+题目按 `llm` / `agent` / `rag` / `engineering` / `product` 归档；能力层是跨分类的阅读路径，不改变既有题目 ID 或链接：
+
+| 层级 | 能力 | 关注点 |
+| :---: | :--- | :--- |
+| **L0** | AI-native 基础判断 | AI 适用边界、任务价值、人与系统的责任边界 |
+| **L1** | 模型与知识基础 | 模型能力、Prompt/Context、模型选择、推理与成本 |
+| **L2** | AI 应用构建 | Agent、RAG、Tool Calling/MCP、Memory、Workflow、人工接管 |
+| **L3** | 生产化与治理 | Evaluation、Observability、Reliability、Security、Privacy、Cost |
+| **L4** | 产品交付与业务闭环 | 需求发现、优先级、体验、指标、实验、合规与落地 |
+
+- **Developer 路径**：L0 → L1 → L2 → L3。
+- **PM 路径**：L0 → L1 → L2 → L3 → L4。
+
+每道题仍保持独立 Q&A 文件，不扩展为完整课程、API 手册或泛 AI 教材。
 
 > 未来目标：当题量与质量达到一定程度后，基于这些结构化数据用 **GitHub Pages** 构建一个可检索、可分类浏览的静态站点。
 
@@ -65,7 +83,7 @@ AI-Interview-CheatSheet/
     {"id": "agent", "label": "Agent 架构与编排", "sort": 20},
     {"id": "rag", "label": "检索增强生成", "sort": 30},
     {"id": "engineering", "label": "工程化、部署、性能、成本", "sort": 40},
-    {"id": "product", "label": "AI 产品经理方向", "sort": 50}
+    {"id": "product", "label": "AI 产品与落地", "sort": 50}
   ],
   "questions": []
 }

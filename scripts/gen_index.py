@@ -32,6 +32,13 @@ EMOJI = {
     "product": "📦",
 }
 TOP_TITLE = "📚 AI 面试题库 · 目录"
+CAPABILITY_PATHS = [
+    ("L0", "AI-native 基础判断", "判断 AI 适用边界、任务价值与人与系统的责任边界。"),
+    ("L1", "模型与知识基础", "理解模型能力、Prompt/Context、模型选择、推理与成本边界。"),
+    ("L2", "AI 应用构建", "构建 Agent、RAG、Tool Calling/MCP、Memory、Workflow 与人工接管。"),
+    ("L3", "生产化与治理", "覆盖 Evaluation、Observability、Reliability、Security、Privacy 与 Cost。"),
+    ("L4", "产品交付与业务闭环", "完成需求发现、优先级、体验设计、指标、实验、合规与落地。"),
+]
 
 
 def gh_anchor(text):
@@ -77,6 +84,21 @@ def main():
         "> 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。",
         "",
         f"**题目总数：{total}** ｜ 索引来源：[`index.json`](index.json)",
+        "",
+        "## 按能力路径浏览",
+        "",
+        "> 题目按技术分类归档；能力路径用于 Developer 与 PM 的跨分类学习，不改变既有题目 ID 或链接。",
+        "",
+        "| 层级 | 能力 | 说明 |",
+        "| :---: | :--- | :--- |",
+    ]
+    for level, name, description in CAPABILITY_PATHS:
+        lines.append(f"| **{level}** | **{name}** | {description} |")
+    lines += [
+        "",
+        "**Developer 路径**：L0 → L1 → L2 → L3，重点关注模型边界、应用构建与生产可靠性。",
+        "",
+        "**PM 路径**：L0 → L1 → L2 → L3 → L4，重点关注场景判断、体验、指标和业务闭环。",
         "",
         "## 分类总览",
         "",
