@@ -1,6 +1,6 @@
 # Agent-Interview-CheatSheet
 
-> 面向 **AI / LLM / Agent 开发工程师** 与 **AI 产品经理** 的面试题库。
+> 面向希望具备 **AI-native** 能力的开发者与产品经理的 AI 面试题库。
 > 每道题会用头部的大模型的回答作为default回答。
 > 持续迭代、不断新增题目，欢迎补充。
 
@@ -12,15 +12,49 @@
 
 ## 项目简介
 
-本项目收集并整理 **AI / LLM / Agent 方向**在面试中真实遇到的问题，包括但不限于：
+本项目收集并整理开发者与产品经理在 AI 面试中真实遇到的问题，目标不是泛 AI 教材，而是提供可复用的面试问法、答题框架和追问路径：
 
-- **工程师视角**：模型原理、训练与推理、Prompt 工程、RAG、Agent 架构、工程化与部署、性能与成本优化等。
-- **产品经理视角**：AI 产品定义、需求拆解、评估指标、数据飞轮、合规与伦理、商业化与落地等。
+- **Developer 视角**：模型原理、Prompt/Context、RAG、Agent 架构、工具调用、工程化、评测、安全、可靠性与成本优化。
+- **PM 视角**：AI 场景识别、需求拆解、体验与失败处理、评估指标、人工介入、合规、商业化与落地。
+- **共同能力**：判断 AI 适用边界，把问题拆成可验证任务，并建立从质量到业务价值的迭代闭环。
 
 对于每个问题会用头部大模型回答面试问题作为"Defualt Answer"。
 每个问题一个markdown文件，包含元数据，目录包含所有问题方便检索。
 
-> 📖 **题目目录**：[index.md](./index.md) —— 按分类 + 序号排列，点击即可跳转到对应题目。
+> 📖 **题目目录**：[index.md](./index.md) —— 支持按技术分类和 AI-native 能力路径浏览。
+
+### AI-native 能力地图
+
+题目按 `llm` / `agent` / `rag` / `engineering` / `product` 归档；能力层是跨分类的阅读路径，不改变既有题目 ID 或链接：
+
+| 层级 | 能力 | 关注点 |
+| :---: | :--- | :--- |
+| **L0** | AI-native 基础判断 | AI 适用边界、任务价值、人与系统的责任边界 |
+| **L1** | 模型与知识基础 | 模型能力、Prompt/Context、模型选择、推理与成本 |
+| **L2** | AI 应用构建 | Agent、RAG、Tool Calling/MCP、Memory、Workflow、人工接管 |
+| **L3** | 生产化与治理 | Evaluation、Observability、Reliability、Security、Privacy、Cost |
+| **L4** | 产品交付与业务闭环 | 需求发现、优先级、体验、指标、实验、合规与落地 |
+
+- **Developer 路径**：L0 → L1 → L2 → L3。
+- **PM 路径**：L0 → L1 → L2 → L3 → L4。
+
+### 可点击路径
+
+| 路径 | 入口 | 目标（实际可点击） |
+| :--- | :--- | :--- |
+| **Developer** | [L0 AI-native 基础判断](./questions/agent-0008-agent-vs-workflow.md) | [Agent vs workflow](./questions/agent-0008-agent-vs-workflow.md) → [为什么不能只调大模型 API](./questions/agent-0035-why-not-just-call-llm-api.md) → [RAG pipeline](./questions/rag-0023-rag-pipeline-full-flow.md) → [AI 应用监控](./questions/engineering-0006-ai-app-monitoring.md) |
+| **PM** | [L0 AI 场景判断](./questions/product-0001-ai-scenario-prioritization.md) | [AI 场景优先级](./questions/product-0001-ai-scenario-prioritization.md) → [模型选型与能力边界](./questions/llm-0002-open-source-vs-closed-source-models.md) → [Prompt / Context engineering](./questions/agent-0019-prompt-vs-context-engineering.md) → [RAG pipeline 全流程](./questions/rag-0023-rag-pipeline-full-flow.md) → [Function Calling 工具链](./questions/agent-0004-function-calling-design.md) → [上线评测闭环](./questions/product-0006-ai-product-iteration-loop.md) |
+
+### 共同入口与 Agent 内容映射
+
+- **共同入口**：[`agent-0008`](./questions/agent-0008-agent-vs-workflow.md) / [`agent-0035`](./questions/agent-0035-why-not-just-call-llm-api.md) / [`agent-0019`](./questions/agent-0019-prompt-vs-context-engineering.md) / [`product-0001`](./questions/product-0001-ai-scenario-prioritization.md) / [`product-0003`](./questions/product-0003-ai-product-metrics.md) 用于建立「AI 能力边界 + 业务落地」视角的共同起点。
+- **Agent 题库映射**：
+  - **L0/L2**：[`agent-0008`](./questions/agent-0008-agent-vs-workflow.md) / [`agent-0009`](./questions/agent-0009-agent-vs-rpa.md) / [`agent-0010`](./questions/agent-0010-agent-vs-chatbot-complexity.md) / [`agent-0035`](./questions/agent-0035-why-not-just-call-llm-api.md) / [`agent-0036`](./questions/agent-0036-loop-vs-graph-engineering.md)：AI-native 方案判断、workflow versus Agent、何时不该只调 API。
+  - **L1/L2**：[`agent-0001`](./questions/agent-0001-skill-token-optimization.md) / [`agent-0002`](./questions/agent-0002-agent-architecture-components.md) / [`agent-0019`](./questions/agent-0019-prompt-vs-context-engineering.md) / [`agent-0021`](./questions/agent-0021-structured-json-output.md) / [`agent-0025`](./questions/agent-0025-react-pattern-working-principle.md)：skill、架构、context engineering 与 tool 设计。
+  - **L2/L3**：[`agent-0028`](./questions/agent-0028-long-term-memory-writeback-decay-conflict.md) / [`agent-0032`](./questions/agent-0032-parallel-tool-calling.md) / [`agent-0040`](./questions/agent-0040-model-as-agent-harness-engineering.md) / [`agent-0041`](./questions/agent-0041-dynamic-tool-risk-assessment.md) / [`agent-0047`](./questions/agent-0047-tool-context-layout-for-prompt-cache.md)：可扩展性、并发、评测、风险控制与上下文优化。
+  - **L3**：[`agent-0042`](./questions/agent-0042-human-handoff-when-user-unavailable.md) / [`agent-0049`](./questions/agent-0049-mcp-streaming-bidirectional-stateful-sessions.md) / [`agent-0051`](./questions/agent-0051-agent-virtual-identity-vs-user-identity.md) / [`agent-0054`](./questions/agent-0054-self-improving-agent-trust-root-boundary.md)：人工接管、权限边界、trust root 与治理。
+
+每道题仍保持独立 Q&A 文件，不扩展为完整课程、API 手册或泛 AI 教材。
 
 > 未来目标：当题量与质量达到一定程度后，基于这些结构化数据用 **GitHub Pages** 构建一个可检索、可分类浏览的静态站点。
 
@@ -65,7 +99,7 @@ AI-Interview-CheatSheet/
     {"id": "agent", "label": "Agent 架构与编排", "sort": 20},
     {"id": "rag", "label": "检索增强生成", "sort": 30},
     {"id": "engineering", "label": "工程化、部署、性能、成本", "sort": 40},
-    {"id": "product", "label": "AI 产品经理方向", "sort": 50}
+    {"id": "product", "label": "AI 产品与落地", "sort": 50}
   ],
   "questions": []
 }
