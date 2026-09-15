@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：149** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：150** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -46,7 +46,7 @@
 | 🧠 大模型基础与原理 | 19 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 55 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
-| ⚙️ 工程化、部署、性能、成本 | 25 | [查看 ↓](#-工程化部署性能成本) |
+| ⚙️ 工程化、部署、性能、成本 | 26 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 6 | [查看 ↓](#-ai-产品与落地) |
 
 ---
@@ -198,7 +198,7 @@
 
 ## ⚙️ 工程化、部署、性能、成本
 
-<sub>分类 ID：`engineering` ｜ 共 25 题</sub>
+<sub>分类 ID：`engineering` ｜ 共 26 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -227,6 +227,7 @@
 | 23 | [Agent 核心越来越大时，怎样选择模块或插件边界并把架构约束变成可检查规则？](questions/engineering-0023-harness-module-boundaries.md) | 🟡 进阶 |
 | 24 | [用户取消 Agent 时，各层怎样收尾，如何避免上一轮回调影响下一轮？](questions/engineering-0024-cancellation-stale-callbacks.md) | 🔴 困难 |
 | 25 | [为什么模型可见上下文与持久事件日志应能对应，如何设计日志真源和 UI、索引投影？](questions/engineering-0025-event-log-model-projection.md) | 🔴 困难 |
+| 26 | [模型流尚未结束就执行工具时，如何在断流或取消后保持 tool call/result 记录完整？](questions/engineering-0026-streaming-tool-transcript-closure.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
