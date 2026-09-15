@@ -3260,6 +3260,28 @@
       "updated": "2026-09-16",
       "answers_count": 1,
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
+      "id": "engineering-0024",
+      "title": "用户取消 Agent 时，各层怎样收尾，如何避免上一轮回调影响下一轮？",
+      "file": "engineering-0024-cancellation-stale-callbacks.md",
+      "language": "zh",
+      "category": "engineering",
+      "category_label": "工程化、部署、性能、成本",
+      "tags": [
+        "cancellation",
+        "abort-signal",
+        "stale-callbacks",
+        "durability",
+        "side-effects"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-16",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     }
   ]
 }
