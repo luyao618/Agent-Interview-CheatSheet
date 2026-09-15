@@ -2746,6 +2746,28 @@
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     },
     {
+      "id": "llm-0014",
+      "title": "需求应通过 Prompt、RAG、微调还是预训练解决，如何用错误归因选择最小可行方案？",
+      "file": "llm-0014-prompt-rag-finetuning-choice.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "prompt-engineering",
+        "rag",
+        "fine-tuning",
+        "pretraining",
+        "evaluation"
+      ],
+      "difficulty": "medium",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-15",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "answers_count": 1
+    },
+    {
       "id": "product-0001",
       "title": "如何判断一个业务场景是否适合引入 AI？",
       "file": "product-0001-ai-scenario-prioritization.md",
