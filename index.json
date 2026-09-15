@@ -2768,6 +2768,28 @@
       "answers_count": 1
     },
     {
+      "id": "llm-0015",
+      "title": "知识蒸馏如何把教师模型能力迁移给学生，与量化、普通微调有何不同？",
+      "file": "llm-0015-knowledge-distillation-tradeoffs.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "knowledge-distillation",
+        "teacher-student",
+        "soft-targets",
+        "fine-tuning",
+        "evaluation"
+      ],
+      "difficulty": "medium",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-15",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
       "id": "product-0001",
       "title": "如何判断一个业务场景是否适合引入 AI？",
       "file": "product-0001-ai-scenario-prioritization.md",
