@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：141** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：142** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -46,7 +46,7 @@
 | 🧠 大模型基础与原理 | 19 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 54 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
-| ⚙️ 工程化、部署、性能、成本 | 18 | [查看 ↓](#-工程化部署性能成本) |
+| ⚙️ 工程化、部署、性能、成本 | 19 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 6 | [查看 ↓](#-ai-产品与落地) |
 
 ---
@@ -197,7 +197,7 @@
 
 ## ⚙️ 工程化、部署、性能、成本
 
-<sub>分类 ID：`engineering` ｜ 共 18 题</sub>
+<sub>分类 ID：`engineering` ｜ 共 19 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -219,6 +219,7 @@
 | 16 | [多轮 Agent 的真实账单怎样计算和对账，如何处理缓存读写、隐藏调用与阶梯价格？](questions/engineering-0016-llm-billing-reconciliation.md) | 🟡 进阶 |
 | 17 | [多模型路由怎样兼顾质量、成本与可用性，主模型超时后如何安全切换？](questions/engineering-0017-model-routing-failover.md) | 🟡 进阶 |
 | 18 | [LLM 输出同时要可流式展示和机器可解析时，如何选择格式并处理半截与畸形数据？](questions/engineering-0018-streaming-structured-rendering.md) | 🟡 进阶 |
+| 19 | [把生图 API 做成产品时，任务状态、取消、重试、计费和资源交付应怎样约定？](questions/engineering-0019-async-generation-job-contract.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
