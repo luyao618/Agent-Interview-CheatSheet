@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：147** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：148** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -46,7 +46,7 @@
 | 🧠 大模型基础与原理 | 19 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 55 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
-| ⚙️ 工程化、部署、性能、成本 | 23 | [查看 ↓](#-工程化部署性能成本) |
+| ⚙️ 工程化、部署、性能、成本 | 24 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 6 | [查看 ↓](#-ai-产品与落地) |
 
 ---
@@ -198,7 +198,7 @@
 
 ## ⚙️ 工程化、部署、性能、成本
 
-<sub>分类 ID：`engineering` ｜ 共 23 题</sub>
+<sub>分类 ID：`engineering` ｜ 共 24 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -225,6 +225,7 @@
 | 21 | [LLM 任务生产速度长期高于消费速度时，如何设计背压而不是无限排队？](questions/engineering-0021-llm-queue-backpressure.md) | 🟡 进阶 |
 | 22 | [研究陌生 Agent 仓库时，如何区分源码事实、设计推断与无法证明的产品结论？](questions/engineering-0022-source-evidence-architecture-review.md) | 🟡 进阶 |
 | 23 | [Agent 核心越来越大时，怎样选择模块或插件边界并把架构约束变成可检查规则？](questions/engineering-0023-harness-module-boundaries.md) | 🟡 进阶 |
+| 24 | [用户取消 Agent 时，各层怎样收尾，如何避免上一轮回调影响下一轮？](questions/engineering-0024-cancellation-stale-callbacks.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
