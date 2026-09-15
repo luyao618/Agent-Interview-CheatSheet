@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：134** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：135** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -46,7 +46,7 @@
 | 🧠 大模型基础与原理 | 18 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 54 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 41 | [查看 ↓](#-检索增强生成) |
-| ⚙️ 工程化、部署、性能、成本 | 15 | [查看 ↓](#-工程化部署性能成本) |
+| ⚙️ 工程化、部署、性能、成本 | 16 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 6 | [查看 ↓](#-ai-产品与落地) |
 
 ---
@@ -193,7 +193,7 @@
 
 ## ⚙️ 工程化、部署、性能、成本
 
-<sub>分类 ID：`engineering` ｜ 共 15 题</sub>
+<sub>分类 ID：`engineering` ｜ 共 16 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -212,6 +212,7 @@
 | 13 | [LLM-as-a-Judge 有系统性偏差时，如何发现和校准？](questions/engineering-0013-llm-as-judge-bias-calibration.md) | 🟡 进阶 |
 | 14 | [Benchmark 数据公开后会被训练污染，如何设计抗泄漏的 Agent 评估？](questions/engineering-0014-agent-benchmark-leakage-resistant-evaluation.md) | 🔴 困难 |
 | 15 | [用 LLM 模拟用户评估 Agent 时，如何验证模拟用户本身可靠？](questions/engineering-0015-llm-user-simulator-quality.md) | 🟡 进阶 |
+| 16 | [多轮 Agent 的真实账单怎样计算和对账，如何处理缓存读写、隐藏调用与阶梯价格？](questions/engineering-0016-llm-billing-reconciliation.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
