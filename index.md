@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：130** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：131** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -43,7 +43,7 @@
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
-| 🧠 大模型基础与原理 | 14 | [查看 ↓](#-大模型基础与原理) |
+| 🧠 大模型基础与原理 | 15 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 54 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 41 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 15 | [查看 ↓](#-工程化部署性能成本) |
@@ -53,7 +53,7 @@
 
 ## 🧠 大模型基础与原理
 
-<sub>分类 ID：`llm` ｜ 共 14 题</sub>
+<sub>分类 ID：`llm` ｜ 共 15 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -71,6 +71,7 @@
 | 12 | [Greedy、Temperature、Top-k、Top-p 与 Beam Search 怎样改变解码，如何按任务选择？](questions/llm-0012-decoding-sampling-beam.md) | 🟡 进阶 |
 | 13 | [Few-shot、Chain-of-Thought、Self-Consistency 与 Think Tool 分别何时有用，怎样验证额外推理值得？](questions/llm-0013-in-context-reasoning-strategies.md) | 🟡 进阶 |
 | 14 | [需求应通过 Prompt、RAG、微调还是预训练解决，如何用错误归因选择最小可行方案？](questions/llm-0014-prompt-rag-finetuning-choice.md) | 🟡 进阶 |
+| 15 | [知识蒸馏如何把教师模型能力迁移给学生，与量化、普通微调有何不同？](questions/llm-0015-knowledge-distillation-tradeoffs.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
