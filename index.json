@@ -2790,6 +2790,28 @@
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     },
     {
+      "id": "llm-0016",
+      "title": "部署量化模型时怎样估算内存与吞吐，为什么 MoE 的激活参数量不能直接当显存需求？",
+      "file": "llm-0016-quantization-local-memory-budget.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "quantization",
+        "memory-budget",
+        "kv-cache",
+        "moe",
+        "inference"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-15",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
       "id": "product-0001",
       "title": "如何判断一个业务场景是否适合引入 AI？",
       "file": "product-0001-ai-scenario-prioritization.md",
