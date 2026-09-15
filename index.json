@@ -3327,6 +3327,29 @@
       "updated": "2026-09-16",
       "answers_count": 1,
       "source": "洛小山《AI 产品从入门到精通》learn-ai，固定版本学习线索"
+    },
+    {
+      "id": "agent-0056",
+      "title": "工具返回大量结构化数据时，如何分离程序值、模型文本和 UI 展示，并支持按需读取？",
+      "file": "agent-0056-tool-result-value-projections.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "tool-result",
+        "schema",
+        "code-mode",
+        "projection",
+        "pagination",
+        "redaction"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-16",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     }
   ]
 }
