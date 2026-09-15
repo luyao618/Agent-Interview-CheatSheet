@@ -3084,6 +3084,28 @@
       "contributor": "佚名",
       "updated": "2026-09-09",
       "answers_count": 1
+    },
+    {
+      "id": "engineering-0018",
+      "title": "LLM 输出同时要可流式展示和机器可解析时，如何选择格式并处理半截与畸形数据？",
+      "file": "engineering-0018-streaming-structured-rendering.md",
+      "language": "zh",
+      "category": "engineering",
+      "category_label": "工程化、部署、性能、成本",
+      "tags": [
+        "streaming",
+        "structured-output",
+        "framing",
+        "rendering",
+        "validation"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-15",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     }
   ]
 }
