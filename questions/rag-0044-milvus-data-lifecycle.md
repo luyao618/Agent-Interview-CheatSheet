@@ -41,7 +41,7 @@ Collection 的 Schema 明确主键类型/是否 AutoID、向量维度、标量�
 
 典型自定义流程是 `Schema → create_collection → create_index → load_collection → 写入及读回`；批量导入也可先写入再建索引/加载。加载后的后续写入按服务端的数据流水线参与检索，不应每插一批就重建整个索引。
 
-**建 collection 不等于一定已 load。** PyMilvus 2.5.6 的自定义 Schema 路径在传入 index_params 时会建索引并加载；未传则需要后续步骤。快速创建也可能自动完成这些工作。因此要确认实际调用路径和 load 状态，不能仅凭 create 成功或索引创建请求已返回就认为数据已可搜。服务端的加载需要资源和时间，按选定 SDK/服务版本等待就绪并处理失败。
+**建 collection 不等于一定已 load。** PyMilvus 3.0.1 的自定义 Schema 路径在传入 index_params 时会建索引并加载；未传则需要后续步骤。快速创建也可能自动完成这些工作。因此要确认实际调用路径和 load 状态，不能仅凭 create 成功或索引创建请求已返回就认为数据已可搜。服务端的加载需要资源和时间，按选定 SDK/服务版本等待就绪并处理失败。
 
 | 操作 | 输入与结果 | 常见误解 |
 | --- | --- | --- |
@@ -63,7 +63,7 @@ Collection 的 Schema 明确主键类型/是否 AutoID、向量维度、标量�
 | 更新方案 | 适用情况 | 代价与边界 |
 | --- | --- | --- |
 | 稳定主键 + 完整行 upsert，删除已消失的 chunk ID | 日常增量修改、存储成本敏感，能控制每篇文档的写入顺序 | 简单；多 chunk 更新可能被读到混合版本，需要额外发布/读取策略，不自动成为文档事务 |
-| 新 generation/新 collection 构建后发布，再回收旧版本 | 大规模重切块、换模型，需要校验和回滚 | 占额外空间；发布指针/过滤版本及旧版本引用回收需要控制面一致性。支持别名的部署可评估别名切换，不能假设 Lite 也支持 |
+| 新 generation/新 collection 构建后发布，再回收旧版本 | 大规模重切块、换模型，需要校验和回滚 | 占额外空间；发布指针/过滤版本及旧版本引用回收需要控制面一致性。支持别名的部署可评估别名切换，但别名切换不自动协调源数据、应用缓存及在途请求 |
 
 异常或超时后，按稳定 ID 和预期版本核实状态再恢复；不要看到客户端异常就重新 insert。保留源版本、摄取事件、目标 collection/主键、操作结果与校验结果，才能解释哪条内容何时进入检索副本。
 
@@ -79,24 +79,27 @@ flush 与上述概念也不同。Milvus 的读可见性不直接由 flush 决定
 
 ### 5. 两条文本的本地实跑
 
-固定 **PyMilvus 2.5.6 + Milvus Lite 2.5.1**，Python 3.11.8，macOS arm64。这里的服务实现是嵌入式 Lite 包，不是 Standalone/Distributed Milvus；该 Lite 未实现 GetVersion RPC，版本以安装包元数据及固定源码标识。两条中文文本是自编的可读示例，不来自业务库：
+固定 **PyMilvus 3.0.1 + Milvus Lite 3.2.1**，Python 3.11.8，macOS arm64；另固定 grpcio 1.83.1、FAISS CPU 1.12.0、NumPy 2.2.6、PyArrow 19.0.1，完整依赖见验证附件。这里实际运行的是 Lite 的本地 Python 引擎和进程内 gRPC adapter，不是 Standalone/Distributed Milvus；版本以安装包元数据及固定源码标识。两条中文文本是自编的可读示例，不来自业务库：
 
 - 1001 / refund-policy：“付款后七日内且商品未拆封，可申请退货。”
 - 2001 / account-help：“忘记账户密码时，可通过邮箱重置。”
 
 三维向量和 query 均手工指定，只验证数据库操作。`manual-v1` 不是实际 Embedding 模型，不从 COSINE 分数推断文本语义质量。更新时主键 1001 保持不变，revision 改为 2，正文改成“三日内”，向量由 `[1,0,0]` 改为 `[0.8,0.6,0]`；它们与 query `[1,0,0]` 的 cosine 分别为 1 和 0.8。
 
-代码每次只新建脚本目录下的随机临时文件数据库，collection 也从空库创建。查询显式 limit=10，足以覆盖本例两条记录，不能拿这个上限扫描任意业务库。变更回包只记录计数/ID，真正的验证依赖后续读回断言；失败会报错，不通过反复重发 mutation 来凑出期望结果。
+代码每次只新建脚本目录下的随机临时数据目录，collection 从空库创建，服务仅监听 loopback 随机端口。查询显式 limit=10，足以覆盖本例两条记录，不能拿这个上限扫描任意业务库。每次更新和删除后均各执行一次 Query 与 Search，核对 ID、revision、正文、分数及无关记录；只按预定次数演示重复操作，任何断言失败立即停止本轮。不添加 sleep、补读直到成功或 mutation 重试来掩盖不一致。
+
+旧 **PyMilvus 2.5.6 + Lite 2.5.1** 已在显式 limit=10 下捕获异常：两次 upsert 后 Query 只剩 2001，而紧接的 Search 仍返回 1001/revision=2；另在删除后旧 upsert 的主键 Query 得到空列表。本地原样复跑 reviewer 的六轮观察器，也有一轮更新后失败。**根因未确认，不能说 limit 修复了问题。** 本例改用重写引擎隔离旧实现，并保留全部失败返回和 traceback；Lite 3.2.1 与旧 `.db` 存储格式不兼容，需要重新导入，不能直接替换依赖后打开旧业务库。
 
 ```python
 import json
+from contextlib import contextmanager
 from copy import deepcopy
 from importlib.metadata import version
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from pymilvus import DataType, MilvusClient
-from milvus_lite.server_manager import server_manager_instance
+from milvus_lite.adapter.grpc.server import start_server_in_thread
 
 COLLECTION = "lesson_chunks"
 ROWS = [
@@ -107,6 +110,29 @@ ROWS = [
      "revision": 1, "embedding_version": "manual-v1",
      "text": "忘记账户密码时，可通过邮箱重置。", "vector": [0.0, 1.0, 0.0]},
 ]
+
+@contextmanager
+def local_client(directory):
+    # 固定 Lite 3.2.1 的测试 helper；只启动本进程拥有的 loopback 服务。
+    server, db, port = start_server_in_thread(str(directory), host="127.0.0.1", port=0)
+    client = None
+    try:
+        client = MilvusClient(uri=f"http://127.0.0.1:{port}", timeout=10)
+        yield client
+    finally:
+        try:
+            if client is not None:
+                client.close()
+        finally:
+            try:
+                stopped = server.stop(grace=0).wait(timeout=10)
+                if not stopped:
+                    raise RuntimeError("local gRPC stop timed out")
+            finally:
+                # grpcio 1.83.1 的私有线程池，仅用于本例可审计的清理。
+                server._state.thread_pool.shutdown(wait=True)
+                db.close()  # 关闭 collection 的后台任务并释放数据目录锁。
+                assert db.closed
 
 def create(client):
     schema = MilvusClient.create_schema(auto_id=False, enable_dynamic_field=False)
@@ -128,66 +154,64 @@ def read(client, expression):
         consistency_level="Strong", timeout=10)
     return sorted([dict(row) for row in rows], key=lambda row: row["id"])
 
-def mutation_ack(response, count_field):
-    summary = {count_field: int(response[count_field])}
-    if "ids" in response:
-        summary["ids"] = list(response["ids"])  # protobuf容器转为普通JSON数组。
-    return summary
-
 def search(client):
     hits = client.search(COLLECTION, data=[[1.0, 0.0, 0.0]], anns_field="vector",
         filter='tenant == "demo" and topic == "refund"', limit=2,
         search_params={"metric_type": "COSINE", "params": {}},
         output_fields=["revision", "text"], consistency_level="Strong", timeout=10)[0]
     return [{"id": hit["id"], "score": round(hit["distance"], 6),
-             "revision": hit["entity"]["revision"]} for hit in hits]
+             "revision": hit["entity"]["revision"], "text": hit["entity"]["text"]}
+            for hit in hits]
+
+def snapshot(client, expected_refund, score):
+    # 每个变更之后各读一次；先收集两种完整返回，再断言，不补读掩盖漏行。
+    result = {"query": read(client, 'tenant == "demo"'), "search": search(client)}
+    expected = ([expected_refund] if expected_refund is not None else []) + [ROWS[1]]
+    fields = ("id", "revision", "text")
+    assert result["query"] == [{k: row[k] for k in fields} for row in expected], result
+    hits = [] if expected_refund is None else [
+        {**{k: expected_refund[k] for k in fields}, "score": score}]
+    assert result["search"] == hits, result
+    return result
+
+def mutation_ack(response, count_field):
+    summary = {count_field: int(response[count_field])}
+    if "ids" in response:
+        summary["ids"] = list(response["ids"])
+    return summary
 
 def demo():
-    assert version("pymilvus") == "2.5.6" and version("milvus-lite") == "2.5.1"
-    # 只新建本目录下的随机临时库；不接受业务URI，也不连接默认端口。
+    assert version("pymilvus") == "3.0.1" and version("milvus-lite") == "3.2.1"
+    assert version("grpcio") == "1.83.1"
     with TemporaryDirectory(prefix="yao370-", dir=Path(__file__).resolve().parent) as directory:
-        uri = str(Path(directory) / "fresh.db")
-        assert not Path(uri).exists()
-        client = None
-        try:
-            client = MilvusClient(uri=uri, timeout=10)
+        data_dir = Path(directory) / "fresh.db"  # 新版使用目录；不接受业务 URI。
+        assert not data_dir.exists()
+        with local_client(data_dir) as client:
             assert client.list_collections() == []
             create(client)
             result = {"sdk": version("pymilvus"), "lite": version("milvus-lite")}
             result["load_state"] = str(client.get_load_state(COLLECTION, timeout=10)["state"])
             result["insert_ack"] = mutation_ack(client.insert(COLLECTION, deepcopy(ROWS), timeout=10), "insert_count")
-            result["initial_query"] = read(client, 'tenant == "demo"')
-            result["initial_filtered_search"] = search(client)
-            assert [row["id"] for row in result["initial_query"]] == [1001, 2001]
-            assert result["initial_filtered_search"] == [{"id": 1001, "score": 1.0, "revision": 1}]
+            result["initial"] = snapshot(client, ROWS[0], 1.0)
             updated = deepcopy(ROWS[0])
             updated.update(revision=2, text="付款后三日内且商品未拆封，可申请退货。",
                            vector=[0.8, 0.6, 0.0])
-            result["upsert_acks"] = [mutation_ack(client.upsert(COLLECTION, [updated], timeout=10), "upsert_count")
-                                     for _ in range(2)]
-            result["after_repeated_upsert"] = read(client, 'tenant == "demo"')
-            result["updated_filtered_search"] = search(client)
-            assert result["after_repeated_upsert"] == [
-                {"id": 1001, "revision": 2, "text": updated["text"]},
-                {"id": 2001, "revision": 1, "text": ROWS[1]["text"]}]
-            assert result["updated_filtered_search"] == [{"id": 1001, "score": 0.8, "revision": 2}]
-            result["delete_ack"] = client.delete(COLLECTION, ids=[1001], timeout=10)
-            result["deleted_pk_query"] = read(client, 'id == 1001')
-            result["deleted_filtered_search"] = search(client)
-            client.delete(COLLECTION, ids=[1001], timeout=10)  # 同一删除再提交，观察最终状态。
-            result["remaining"] = read(client, 'tenant == "demo"')
-            assert result["deleted_pk_query"] == result["deleted_filtered_search"] == []
-            assert result["remaining"] == [{"id": 2001, "revision": 1, "text": ROWS[1]["text"]}]
+            result["updates"] = []
+            for _ in range(2):  # 固定两次，用来检验相同 payload 的幂等范围。
+                ack = mutation_ack(client.upsert(COLLECTION, [updated], timeout=10), "upsert_count")
+                result["updates"].append({"ack": ack, **snapshot(client, updated, 0.8)})
+            result["deletes"] = []
+            for _ in range(2):  # 固定两次删除；任何断言失败立即停止本轮。
+                ack = client.delete(COLLECTION, ids=[1001], timeout=10)
+                state = snapshot(client, None, None)
+                state["pk_query"] = read(client, 'id == 1001')
+                assert state["pk_query"] == [], state
+                result["deletes"].append({"ack": ack, **state})
             client.drop_collection(COLLECTION, timeout=10)
             result["collection_removed"] = not client.has_collection(COLLECTION)
-        finally:
-            try:
-                if client is not None:
-                    client.close()
-            finally:
-                # 固定Lite2.5.1的管理器：停止本次uri对应的子进程并等待退出。
-                server_manager_instance.release_server(uri)
+            assert result["collection_removed"]
     result["temporary_db_removed"] = not Path(directory).exists()
+    assert result["temporary_db_removed"]
     return result
 
 if __name__ == "__main__":
@@ -201,17 +225,19 @@ if __name__ == "__main__":
 | 显式 Index/Load 后 | get_load_state 返回 Loaded |
 | insert 两条文本 | insert_count=2，ID 为 1001、2001；Query 得到两条 revision=1 的原文 |
 | filter 为 demo 租户 + refund 的 Search，limit=2 | 仅 1001，score=1.0、revision=1；不会为了凑两条而返回 account 文本 |
-| 相同完整新行 upsert 两次 | 两次 upsert_count 均为 1；Query 仍为 1001/revision=2 与 2001/revision=1，没有新增逻辑 ID |
-| 更新后的同条件 Search | 1001，score=0.8、revision=2 |
+| 相同完整新行 upsert 两次 | 每次 upsert_count=1、ids=[1001]；每次 Query 均为 1001/revision=2 与 2001/revision=1，没有新增逻辑 ID |
+| 每次更新后的同条件 Search | 1001，score=0.8、revision=2，正文为“三日内” |
 | delete 1001 后 | 此 SDK/Lite 组合的回包为 `[1001]`；主键 Query 和 refund Search 均为空 |
-| 重复 delete 1001 后 | 只剩 2001，原文及 revision=1 不变 |
-| 清理 | 本例 collection 已 drop，专属 Lite 子进程停止后临时目录删除 |
+| 重复 delete 1001 后 | Query 只剩 2001，原文及 revision=1 不变；主键 Query 和 refund Search 仍为空 |
+| 清理 | 本例 collection 已 drop，专属 gRPC 服务/线程池和引擎关闭后临时目录删除 |
 
-PyMilvus 2.5.6 会兼容返回主键列表的删除实现，不应把它与服务端常见的计数字典混为一谈。初次探测也遇到过一次未显式 limit 的过滤 Query 漏项，后续三组有/无 limit 对照未稳定复现，原因未确认；保留在验证记录中。正式示例显式 limit 并逐步断言通过，**不能将这次通过当作对 Lite 并发一致性的证明，也不能声称 limit 修复了该现象**。
+该固定组合的 delete 回包仍是主键列表，不能从回包形状或重复删除回包推断实体还存在；以读回为准。验证分为预定的 **30 轮正文新库流程**与 **10 轮新库边界流程**，每轮保留完整返回、异常和清理结果。边界流程验证了两个反例：revision=2 后写旧 revision=1，Query/Search 均回到旧正文、score=1；删除后写同一旧 payload，两种读取均显示它复活，2001 不变。这说明业务 revision 不构成版本栅栏，并不是推荐重放旧事件。
 
-Lite 与服务端的边界必须保留：2.5.x Lite 文档只承诺 Strong 模式，其他一致性配置按 Strong 处理，不是四种分布式水位的实验平台。固定 Lite 2.5.1 源码的 Search/Query 路径会调用 LoadCollection；因此 Lite 某路径“没手动 Load 也查到了”，不能反证服务端加载要求。该包不支持完整的 partitions、users/roles/RBAC 和 alias；本例的租户 filter 也不是 RBAC 测试。
+上述轮次只验证锁定环境、两条记录、串行写入的有界场景；不是生产可靠性或失败率估计，不能声称已经解释或修复了旧引擎根因。任一轮读回不符应保留证据并判失败，不能用后续成功覆盖。测试脚本还检查 Schema、跨租户过滤、Release/显式 Reload、关闭后重开持久化及定向过滤删除。
 
-这里显式停止的只是新建文件对应的 Lite 子进程，使用了固定版本的本地管理器；连接共享服务端时只关闭自己的 client，不能照搬成停止共享服务。服务端的多客户端顺序、复制可见性、故障恢复、资源加载和 compaction/GC 需要在锁定的目标服务版本中另测。
+Lite 3.2.1 与服务端的边界必须保留：它是单进程本地引擎，同一 collection 的写入必须串行；没有服务端分布式水位协调，传入 Strong 也不是四种服务端一致性的实验。固定源码中的 Search/Query 要求 loaded，Release 后必须重新 Load；原 2.5.1 的自动加载观察不能沿用。新版支持本地 partitions/alias，但仍无认证、users/roles/RBAC/TLS，tenant filter 不等于 RBAC，不能暴露到不受信任网络。
+
+清理代码使用固定 Lite 测试 helper 和 grpcio 私有线程池，负责本例新启动的进程内服务，不能直接作为通用生产 SDK 封装。它等待本次 RPC 服务停止、回收线程池并关闭引擎，验证另检查端口不再监听、后台线程退出及临时目录消失；没有终止任何既有服务。连接共享服务端时只关闭自己的 client。服务端多客户端顺序、复制可见性、故障恢复、资源加载和 compaction/GC 仍须在目标服务版本独立验证。
 
 ## 延伸 / 追问
 
@@ -240,7 +266,9 @@ revision 只是业务数据，接口不自动比较大小；迟到事件可以�
 - 课程线索：洛小山《AI 产品从入门到精通》learn-ai，固定 commit `5a933d287dd5074cc1543cb849146f3261d47521`：[slides/vector-db-2.html](https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/vector-db-2.html)、[slides/vector-db-3.html](https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/vector-db-3.html)、[slides/vector-db-4.html](https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/vector-db-4.html)。只作选题线索，正文、文本和代码独立编写，未搬运 AGPL 素材。
 - Milvus 官方 2.5.x 文档仓库固定快照 `d9722c11eca0de0b551749dbb6c6a226533d4a20`：[Load & Release](https://github.com/milvus-io/milvus-docs/blob/d9722c11eca0de0b551749dbb6c6a226533d4a20/site/en/userGuide/collections/load-and-release.md)、[Upsert Entities](https://github.com/milvus-io/milvus-docs/blob/d9722c11eca0de0b551749dbb6c6a226533d4a20/site/en/userGuide/insert-and-delete/upsert-entities.md)、[Consistency](https://github.com/milvus-io/milvus-docs/blob/d9722c11eca0de0b551749dbb6c6a226533d4a20/site/en/userGuide/search-query-get/consistency.md)。本文使用 AutoID 关闭的完整行模式，不假定所有版本的部分更新能力相同。
 - 同一文档快照的 [Product FAQ](https://github.com/milvus-io/milvus-docs/blob/d9722c11eca0de0b551749dbb6c6a226533d4a20/site/en/faq/product_faq.md)：删除/compaction/GC、flush 与读可见性；[Operational FAQ](https://github.com/milvus-io/milvus-docs/blob/d9722c11eca0de0b551749dbb6c6a226533d4a20/site/en/faq/operational_faq.md)：重复主键不能代替摄取去重。
-- PyMilvus v2.5.6，commit `e941adbd11efb242d4ee4566d7da617a754fbc6c`，[milvus_client.py](https://github.com/milvus-io/pymilvus/blob/e941adbd11efb242d4ee4566d7da617a754fbc6c/pymilvus/milvus_client/milvus_client.py)：自定义 Schema 创建路径、upsert/delete 回包兼容、Close 的连接语义。
-- Milvus Lite v2.5.1，commit `c24c18853883cd9870cc14757498adb89fc0379a`：[README](https://github.com/milvus-io/milvus-lite/blob/c24c18853883cd9870cc14757498adb89fc0379a/README.md)、[milvus_proxy.cpp](https://github.com/milvus-io/milvus-lite/blob/c24c18853883cd9870cc14757498adb89fc0379a/src/milvus_proxy.cpp)、[server_manager.py](https://github.com/milvus-io/milvus-lite/blob/c24c18853883cd9870cc14757498adb89fc0379a/python/src/milvus_lite/server_manager.py)：支持范围、Search/Query 自动加载及本地进程清理；[Lite 文档](https://github.com/milvus-io/milvus-docs/blob/d9722c11eca0de0b551749dbb6c6a226533d4a20/site/en/getstarted/milvus_lite.md) 的一致性限制。该文档部分能力表沿用更早接口，本文 get_load_state 的观测限定到上述实测包与固定实现，不据此宣称普遍兼容。
+- PyMilvus v3.0.1，commit `abf720abc64f57cea4cbc05292a802f9fd73c4c8`：[milvus_client.py](https://github.com/milvus-io/pymilvus/blob/abf720abc64f57cea4cbc05292a802f9fd73c4c8/pymilvus/milvus_client/milvus_client.py)：自定义 Schema 创建路径、upsert/delete 回包兼容、Close 的连接语义。
+- Milvus Lite v3.2.1，commit `43d1257774e629bc9f66873977ab7c320d5bf5a7`：[README](https://github.com/milvus-io/milvus-lite/blob/43d1257774e629bc9f66873977ab7c320d5bf5a7/README.md) 的存储格式/并发/能力限制；[collection.py](https://github.com/milvus-io/milvus-lite/blob/43d1257774e629bc9f66873977ab7c320d5bf5a7/milvus_lite/engine/collection.py) 的 upsert/delete、Query/Search、loaded 检查及后台任务关闭；[servicer.py](https://github.com/milvus-io/milvus-lite/blob/43d1257774e629bc9f66873977ab7c320d5bf5a7/milvus_lite/adapter/grpc/servicer.py) 的本地 RPC 适配；[server.py](https://github.com/milvus-io/milvus-lite/blob/43d1257774e629bc9f66873977ab7c320d5bf5a7/milvus_lite/adapter/grpc/server.py) 的专属 loopback 测试服务。
+- grpcio v1.83.1，commit `aae267021b1ac256f8b9038d0ef528c3798cc137`：[服务与线程池实现](https://github.com/grpc/grpc/blob/aae267021b1ac256f8b9038d0ef528c3798cc137/src/python/grpcio/grpc/_server.py)，仅用于本例专属服务清理，私有字段不保证跨版本兼容。
+- 旧失败环境留档：PyMilvus v2.5.6 commit `e941adbd11efb242d4ee4566d7da617a754fbc6c`、[Lite v2.5.1 README](https://github.com/milvus-io/milvus-lite/blob/c24c18853883cd9870cc14757498adb89fc0379a/README.md)，Lite commit `c24c18853883cd9870cc14757498adb89fc0379a`。保留作异常复现依据，不将旧实现行为或旧文档能力表套到新版。
 
 来源核实与本地实验日期为 **2026-09-15**。未运行 Standalone/Distributed Milvus，未操作任何既有业务数据，也未测量生产一致性、可用性或物理擦除时延。
