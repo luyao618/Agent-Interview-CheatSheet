@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：126** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：127** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -43,7 +43,7 @@
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
-| 🧠 大模型基础与原理 | 10 | [查看 ↓](#-大模型基础与原理) |
+| 🧠 大模型基础与原理 | 11 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 54 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 41 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 15 | [查看 ↓](#-工程化部署性能成本) |
@@ -53,7 +53,7 @@
 
 ## 🧠 大模型基础与原理
 
-<sub>分类 ID：`llm` ｜ 共 10 题</sub>
+<sub>分类 ID：`llm` ｜ 共 11 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -67,6 +67,7 @@
 | 8 | [自回归模型怎样逐 Token 生成回答，训练、推理和对话内学习分别改变了什么？](questions/llm-0008-next-token-training-inference.md) | 🟡 进阶 |
 | 9 | [Base 模型如何通过 Chat Template 与 SFT 变成对话模型，模板不匹配会怎样？](questions/llm-0009-base-chat-template-sft.md) | 🟡 进阶 |
 | 10 | [Self-Attention 如何建立 Token 关系，因果掩码与 encoder、decoder 的用途有什么关系？](questions/llm-0010-causal-attention-architecture.md) | 🟡 进阶 |
+| 11 | [模型规模、训练数据和计算预算怎样共同影响能力，如何判断所谓涌现而不迷信参数量？](questions/llm-0011-scaling-data-emergence.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
