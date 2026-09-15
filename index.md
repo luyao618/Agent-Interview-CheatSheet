@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：146** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：147** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -44,7 +44,7 @@
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
 | 🧠 大模型基础与原理 | 19 | [查看 ↓](#-大模型基础与原理) |
-| 🤖 Agent 架构与编排 | 54 | [查看 ↓](#-agent-架构与编排) |
+| 🤖 Agent 架构与编排 | 55 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 23 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 6 | [查看 ↓](#-ai-产品与落地) |
@@ -81,7 +81,7 @@
 
 ## 🤖 Agent 架构与编排
 
-<sub>分类 ID：`agent` ｜ 共 54 题</sub>
+<sub>分类 ID：`agent` ｜ 共 55 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -139,6 +139,7 @@
 | 52 | [异步事件堆积时，如何把工具结果、用户消息和系统提醒组织给模型？](questions/agent-0052-async-event-presentation-to-model.md) | 🟡 进阶 |
 | 53 | [Agent 自举生成新 Agent 时，如何防止能力退化和错误累积？](questions/agent-0053-agent-bootstrapping-degradation-control.md) | 🔴 困难 |
 | 54 | [Agent 能自我更新工具和验证器时，如何隔离不能被它修改的信任根？](questions/agent-0054-self-improving-agent-trust-root-boundary.md) | 🔴 困难 |
+| 55 | [Agent 运行中收到用户插话时，如何区分续问、转向和信息注入，并决定哪一层继续运行？](questions/agent-0055-turn-loop-input-semantics.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
