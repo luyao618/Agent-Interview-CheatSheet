@@ -3304,6 +3304,29 @@
       "updated": "2026-09-16",
       "answers_count": 1,
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
+      "id": "engineering-0026",
+      "title": "模型流尚未结束就执行工具时，如何在断流或取消后保持 tool call/result 记录完整？",
+      "file": "engineering-0026-streaming-tool-transcript-closure.md",
+      "language": "zh",
+      "category": "engineering",
+      "category_label": "工程化、部署、性能、成本",
+      "tags": [
+        "agent",
+        "streaming",
+        "tool-calling",
+        "event-log",
+        "cancellation",
+        "concurrency"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-16",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai，固定版本学习线索"
     }
   ]
 }
