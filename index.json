@@ -3373,6 +3373,29 @@
       "updated": "2026-09-16",
       "answers_count": 1,
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
+      "id": "agent-0058",
+      "title": "工具发现与注册动态变化时，怎样保证一次采样看到的工具菜单和实际分发能力一致？",
+      "file": "agent-0058-tool-catalog-sampling-snapshot.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "tool-registry",
+        "mcp",
+        "snapshot",
+        "discovery",
+        "authorization",
+        "generation"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-16",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     }
   ]
 }
