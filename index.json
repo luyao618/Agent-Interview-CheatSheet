@@ -3150,6 +3150,28 @@
       "updated": "2026-09-16",
       "answers_count": 1,
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
+      "id": "engineering-0020",
+      "title": "定时 Agent 应复用会话还是重建上下文，怎样兼顾增量状态、漏跑合并和预算？",
+      "file": "engineering-0020-scheduled-agent-state-cost.md",
+      "language": "zh",
+      "category": "engineering",
+      "category_label": "工程化、部署、性能、成本",
+      "tags": [
+        "scheduled-agents",
+        "state",
+        "catch-up",
+        "concurrency",
+        "budget"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-16",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     }
   ]
 }
