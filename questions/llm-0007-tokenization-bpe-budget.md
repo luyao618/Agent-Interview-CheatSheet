@@ -130,7 +130,7 @@ R ≤ 该模型/接口的最大输出上限
 
 若接口还有独立输入限制，也必须满足。对 OpenAI reasoning 接口，`R` 需覆盖 reasoning、可见文本及相应生成格式开销；不能只给最终回答留空间。上限、截断策略和计算规则须按具体模型 snapshot 核对。原始字符串的本地计数仅覆盖 `I` 的一部分；应使用服务商计数接口或模型匹配的完整 template 估算，再以实际 `usage` 校准，不能硬编码“每条消息固定加几个 token”通用于所有模型。
 
-**费用预算按实际用量分类计价。** 对有缓存输入折扣的纯文本请求，设 `I_c` 是 `I` 中命中缓存的部分，`O` 为实际计费输出，单价 `p_in`、`p_cache`、`p_out` 的单位为美元 / 百万 token：
+**费用预算按实际用量分类计价。以下简式仅适用于无独立 cache-write 费率的纯文本请求。** 设 `I_c` 是 `I` 中命中缓存读取的部分，`O` 为实际计费输出，单价 `p_in`、`p_cache`、`p_out` 的单位为美元 / 百万 token：
 
 ```text
 费用（美元）= ((I - I_c) × p_in + I_c × p_cache + O × p_out) / 1,000,000
@@ -138,7 +138,17 @@ R ≤ 该模型/接口的最大输出上限
 
 这里 `I_c` 是输入的子集，不能再加一次完整输入价；输出预留 `R` 用于限额和预算，不代表最终消耗了 `R`。OpenAI `usage.output_tokens` 已包含其中的 reasoning tokens，不能再把 `output_tokens_details.reasoning_tokens` 重复相加。多次调用逐次求和；工具费、图像/音频或其他计费项目另按合同规则核算，不套用本地文本计数。
 
-**以下只是预算算例，不是模型报价或实测账单（编写于 2026-09-15）**：假设 `I=5,000`、`I_c=3,000`、`O=1,000` token，三种单价分别为 `2`、`0.5`、`8` 美元 / 百万 token，则费用为 `(2,000×2 + 3,000×0.5 + 1,000×8)/1,000,000 = 0.0135` 美元。即便有缓存折扣，缓存内容仍占本次上下文容量；价格优惠不会把窗口变大。
+**以下是无独立 cache-write 费率的预算算例，不是模型报价或实测账单（编写于 2026-09-15）**：假设 `I=5,000`、`I_c=3,000`、`O=1,000` token，三种单价分别为 `2`、`0.5`、`8` 美元 / 百万 token，则费用为 `(2,000×2 + 3,000×0.5 + 1,000×8)/1,000,000 = 0.0135` 美元。即便有缓存折扣，缓存内容仍占本次上下文容量；价格优惠不会把窗口变大。
+
+**存在独立缓存写入用量及费率时，须分为普通输入、缓存读取、缓存写入三类。** 以 OpenAI 的 `usage` 口径为例，`I_c` 对应 `input_tokens_details.cached_tokens`，另设 `I_w` 对应 `input_tokens_details.cache_write_tokens`；两者是总输入 `I=input_tokens` 中互斥的部分，普通输入为 `I-I_c-I_w`，三类数量均应非负。设 `p_write` 为缓存写入的完整单价，单位同为美元 / 百万 token：
+
+```text
+费用（美元）= ((I - I_c - I_w) × p_in + I_c × p_cache + I_w × p_write + O × p_out) / 1,000,000
+```
+
+不能把 `I_w` 一概按普通输入价处理，也不能在已经为它收取普通输入价后，再叠加完整的 `p_write`。OpenAI 官方 Prompt caching 文档在 **2026-09-15 核实**时规定，GPT-5.6 及以后模型的缓存写入、读取费率分别为普通输入价的 **1.25 倍、0.1 倍**；其他模型、服务商或后续版本须核对自己的字段与费率，不能套用这两个倍数。
+
+**分类计价算例（2026-09-15 验证，仅计算输入费）**：采用官方文档第二次请求的示例用量 `I=15,000`、`I_c=12,000`、`I_w=3,000` token，另假设普通输入单价为 `2` 美元 / 百万 token（不是模型报价）。按上述已核实比例，读取价为 `0.2`、写入价为 `2.5`，普通输入数量为 `0`。输入费为 `(0×2 + 12,000×0.2 + 3,000×2.5)/1,000,000 = 0.0099` 美元；误用简式会得到 `0.0084` 美元，少计 `0.0015` 美元。输出费仍需另加，示例用量也不代表本题实际调用过 API。
 
 上线前按语言、代码比例和任务类型抽样，记录 token 分布、输出长度与失败率；容量关注长尾和最大值，费用预测结合调用量与真实单价。模型或 template 升级后重测。具体 Agent 降本手段参见 [agent-0038：Agent 节省 Token 成本](agent-0038-reduce-agent-token-cost.md)，本题聚焦这些优化之前的计量基础。
 
@@ -146,7 +156,7 @@ R ≤ 该模型/接口的最大输出上限
 
 **追问一：换模型后，同样的文本从 1,000 token 降到 700，是否就便宜 30%？**
 
-不能直接下结论。先确认 tokenizer 与模型匹配，再比较输入/缓存/输出单价、输出量、翻译或重试调用以及任务质量；更少的输入 token 只改变成本公式中的一个量。重新计数后也要验证 template 开销和上下文余量，不能沿用旧模型的整数 ID。
+不能直接下结论。先确认 tokenizer 与模型匹配，再比较普通输入/缓存读取/缓存写入/输出单价、输出量、翻译或重试调用以及任务质量；更少的输入 token 只改变成本公式中的一个量。重新计数后也要验证 template 开销和上下文余量，不能沿用旧模型的整数 ID。
 
 **追问二：按 token 数截取中文，为什么有时末尾出现 `�`？**
 
@@ -171,4 +181,5 @@ byte-level token 的边界可能位于 UTF-8 字符内部，截断后默认宽�
 - OpenAI，**tiktoken 0.12.0**，固定 commit `97e49cbadd500b5cc9dbb51a486f0b42e6701bee`：[教学训练与编码 `tiktoken/_educational.py`，`bpe_encode` L83 / `bpe_train` L119](https://github.com/openai/tiktoken/blob/97e49cbadd500b5cc9dbb51a486f0b42e6701bee/tiktoken/_educational.py#L83)；[运行时 `src/lib.rs`，`_byte_pair_merge` L17](https://github.com/openai/tiktoken/blob/97e49cbadd500b5cc9dbb51a486f0b42e6701bee/src/lib.rs#L17)、[`encode_ordinary` L232](https://github.com/openai/tiktoken/blob/97e49cbadd500b5cc9dbb51a486f0b42e6701bee/src/lib.rs#L232)。用于核对机制，而非从课程推断实现。
 - 同一 tiktoken commit：[编码定义及词表 hash `tiktoken_ext/openai_public.py`，L75 / L95](https://github.com/openai/tiktoken/blob/97e49cbadd500b5cc9dbb51a486f0b42e6701bee/tiktoken_ext/openai_public.py#L75)；[special-token 策略 `tiktoken/core.py::encode`，L79](https://github.com/openai/tiktoken/blob/97e49cbadd500b5cc9dbb51a486f0b42e6701bee/tiktoken/core.py#L79)；[解码与 UTF-8 边界 `decode`，L272](https://github.com/openai/tiktoken/blob/97e49cbadd500b5cc9dbb51a486f0b42e6701bee/tiktoken/core.py#L272)。
 - OpenAI 官方文档，[Conversation state — Managing the context window](https://developers.openai.com/api/docs/guides/conversation-state#managing-the-context-window)，访问日期 2026-09-15；上下文与输出限制按模型核对。
-- OpenAI 官方文档，[Reasoning models — Managing the context window](https://developers.openai.com/api/docs/guides/reasoning#managing-the-context-window)，访问日期 2026-09-15；核对 reasoning 的上下文占用、输出计费和 `usage` 字段。本题未引用实时模型价格或规格数值。
+- OpenAI 官方文档，[Reasoning models — Managing the context window](https://developers.openai.com/api/docs/guides/reasoning#managing-the-context-window)，访问日期 2026-09-15；核对 reasoning 的上下文占用、输出计费和 `usage` 字段。
+- OpenAI 官方文档，Prompt caching：[How caching works — GPT-5.6 and later](https://developers.openai.com/api/docs/guides/prompt-caching#how-caching-works-gpt-5-6-and-later)、[Monitor cache performance](https://developers.openai.com/api/docs/guides/prompt-caching#monitor-cache-performance)，访问并核实日期 2026-09-15；核对缓存写入/读取费率比例、第二次请求示例用量，以及按 `input_tokens`、`cached_tokens`、`cache_write_tokens` 分类计价的口径。本文中的美元绝对单价均是假设，并非具体模型报价。
