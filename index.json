@@ -3419,6 +3419,29 @@
       "updated": "2026-09-16",
       "answers_count": 1,
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
+      "id": "agent-0059",
+      "title": "上下文压缩后仍溢出时，如何证明重试取得了进展，并区分 UI 占用率与下一次请求预算？",
+      "file": "agent-0059-compaction-progress-proof.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "compaction",
+        "context-window",
+        "token-budget",
+        "progress",
+        "retry",
+        "observability"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-16",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     }
   ]
 }
