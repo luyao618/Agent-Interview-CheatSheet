@@ -2834,6 +2834,28 @@
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     },
     {
+      "id": "llm-0018",
+      "title": "KV Cache 缓存的到底是什么，为什么能加速自回归推理，却会带来内存压力？",
+      "file": "llm-0018-kv-cache-prefill-decode.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "kv-cache",
+        "prefill",
+        "decode",
+        "prefix-caching",
+        "inference"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-15",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
       "id": "product-0001",
       "title": "如何判断一个业务场景是否适合引入 AI？",
       "file": "product-0001-ai-scenario-prioritization.md",
