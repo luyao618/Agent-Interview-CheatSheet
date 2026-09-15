@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：122** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：123** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -43,7 +43,7 @@
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
-| 🧠 大模型基础与原理 | 6 | [查看 ↓](#-大模型基础与原理) |
+| 🧠 大模型基础与原理 | 7 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 54 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 41 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 15 | [查看 ↓](#-工程化部署性能成本) |
@@ -53,7 +53,7 @@
 
 ## 🧠 大模型基础与原理
 
-<sub>分类 ID：`llm` ｜ 共 6 题</sub>
+<sub>分类 ID：`llm` ｜ 共 7 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -63,6 +63,7 @@
 | 4 | [多轮 Agent 后训练中，最终成败如何归因到中间工具调用决策？](questions/llm-0004-agent-rl-credit-assignment.md) | 🔴 困难 |
 | 5 | [Agent 训练中如何判断 SFT 已经足够，应该切换到 RL？](questions/llm-0005-agent-training-sft-to-rl-switch.md) | 🔴 困难 |
 | 6 | [什么是 Speculative Decoding？它如何在不改变输出分布的前提下加速 LLM 推理？](questions/llm-0006-speculative-decoding.md) | 🔴 困难 |
+| 7 | [Token、字符与词有什么区别，BPE 如何影响多语言产品的上下文和成本预算？](questions/llm-0007-tokenization-bpe-budget.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
