@@ -3238,6 +3238,28 @@
       "updated": "2026-09-16",
       "answers_count": 1,
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
+      "id": "agent-0055",
+      "title": "Agent 运行中收到用户插话时，如何区分续问、转向和信息注入，并决定哪一层继续运行？",
+      "file": "agent-0055-turn-loop-input-semantics.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "input-semantics",
+        "steering",
+        "follow-up",
+        "lifecycle",
+        "atomic-claim"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-16",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     }
   ]
 }
