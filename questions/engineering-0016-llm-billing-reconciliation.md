@@ -97,7 +97,9 @@ B 补证前只能报告“已知小计 **0.012800 USD，1 次调用待核实**�
 
 ### 5. 可运行的快照计价与对账示例
 
-代码只处理已归一化、同一虚构供应商/项目/模型/币种/价表下的快照，不实现生产 API 客户端或自动补证。usage 桶顺序为 `(N,R,W,O)`；None 保留未知，负数和布尔值拒绝。新的 resolved 快照不覆盖原始 observed，原始事件应另行保留审计。冲突快照主动报错，不靠“最后一条覆盖”掩盖矛盾。
+代码只处理已归一化、同一虚构供应商/项目/模型/币种/价表下的快照，不实现生产 API 客户端或自动补证。usage 接收四项 tuple/list，桶顺序为 `(N,R,W,O)`；整体或任一桶为 None 都保留未知，其余只接受非负 int，拒绝布尔值、浮点数及字符串，不自动强转。
+
+**每条快照先严格校验，再比较和去重**：Python 的 `False == 0`、`True == 1`、`1.0 == 1`，不能让非法记录被后来的合法重复值掩盖。校验后复制为 tuple，只比较这些已验证快照，不按算出的金额或 pending 状态判重。新的 resolved 快照不覆盖原始 observed，原始事件应另行保留审计。冲突快照主动报错，不靠“最后一条覆盖”掩盖矛盾；同一 ID 的未知与已知快照混在一起仍视为冲突，须先依据补证明确选择快照。
 
 ```python
 from decimal import Decimal as D
@@ -107,13 +109,20 @@ MILLION = D(1_000_000)
 LOW = tuple(map(D, ("2", "0.5", "2.5", "8")))
 HIGH = tuple(map(D, ("4", "1", "5", "16")))
 
-def quote(usage):
+def validate_usage(usage):
     # 已归一化互斥桶，顺序为普通输入、读取、写入、计费输出。
     if usage is None:
         return None
-    if len(usage) != 4 or any(v is not None and (type(v) is not int or v < 0) for v in usage):
+    if type(usage) not in (tuple, list) or len(usage) != 4:
+        raise ValueError("usage must be a four-item tuple/list, or unknown None")
+    counts = tuple(usage)  # 保存独立快照，不保留可变list的引用。
+    if any(v is not None and (type(v) is not int or v < 0) for v in counts):
         raise ValueError("four nonnegative integer counts, or unknown None, required")
-    if any(v is None for v in usage):
+    return counts
+
+def quote(usage):
+    usage = validate_usage(usage)  # 直接计价入口也执行同一严格校验。
+    if usage is None or any(v is None for v in usage):
         return None
     normal, read, write, output = usage
     rates = HIGH if normal + read + write > 2000 else LOW
@@ -126,6 +135,7 @@ def summarize(snapshot):
     for request_id, usage in snapshot:
         if not isinstance(request_id, str) or not request_id:
             raise ValueError("a physical request ID is required")
+        usage = validate_usage(usage)  # 必须先校验每条记录，再比较/去重。
         if request_id in by_id and by_id[request_id] != usage:
             raise ValueError("conflicting usage snapshots")
         by_id[request_id] = usage
