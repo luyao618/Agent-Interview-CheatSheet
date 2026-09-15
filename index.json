@@ -2680,6 +2680,28 @@
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     },
     {
+      "id": "llm-0011",
+      "title": "模型规模、训练数据和计算预算怎样共同影响能力，如何判断所谓涌现而不迷信参数量？",
+      "file": "llm-0011-scaling-data-emergence.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "scaling-laws",
+        "training-data",
+        "compute-budget",
+        "emergence",
+        "model-evaluation"
+      ],
+      "difficulty": "medium",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-15",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
       "id": "product-0001",
       "title": "如何判断一个业务场景是否适合引入 AI？",
       "file": "product-0001-ai-scenario-prioritization.md",
