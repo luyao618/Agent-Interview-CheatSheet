@@ -163,12 +163,12 @@ def orchestrate(gateway):
 
 | 工作负载 | 子进程 CPU 秒 | 放行至回收秒 | 观测终态 | guest 的 100 ms 定时器 |
 | --- | --- | --- | --- | --- |
-| 正常返回 6 | 0.0298 | 0.0162 | COMPLETED，exit 0 | 完成前主动清除 |
-| 同步死循环 | 1.0207 | 1.0104 | CPU_LIMIT，SIGXCPU / -24 | 未执行，事件循环被阻塞 |
-| 未完成 Promise | 0.0300 | 0.4545 | WALL_LIMIT，宿主 SIGKILL / -9 | 已执行，但 Promise 仍未完成 |
-| 自制语法错误 | 0.0426 | 0.0193 | SCRIPT_ERROR，exit 2 | 捕获错误后清除 |
+| 正常返回 6 | 0.0391 | 0.0163 | COMPLETED，exit 0 | 完成前主动清除 |
+| 同步死循环 | 1.0137 | 1.0055 | CPU_LIMIT，SIGXCPU / -24 | 未执行，事件循环被阻塞 |
+| 未完成 Promise | 0.0335 | 0.4343 | WALL_LIMIT，宿主 SIGKILL / -9 | 已执行，但 Promise 仍未完成 |
+| 自制语法错误 | 0.0335 | 0.0165 | SCRIPT_ERROR，exit 2 | 捕获错误后清除 |
 
-pending 的墙钟配置为 0.4 秒，本次在约 0.4118 秒观察到到期，身份核对、发信号和回收后约 0.4545 秒结束。其他样例有 3 秒外部运行兜底。监督者还给启动、CLI/ps 核对和回收分别设置有限等待；不能把 guest 的 0.4 秒配置称为端到端 400 ms 硬 SLA。
+pending 的墙钟配置为 0.4 秒，本次在约 0.4048 秒观察到到期，身份核对、发信号和回收后约 0.4343 秒结束。其他样例有 3 秒外部运行兜底。监督者还给启动、CLI/ps 核对和回收分别设置有限等待；不能把 guest 的 0.4 秒配置称为端到端 400 ms 硬 SLA。
 
 初次环境检查发现 Python/macOS 启动加入 locale/platform 环境键，断言失败时所有样例已回收。后续在 exec 前重建白名单，并在可信 Node 前导代码移除启动期附加键；最终进入工作负载时仅有 LANG/TMPDIR。原失败记录保留，最终结果通过。最小环境不等于安全沙箱：Node 官方 `node:vm` 文档也明确它不是运行不可信代码的安全机制；本实验的子进程和堆标志没有替代 OS/容器隔离与工具授权。
 
@@ -279,7 +279,11 @@ def trial(mode):
             fields=row.split(None,1)
             ok=(len(fields)==2 and fields[0]==str(os.getpid()) and nonce in fields[1]
                 and str(child) in fields[1] and p.pid not in (forbidden,current_daemon,os.getpid()))
-            checks.append({'stage':stage,'owned':ok,'not_daemon':p.pid!=current_daemon})
+            checks.append({'stage':stage,'owned':ok,'not_daemon':p.pid!=current_daemon,
+                'child_pid':p.pid,'expected_parent_pid':os.getpid(),'daemon_pid':current_daemon,
+                'observed_parent_pid':int(fields[0]) if len(fields)==2 else None,
+                'nonce_matches':len(fields)==2 and nonce in fields[1],
+                'script_path_matches':len(fields)==2 and str(child) in fields[1]})
             if not ok:raise RuntimeError('child identity check failed; no signal sent')
             return True
         def stop(stage):
