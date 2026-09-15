@@ -3216,6 +3216,28 @@
       "updated": "2026-09-16",
       "answers_count": 1,
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
+      "id": "engineering-0023",
+      "title": "Agent 核心越来越大时，怎样选择模块或插件边界并把架构约束变成可检查规则？",
+      "file": "engineering-0023-harness-module-boundaries.md",
+      "language": "zh",
+      "category": "engineering",
+      "category_label": "工程化、部署、性能、成本",
+      "tags": [
+        "module-boundaries",
+        "dependency-inversion",
+        "plugins",
+        "architecture-tests",
+        "tool-output"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-16",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     }
   ]
 }
