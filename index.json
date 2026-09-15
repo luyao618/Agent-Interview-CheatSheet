@@ -2724,6 +2724,28 @@
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     },
     {
+      "id": "llm-0013",
+      "title": "Few-shot、Chain-of-Thought、Self-Consistency 与 Think Tool 分别何时有用，怎样验证额外推理值得？",
+      "file": "llm-0013-in-context-reasoning-strategies.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "few-shot",
+        "chain-of-thought",
+        "self-consistency",
+        "think-tool",
+        "evaluation"
+      ],
+      "difficulty": "medium",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-15",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
       "id": "product-0001",
       "title": "如何判断一个业务场景是否适合引入 AI？",
       "file": "product-0001-ai-scenario-prioritization.md",
