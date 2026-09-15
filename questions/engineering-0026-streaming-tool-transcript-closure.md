@@ -47,9 +47,13 @@ answers:
 
 收流循环的正常、异常和用户取消出口应汇到同一个收尾路径：关闭准入 → 固定已启动集合 → drain → 提交收尾状态 → 决定结束或下一 attempt。工具必须先并发启动，再等待集合；如果每收到一个调用就 `await execute()`，即使容器名叫队列也已经串行了。
 
+**终态日志写入也可能失败，不能把它放在任务回收的保护范围之外。** 准入关闭通知必须在写入失败时仍然发出；已启动任务由 `finally` 取消并收集，保留首次存储异常后再抛给调用者。坏日志拒绝后续写入，不能补造结果或宣称 DrainClosed；可靠前缀里缺少观测的 call 仍是 unresolved。等待通知的一方也要同时观察生产该通知的任务：任务已经失败就取回异常，不能只等一个永远不来的 Event。工具启动、返回和 closing 的通知都遵循这一规则。
+
 记录的真实完成顺序可以是 `c2 → c1`，模型输入投影仍可稳定按 `ordinal` 排成 `c1 → c2`。不要重写日志来伪造完成时间，也不要为了有序呈现而把已完成的 c2 只留在内存等 c1：应立即保存观测，再在读模型中排序。按调用顺序是本例的确定性选择，具体 provider 对结果位置、消息分组和 call ID 的要求还要由适配器校验。
 
 CPython 3.11.8 的 `asyncio.gather` 按传入顺序返回结果；默认模式会先传播首个异常，但其他任务可能继续运行，所以仅 catch 该异常就退出不能算 drain。`TaskGroup` 遇到未处理异常会取消兄弟任务，适合整组失败策略；若要保留独立查询结果，须先区分业务失败与调度/存储失败。`gather(return_exceptions=True)` 也不能把日志写失败吞成一个正常工具结果。
+
+本例用 `wait(..., FIRST_EXCEPTION)` 在存储等未处理异常发生时提前进入回收，再以 `gather(return_exceptions=True)` 取回所有任务结果。普通工具异常已转换为 unknown 观测，不会被误当成存储失败去中断其他独立工具；存储出错则停止本次收尾提交，并传播首个 OSError。
 
 drain 需要预算和持有者。到期发取消是请求，不是资源释放证明。生产中不合作的任务应由受监督 worker 持有，保留执行 ID 与核实渠道；不能把未结束 future 丢出作用域，也不能无限等挂死线程。取消的应是收流和可取消工作，收尾不能依赖同一个已经被杀掉的 owner。`shield` 仅阻止某种取消传播，不提供持久持有者或崩溃恢复。
 
@@ -117,22 +121,29 @@ class Journal:
         self.file = self.path.open('x', encoding='utf-8')
         self.rows = []
         self.poisoned = False
+        self.failure = None
 
     def emit(self, kind, **data):
         if self.poisoned:
-            raise OSError('journal unavailable')
+            raise self.failure
         row = copy_json(dict(seq=len(self.rows), kind=kind, **data))
         try:
             self.file.write(json.dumps(row, ensure_ascii=False) + '\n')
             self.file.flush()
             os.fsync(self.file.fileno())
-        except OSError:
+        except OSError as error:
             self.poisoned = True
+            self.failure = error
             raise  # Never start another tool or claim closure after this failure.
         self.rows.append(row)
 
     def close(self):
-        self.file.close()
+        try:
+            self.file.close()
+        except OSError as error:
+            if self.failure is None:
+                self.poisoned, self.failure = True, error
+            raise self.failure
 
 
 class Run:
@@ -209,22 +220,34 @@ class Run:
         if reason == 'completed' and set(self.parts) != set(self.calls):
             raise ValueError('unfinished call item')
         self.sealed = True
-        if reason == 'completed':
-            self.log.emit('AssistantComplete', text=self.text,
-                          calls=sorted(self.calls.values(), key=lambda c: c['ordinal']))
-        else:
-            self.log.emit('StreamInterrupted', reason=reason)
-        self.admission_closed.set()
         tasks = list(self.tasks.values())
-        if tasks:
-            _, pending = await asyncio.wait(tasks, timeout=budget)
-            for task in pending:
-                task.cancel()
+        failure, outcomes = None, []
+        try:
+            try:
+                if reason == 'completed':
+                    self.log.emit('AssistantComplete', text=self.text,
+                                  calls=sorted(self.calls.values(), key=lambda c: c['ordinal']))
+                else:
+                    self.log.emit('StreamInterrupted', reason=reason)
+            finally:
+                self.admission_closed.set()  # Notification must not depend on storage.
+            if tasks:
+                await asyncio.wait(tasks, timeout=budget, return_when=asyncio.FIRST_EXCEPTION)
+        except BaseException as error:
+            failure = error
+        finally:
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
             # Safe here ONLY because the original fake tools cooperate with cancellation.
             outcomes = await asyncio.gather(*tasks, return_exceptions=True)
-            for outcome in outcomes:
-                if isinstance(outcome, BaseException) and not isinstance(outcome, asyncio.CancelledError):
-                    raise outcome  # Storage failure is not a normal tool error.
+        if self.log.failure is not None:
+            raise self.log.failure  # Cleanup errors must not replace the first storage error.
+        if failure is not None:
+            raise failure
+        for outcome in outcomes:
+            if isinstance(outcome, BaseException) and not isinstance(outcome, asyncio.CancelledError):
+                raise outcome
         self.log.emit('DrainClosed')
         return transcript(self.log.rows)
 
@@ -271,6 +294,20 @@ def model_export(view):
     return copy_json(dict(assistant=view['assistant'], tool_results=view['results']))
 
 
+async def await_notice(event, worker):
+    notice = asyncio.create_task(event.wait())
+    try:
+        done, _ = await asyncio.wait((notice, worker), return_when=asyncio.FIRST_COMPLETED)
+        if worker in done:
+            worker.result()  # Observe failure even if no notification was ever sent.
+        if not event.is_set():
+            raise RuntimeError('worker ended without notification')
+    finally:
+        if not notice.done():
+            notice.cancel()
+        await asyncio.gather(notice, return_exceptions=True)
+
+
 async def demo(path):
     journal = Journal(path)
     gates = {key: asyncio.Event() for key in ('a', 'b')}
@@ -282,30 +319,34 @@ async def demo(path):
         await gates[key].wait()
         finished[key].set()
         return dict(value={'a': 11, 'b': 22}[key])
-    run = Run(journal, 'r1', lookup)
-    closing = None
+    run, closing = None, None
     try:
+        run = Run(journal, 'r1', lookup)
         for call_id, ordinal, key in (('c1', 0, 'a'), ('c2', 1, 'b')):
             run.args_delta('r1', call_id, ordinal, '{"key":"')
             run.args_delta('r1', call_id, ordinal, key + '"}')
             run.call_ready('r1', call_id)
-        await asyncio.gather(*(event.wait() for event in started.values()))
+        await await_notice(started['a'], run.tasks['c1'])
+        await await_notice(started['b'], run.tasks['c2'])
         gates['b'].set()
-        await finished['b'].wait()
+        await await_notice(finished['b'], run.tasks['c2'])
         run.chunk('r1', '我已经查到')
         closing = asyncio.create_task(run.finish('disconnected'))
-        await run.admission_closed.wait()
+        await await_notice(run.admission_closed, closing)
         gates['a'].set()
         view = await closing
         return dict(events=copy_json(journal.rows), transcript=view)
     finally:
-        if closing is not None and not closing.done():
-            closing.cancel()
-            await asyncio.gather(closing, return_exceptions=True)
-        for task in run.tasks.values():
+        owned = list(run.tasks.values()) if run is not None else []
+        if run is not None:
+            run.sealed = True
+            run.admission_closed.set()
+        if closing is not None:
+            owned.append(closing)
+        for task in owned:
             if not task.done():
                 task.cancel()
-        await asyncio.gather(*run.tasks.values(), return_exceptions=True)
+        await asyncio.gather(*owned, return_exceptions=True)  # Also retrieve already-failed closing.
         journal.close()
 ```
 
@@ -319,12 +360,12 @@ import asyncio, json, tempfile
 from pathlib import Path
 from closure_demo import demo
 with tempfile.TemporaryDirectory(prefix='closure-demo-') as folder:
-    result = asyncio.run(asyncio.wait_for(demo(Path(folder) / 'events.jsonl'), 5))
+    result = asyncio.run(demo(Path(folder) / 'events.jsonl'))
     print(json.dumps(result, ensure_ascii=False, indent=2))
 PY
 ```
 
-验证口径（2026-09-16）：Python 3.11.8，macOS arm64，原创 JSONL 文件、两个协作取消的本地工具，未调用模型或业务 API。正式验证从本文抽取 Python，覆盖两工具时序、参数截断/重复键、重复确认、迟到输入、正常终态、用户取消、执行前写入失败、结果写入失败、工具异常，以及关闭文件后的日志重建。日志写入失败阻止新执行或收尾成功；断流主例和错误支路均没有补造 assistant 消息。
+验证口径（2026-09-16）：Python 3.11.8，macOS arm64，原创 JSONL 文件、两个协作取消的本地工具，未调用模型或业务 API。正式验证从本文抽取 Python：原有 11 tests 覆盖两工具时序、参数截断/重复键、重复确认、迟到输入、正常终态、用户取消、执行前/结果写入失败、工具异常和关闭文件后的重建。另有 8 tests / 17 故障场景覆盖两种终态的 write/flush/fsync 失败、用户取消时终态写失败、demo 的 closing 无通知就失败，以及启动、观测、分片、DrainClosed、等待原语以及收尾 close 的二次失败路径。故障注入使用专属临时文件；回归在测试兜底之前断言任务完成、异常已取回、首次异常对象保留，未触发被动 watchdog 或兜底取消。坏日志不追加 DrainClosed 或新结果，断流主例不补造 assistant 消息。
 
 代码有意限定为单事件循环、最多两个调用、受信任的 fixture 事件和本地文件系统；JSONL 回放不是通用畸形/恶意日志校验器。`flush/fsync` 的使用不证明断电、文件截断或跨进程事务安全，也不把日志与远端工具做成原子事务。`budget` 是 `asyncio.wait` 的等待秒数，之后的协作取消与 gather **不提供生产硬时限**；外部强杀/重复取消 owner、非合作工具、后续核实、真实审批与 provider 序列化均未实现。`DrainClosed` 表示本地任务已收集，仍可能带 unknown，不代表所有业务动作都有确定结果。
 
