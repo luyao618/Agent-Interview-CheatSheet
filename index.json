@@ -3803,6 +3803,28 @@
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     },
     {
+      "id": "engineering-0040",
+      "title": "如何用 Prompt Playground 做可复现的对照实验，再判断改动是否能安全接入真实业务？",
+      "file": "engineering-0040-prompt-playground-reproducibility.md",
+      "language": "zh",
+      "category": "engineering",
+      "category_label": "工程化、部署、性能、成本",
+      "tags": [
+        "prompt-playground",
+        "reproducibility",
+        "regression",
+        "sampling",
+        "cache"
+      ],
+      "difficulty": "medium",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-16",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
       "id": "agent-0063",
       "title": "长任务跨多个上下文窗口时，Initializer 与执行 Agent 如何交接并防止过早宣布完成？",
       "category": "agent",
