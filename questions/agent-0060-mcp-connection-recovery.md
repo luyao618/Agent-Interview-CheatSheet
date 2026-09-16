@@ -54,6 +54,10 @@ MCP 客户端怎样做懒连接、重连和能力刷新，避免旧连接事件�
 
 本例有意使用很小的**教学预算**：每个 owner 生命周期最多创建 3 个 client，失败后的名义退避为 1 秒、2 秒；成功连接不会重置这个累计预算。退避函数只推进一个 event-loop turn，记录的是虚拟秒数，不是实测等待时间。一次不稳定刷新批次最多取 3 次清单，稳定发布后下一批重新计数。默认 mock RPC 等待阈值是 0.1 秒；真实产品若采用“稳定运行一段时间后重置”策略，必须另有总预算和禁用/停止检查，不能无条件清零。
 
+取消还要区分来源：RPC task 自身取消，在当前有效连接上返回明确的 `rpc_cancelled` 失败；`owner.stop()` 先使等待方得到 `stopped`；没有 stop 的意外 worker 取消则报告 `owner_cancelled`。终态必须令等待谓词成立，不能只有 `phase=failed` 而没有错误。`ready()` 同时观察状态变化和 worker 完成；即使 worker 在第一条指令前被取消，也会唤醒等待方，不返回假的空成功。
+
+回收阶段采用一个保留的完成 future：首次取消 RPC 后，后续 owner 取消只能延后传播，不能再次取消正在执行 cleanup 的子任务。`settle` 用 `shield` 等待同一个完成对象，显式消费结果；之后无 await 地移除 `rpc_tasks` 登记并更新计数，再重抛延后的取消。只套一次 `shield` 仍会让等待它的 caller 立刻收到取消，因而跳过后续登记清理。client 的释放、owner 的终态通知和已经开始的 stop join 也要保护，包括等待锁时再次被取消的情况。`collected_all` 要检查真实完成与登记一致；done task 仍留集合是收集状态错误，不能误写成 RPC 仍在后台运行，也不能只清集合掩盖它。
+
 MCP 文档建议请求超时与取消处理；Python cancellation 仍是合作式的。本例在超时后取消并 `gather` 已有 mock RPC，迟到返回也不能把已判定的 timeout 改成成功。所有 mock 等待都响应取消；**这不证明任意 SDK、阻塞代码或 OS 资源能在 0.1 秒内回收**。真实 transport 还需有界关闭、资源所有权及必要的外部监督。断线前已发出的工具调用可能结果未知，恢复连接不授权自动重放有副作用的调用。
 
 ### 3. stdio 与 Streamable HTTP 的恢复动作不同
@@ -188,6 +192,7 @@ class Owner:
         self.backoff = backoff or self.virtual_backoff
         self.cv = asyncio.Condition()
         self.wake = asyncio.Event()
+        self.ready_wake = asyncio.Event()
         self.worker = self.current = self.snapshot = self.capabilities = None
         self.generation = self.revision = self.attempts = 0
         self.alive = self.stopped = False
@@ -206,19 +211,42 @@ class Owner:
         return (not self.stopped and self.alive and
                 self.current is client and self.generation == generation)
 
+    def notify(self):
+        self.cv.notify_all()  # Caller holds cv.
+        self.ready_wake.set()
+
     async def ready(self):
-        async with self.cv:
-            if self.stopped:
-                raise Halt('stopped')
-            if self.worker is None:
-                self.worker = asyncio.create_task(self.run())
-            await self.cv.wait_for(lambda: self.snapshot is not None or
-                                   self.error is not None or self.stopped)
-            if self.stopped:
-                raise Halt('stopped')
-            if self.error is not None:
-                raise Halt(self.error)
-            return self.snapshot
+        while True:
+            async with self.cv:
+                if self.stopped:
+                    raise Halt('stopped')
+                if self.worker is None:
+                    self.worker = asyncio.create_task(self.run())
+                    # Also wakes waiters if cancelled before run's first instruction.
+                    self.worker.add_done_callback(lambda _: self.ready_wake.set())
+                if self.worker.done() and self.error is None:
+                    self.error = ('owner_cancelled' if self.worker.cancelled()
+                                  else 'owner_terminated')
+                    self.phase = 'failed'
+                if self.error is not None:
+                    raise Halt(self.error)
+                if self.snapshot is not None:
+                    return self.snapshot
+                self.ready_wake.clear()
+            await self.ready_wake.wait()  # Cancelling this waiter does not cancel worker.
+
+    @staticmethod
+    async def settle(future):
+        # Retain ONE shielded completion future. Repeated cancellation is deferred,
+        # never forwarded to the task that is already doing cooperative cleanup.
+        deferred = None
+        while not future.done():
+            try:
+                await asyncio.shield(future)
+            except asyncio.CancelledError as exc:
+                deferred = exc
+        future.result()  # Consume completion, including gather's collected results.
+        return deferred
 
     async def event(self, client, generation, kind):
         if kind not in ('disconnect', 'changed', 'refresh'):
@@ -236,7 +264,7 @@ class Owner:
             self.snapshot = None
             self.phase = 'disconnected' if kind == 'disconnect' else 'refreshing'
             self.wake.set()
-            self.cv.notify_all()
+            self.notify()
             return True
 
     async def rpc(self, awaitable):
@@ -247,15 +275,41 @@ class Owner:
             done, _ = await asyncio.wait({task}, timeout=self.rpc_seconds)
             if not done:
                 raise Transient('rpc_timeout')
+            if task.cancelled():
+                raise Halt('rpc_cancelled')  # Child cancellation is not owner.stop.
             return task.result()
         finally:
             if not task.done():
                 task.cancel()
-            await asyncio.gather(task, return_exceptions=True)
+            deferred = await self.settle(asyncio.gather(task, return_exceptions=True))
+            # Completion was consumed; no await can interrupt this bookkeeping.
             self.rpc_tasks.remove(task)
             self.collected += 1
+            if deferred is not None:
+                raise deferred
+
+    async def release(self, client, generation):
+        try:
+            async with self.cv:
+                if self.current is client and self.generation == generation:
+                    self.alive = False
+                    self.snapshot = self.capabilities = None
+                    self.phase = 'backoff'
+                    self.notify()
+        finally:
+            client.close()
+
+    async def finish(self, failure):
+        async with self.cv:
+            self.alive = False
+            self.current = self.snapshot = self.capabilities = None
+            if not self.stopped:
+                self.error = failure or 'owner_terminated'
+            self.phase = 'stopped' if self.stopped else 'failed'
+            self.notify()
 
     async def run(self):
+        failure = None
         try:
             while True:
                 async with self.cv:
@@ -276,7 +330,7 @@ class Owner:
                     self.snapshot = self.capabilities = None
                     self.phase = 'connecting'
                     self.wake.clear()
-                    self.cv.notify_all()
+                    self.notify()
                 try:
                     caps = await self.rpc(client.initialize())
                     async with self.cv:
@@ -288,7 +342,7 @@ class Owner:
                             raise Halt('invalid_capabilities')
                         self.capabilities = caps
                         self.phase = 'refreshing'
-                        self.cv.notify_all()
+                        self.notify()
                     refreshes = 0
                     while True:
                         async with self.cv:
@@ -312,7 +366,7 @@ class Owner:
                                 raise Halt('invalid_tools')
                             self.snapshot = Snapshot(generation, revision, caps, tools)
                             self.phase = 'ready'
-                            self.cv.notify_all()
+                            self.notify()
                         refreshes = 0
                         await self.wake.wait()
                 except Exception as exc:
@@ -322,28 +376,23 @@ class Owner:
                         raise  # Fatal errors belong only to the live attempt.
                     # Invalidated attempt errors and classified transients retry.
                 finally:
-                    async with self.cv:
-                        if self.current is client and self.generation == generation:
-                            self.alive = False
-                            self.snapshot = self.capabilities = None
-                            self.phase = 'backoff'
-                            self.cv.notify_all()
-                    client.close()
+                    deferred = await self.settle(asyncio.create_task(
+                        self.release(client, generation)))
+                    if deferred is not None:
+                        raise deferred
                 if self.attempts < self.max_attempts:
                     delay = min(2 ** (self.attempts - 1), 4)
                     self.delays.append(delay)
                     await self.backoff(delay)
         except asyncio.CancelledError:
+            failure = 'owner_cancelled'
             raise
         except Exception as exc:
-            async with self.cv:
-                self.error = str(exc)
+            failure = str(exc) or type(exc).__name__
         finally:
-            async with self.cv:
-                self.alive = False
-                self.current = self.snapshot = self.capabilities = None
-                self.phase = 'stopped' if self.stopped else 'failed'
-                self.cv.notify_all()
+            deferred = await self.settle(asyncio.create_task(self.finish(failure)))
+            if deferred is not None:
+                raise deferred
 
     async def stop(self):
         async with self.cv:
@@ -354,11 +403,13 @@ class Owner:
                 self.phase = 'stopped'
                 if self.worker is not None:
                     self.worker.cancel()
-                self.cv.notify_all()
+                self.notify()
             worker = self.worker
         if worker is not None:
             # A caller must await stop; it is never a detached shutdown request.
-            await asyncio.shield(asyncio.gather(worker, return_exceptions=True))
+            deferred = await self.settle(asyncio.gather(worker, return_exceptions=True))
+            if deferred is not None:
+                raise deferred
 
     def collected_all(self):
         return (not self.rpc_tasks and self.spawned == self.collected and
@@ -398,7 +449,7 @@ if __name__ == '__main__':
 
 2026-09-16 在 Python 3.11.8 本地运行得到：`before_refresh={phase: refreshing, generation: 2, registry: null, old_event_accepted: false, current_is_b: true}`，随后 `new_generation=2, new_schema=slug-v2, connection_attempts=2, virtual_delays=[1]`。这里的 `null` 是 JSON 对不可用注册表的投影，与“已成功发现零个工具”的空 tuple 不同。
 
-配套原创测试执行 `python3 test_recovery.py`，**28 个测试通过**：包括 A 迟到事件、双重身份校验、共享启动与取消等待者、100 条通知合并为一次额外刷新、刷新期间变更导致候选作废、初始化期间通知、重连与刷新预算耗尽、致命故障、三种阶段停止、超时后迟到返回、旧 RPC 错误归属、能力变化、坏/空清单及输入不可变性。测试的 31 个 owner、73/73 个 RPC task、40 个已创建 client 和 12 个等待任务在 event-loop teardown 前完成收集；两次 demo 也各自执行独立的清理断言，不计入这些测试计数。完整测试与复跑脚本随单题 review 证据提供。
+配套原创测试执行 `python3 test_recovery.py`，**28 个测试通过**：包括 A 迟到事件、双重身份校验、共享启动与取消等待者、100 条通知合并为一次额外刷新、刷新期间变更导致候选作废、初始化期间通知、重连与刷新预算耗尽、致命故障、三种阶段停止、超时后迟到返回、旧 RPC 错误归属、能力变化、坏/空清单及输入不可变性。测试的 31 个 owner、73/73 个 RPC task、40 个已创建 client 和 12 个等待任务在 event-loop teardown 前完成收集；两次 demo 也各自执行独立的清理断言，不计入这些测试计数。新增 `python3 test_cancellation.py` 的 **9 条正向取消回归也通过**，覆盖 RPC 初始化/清单各自取消、多等待者终止、timeout cleanup 中 stop、重复 owner 取消、stop caller 被取消、cleanup 异常结果消费、worker 首指令前取消及释放 client 时等待锁的取消。同一套 9 条断言对旧 fixture 为 9 failures / exit1，对修复版为 0 failures / exit0；原 28 tests 文件未改且全部通过。断言先观察等待方结束、cleanup 已完成、结果已消费及登记一致，再进入补救 finally；cleanup 异常消费的诊断限定 CPython 3.11。旧 reviewer 脚本 exit0 代表复现缺陷成功，不是修复通过。完整红/绿记录及复跑脚本随单题 review 证据提供。
 
 `ready()` 返回的 snapshot 离开锁后就可能过期。调用方要在真正执行入口复核当前 binding，不能拿“曾经 ready”当执行许可。真实适配器还需处理分页期间的服务端变更、丢通知、权限过滤及在途结果；没有服务端版本/一致性保证时，本地 revision 只描述**已观察到的变化**，不能证明远端 schema 从未变过。
 
