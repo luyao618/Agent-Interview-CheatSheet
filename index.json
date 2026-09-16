@@ -3488,6 +3488,29 @@
       "updated": "2026-09-16",
       "answers_count": 1,
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
+      "id": "engineering-0030",
+      "title": "如何让 Agent 使用外部服务却拿不到原始凭据，并在轮换与网络重定向时维持边界？",
+      "file": "engineering-0030-credential-proxy-egress.md",
+      "language": "zh",
+      "category": "engineering",
+      "category_label": "工程化、部署、性能、成本",
+      "tags": [
+        "credentials",
+        "proxy",
+        "egress",
+        "rotation",
+        "redirection",
+        "redaction"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-16",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     }
   ]
 }
