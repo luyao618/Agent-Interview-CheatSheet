@@ -3580,6 +3580,29 @@
       "language": "zh",
       "category_label": "Agent 架构与编排",
       "answers_count": 1
+    },
+    {
+      "id": "agent-0062",
+      "title": "自动续跑 Agent 能否修改自己的目标与预算，如何用输入来源而非文本声明判断授权？",
+      "category": "agent",
+      "tags": [
+        "goal",
+        "budget",
+        "provenance",
+        "authorization",
+        "delegation",
+        "prompt-injection"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "status": "published",
+      "updated": "2026-09-16",
+      "file": "agent-0062-goal-budget-origin-authorization.md",
+      "language": "zh",
+      "category_label": "Agent 架构与编排",
+      "answers_count": 1
     }
   ]
 }
