@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：169** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：170** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -44,7 +44,7 @@
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
 | 🧠 大模型基础与原理 | 19 | [查看 ↓](#-大模型基础与原理) |
-| 🤖 Agent 架构与编排 | 65 | [查看 ↓](#-agent-架构与编排) |
+| 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 35 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 6 | [查看 ↓](#-ai-产品与落地) |
@@ -81,7 +81,7 @@
 
 ## 🤖 Agent 架构与编排
 
-<sub>分类 ID：`agent` ｜ 共 65 题</sub>
+<sub>分类 ID：`agent` ｜ 共 66 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -150,6 +150,7 @@
 | 63 | [长任务跨多个上下文窗口时，Initializer 与执行 Agent 如何交接并防止过早宣布完成？](questions/agent-0063-long-task-initializer-handoff.md) | 🟡 进阶 |
 | 64 | [ACE、MCE 与 Meta-Harness 的优化对象有何不同，怎样设计一个可验证的上下文优化实验？](questions/agent-0064-automated-context-optimization.md) | 🔴 困难 |
 | 65 | [如何把 Agent 工作流设计变成搜索问题，ADAS 与 AFlow 的探索、评估和停止条件如何不同？](questions/agent-0065-workflow-search-aflow-adas.md) | 🔴 困难 |
+| 66 | [递归改进与进化搜索怎样优化 Harness，为什么保留多样候选可能优于只保留当前最高分？](questions/agent-0066-recursive-harness-evolution.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
