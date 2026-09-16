@@ -4068,6 +4068,28 @@
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
       "updated": "2026-09-17",
       "answers_count": 1
+    },
+    {
+      "id": "product-0012",
+      "title": "AI 产品应怎样决定拟人化程度，并在模型升级时处理人格变化、依恋与用户控制权？",
+      "file": "product-0012-ai-persona-emotional-boundaries.md",
+      "language": "zh",
+      "category": "product",
+      "category_label": "AI 产品与落地",
+      "tags": [
+        "ai-persona",
+        "emotional-boundaries",
+        "identity-transparency",
+        "migration",
+        "user-control"
+      ],
+      "difficulty": "medium",
+      "role": "pm",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "updated": "2026-09-17",
+      "answers_count": 1
     }
   ]
 }
