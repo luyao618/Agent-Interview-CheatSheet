@@ -3625,6 +3625,28 @@
       "language": "zh",
       "category_label": "工程化、部署、性能、成本",
       "answers_count": 1
+    },
+    {
+      "id": "engineering-0033",
+      "title": "Coding Agent 如何在用户或其他 Agent 同时改文件时安全编辑，何时用 patch、精确替换或 AST？",
+      "category": "engineering",
+      "tags": [
+        "coding-agent",
+        "optimistic-concurrency",
+        "file-editing",
+        "patch",
+        "ast"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "status": "published",
+      "updated": "2026-09-16",
+      "file": "engineering-0033-agent-editing-version-guards.md",
+      "language": "zh",
+      "category_label": "工程化、部署、性能、成本",
+      "answers_count": 1
     }
   ]
 }
