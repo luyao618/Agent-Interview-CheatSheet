@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：165** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：166** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -46,7 +46,7 @@
 | 🧠 大模型基础与原理 | 19 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 62 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
-| ⚙️ 工程化、部署、性能、成本 | 34 | [查看 ↓](#-工程化部署性能成本) |
+| ⚙️ 工程化、部署、性能、成本 | 35 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 6 | [查看 ↓](#-ai-产品与落地) |
 
 ---
@@ -205,7 +205,7 @@
 
 ## ⚙️ 工程化、部署、性能、成本
 
-<sub>分类 ID：`engineering` ｜ 共 34 题</sub>
+<sub>分类 ID：`engineering` ｜ 共 35 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -243,6 +243,7 @@
 | 32 | [同一 Agent 内核接不同 provider、CLI 和 Web 时，怎样设计协议投影并安全迁移历史？](questions/engineering-0032-provider-protocol-session-migration.md) | 🔴 困难 |
 | 33 | [Coding Agent 如何在用户或其他 Agent 同时改文件时安全编辑，何时用 patch、精确替换或 AST？](questions/engineering-0033-agent-editing-version-guards.md) | 🟡 进阶 |
 | 34 | [工具命令超出一次调用时限后，exec、wait 与宿主进程应怎样管理输出、超时和清理责任？](questions/engineering-0034-exec-wait-process-ownership.md) | 🔴 困难 |
+| 35 | [如何测试非确定性的 Agent 运行时，让回放、故障注入与性质测试各自覆盖真实风险？](questions/engineering-0035-nondeterministic-agent-testing.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
