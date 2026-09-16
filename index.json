@@ -3715,6 +3715,28 @@
       "answers_count": 1
     },
     {
+      "id": "engineering-0036",
+      "title": "团队如何把 AI 编程经验写成适用且可检查的规则，避免照搬他人环境与阻碍合理 MVP？",
+      "category": "engineering",
+      "tags": [
+        "ai-coding",
+        "rules",
+        "acceptance-contract",
+        "scope",
+        "authorization"
+      ],
+      "difficulty": "medium",
+      "role": "both",
+      "contributor": "CX-Dev",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai LA-050；GitHub Docs；OWASP Authorization Cheat Sheet",
+      "status": "published",
+      "updated": "2026-09-16",
+      "file": "engineering-0036-agent-rules-executable-contracts.md",
+      "language": "zh",
+      "category_label": "工程化、部署、性能、成本",
+      "answers_count": 1
+    },
+    {
       "id": "agent-0063",
       "title": "长任务跨多个上下文窗口时，Initializer 与执行 Agent 如何交接并防止过早宣布完成？",
       "category": "agent",
