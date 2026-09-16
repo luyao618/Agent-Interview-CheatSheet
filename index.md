@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：186** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：187** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -46,7 +46,7 @@
 | 🧠 大模型基础与原理 | 20 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
-| ⚙️ 工程化、部署、性能、成本 | 42 | [查看 ↓](#-工程化部署性能成本) |
+| ⚙️ 工程化、部署、性能、成本 | 43 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 14 | [查看 ↓](#-ai-产品与落地) |
 
 ---
@@ -210,7 +210,7 @@
 
 ## ⚙️ 工程化、部署、性能、成本
 
-<sub>分类 ID：`engineering` ｜ 共 42 题</sub>
+<sub>分类 ID：`engineering` ｜ 共 43 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -256,6 +256,7 @@
 | 40 | [如何用 Prompt Playground 做可复现的对照实验，再判断改动是否能安全接入真实业务？](questions/engineering-0040-prompt-playground-reproducibility.md) | 🟡 进阶 |
 | 41 | [让 AI 生成界面时，如何把审美与交互目标变成可验证规格，并覆盖真实输入和边界状态？](questions/engineering-0041-ai-ui-specification-verification.md) | 🟡 进阶 |
 | 42 | [AI 生成的代码功能正确但数据量一大就变慢，如何验收复杂度并选择更合适的数据结构？](questions/engineering-0042-ai-code-complexity-validation.md) | 🟡 进阶 |
+| 43 | [AI 产品承诺删除用户数据时，怎样覆盖原文、日志、缓存、向量、备份及训练用途？](questions/engineering-0043-ai-data-deletion-lineage.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
