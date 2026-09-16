@@ -3557,6 +3557,29 @@
       "language": "zh",
       "category_label": "Agent 架构与编排",
       "answers_count": 1
+    },
+    {
+      "id": "agent-0061",
+      "title": "父 Agent 如何持久管理子 Agent 的关系、隔离、取消与结果回收，避免孤儿任务？",
+      "category": "agent",
+      "tags": [
+        "subagent",
+        "supervision",
+        "durable-graph",
+        "lifecycle",
+        "isolation",
+        "recovery"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "status": "published",
+      "updated": "2026-09-16",
+      "file": "agent-0061-subagent-supervision-durable-graph.md",
+      "language": "zh",
+      "category_label": "Agent 架构与编排",
+      "answers_count": 1
     }
   ]
 }

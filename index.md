@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：160** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：161** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -44,7 +44,7 @@
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
 | 🧠 大模型基础与原理 | 19 | [查看 ↓](#-大模型基础与原理) |
-| 🤖 Agent 架构与编排 | 60 | [查看 ↓](#-agent-架构与编排) |
+| 🤖 Agent 架构与编排 | 61 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 31 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 6 | [查看 ↓](#-ai-产品与落地) |
@@ -81,7 +81,7 @@
 
 ## 🤖 Agent 架构与编排
 
-<sub>分类 ID：`agent` ｜ 共 60 题</sub>
+<sub>分类 ID：`agent` ｜ 共 61 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -145,6 +145,7 @@
 | 58 | [工具发现与注册动态变化时，怎样保证一次采样看到的工具菜单和实际分发能力一致？](questions/agent-0058-tool-catalog-sampling-snapshot.md) | 🔴 困难 |
 | 59 | [上下文压缩后仍溢出时，如何证明重试取得了进展，并区分 UI 占用率与下一次请求预算？](questions/agent-0059-compaction-progress-proof.md) | 🔴 困难 |
 | 60 | [MCP 客户端怎样做懒连接、重连和能力刷新，避免旧连接事件破坏新状态？](questions/agent-0060-mcp-connection-recovery.md) | 🟡 进阶 |
+| 61 | [父 Agent 如何持久管理子 Agent 的关系、隔离、取消与结果回收，避免孤儿任务？](questions/agent-0061-subagent-supervision-durable-graph.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
