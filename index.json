@@ -3669,6 +3669,28 @@
       "language": "zh",
       "category_label": "工程化、部署、性能、成本",
       "answers_count": 1
+    },
+    {
+      "id": "engineering-0035",
+      "title": "如何测试非确定性的 Agent 运行时，让回放、故障注入与性质测试各自覆盖真实风险？",
+      "category": "engineering",
+      "tags": [
+        "runtime-testing",
+        "deterministic-replay",
+        "fault-injection",
+        "property-testing",
+        "streaming"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "status": "published",
+      "updated": "2026-09-16",
+      "file": "engineering-0035-nondeterministic-agent-testing.md",
+      "language": "zh",
+      "category_label": "工程化、部署、性能、成本",
+      "answers_count": 1
     }
   ]
 }
