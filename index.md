@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：166** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：167** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -44,7 +44,7 @@
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
 | 🧠 大模型基础与原理 | 19 | [查看 ↓](#-大模型基础与原理) |
-| 🤖 Agent 架构与编排 | 62 | [查看 ↓](#-agent-架构与编排) |
+| 🤖 Agent 架构与编排 | 63 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 35 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 6 | [查看 ↓](#-ai-产品与落地) |
@@ -81,7 +81,7 @@
 
 ## 🤖 Agent 架构与编排
 
-<sub>分类 ID：`agent` ｜ 共 62 题</sub>
+<sub>分类 ID：`agent` ｜ 共 63 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -147,6 +147,7 @@
 | 60 | [MCP 客户端怎样做懒连接、重连和能力刷新，避免旧连接事件破坏新状态？](questions/agent-0060-mcp-connection-recovery.md) | 🟡 进阶 |
 | 61 | [父 Agent 如何持久管理子 Agent 的关系、隔离、取消与结果回收，避免孤儿任务？](questions/agent-0061-subagent-supervision-durable-graph.md) | 🔴 困难 |
 | 62 | [自动续跑 Agent 能否修改自己的目标与预算，如何用输入来源而非文本声明判断授权？](questions/agent-0062-goal-budget-origin-authorization.md) | 🔴 困难 |
+| 63 | [长任务跨多个上下文窗口时，Initializer 与执行 Agent 如何交接并防止过早宣布完成？](questions/agent-0063-long-task-initializer-handoff.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
