@@ -3759,6 +3759,29 @@
       "language": "zh",
       "category_label": "Agent 架构与编排",
       "answers_count": 1
+    },
+    {
+      "id": "agent-0066",
+      "title": "递归改进与进化搜索怎样优化 Harness，为什么保留多样候选可能优于只保留当前最高分？",
+      "category": "agent",
+      "tags": [
+        "recursive-improvement",
+        "stop",
+        "quality-diversity",
+        "archive",
+        "harness",
+        "evaluation"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "status": "published",
+      "updated": "2026-09-16",
+      "file": "agent-0066-recursive-harness-evolution.md",
+      "language": "zh",
+      "category_label": "Agent 架构与编排",
+      "answers_count": 1
     }
   ]
 }
