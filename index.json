@@ -4046,6 +4046,28 @@
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
       "updated": "2026-09-17",
       "answers_count": 1
+    },
+    {
+      "id": "product-0011",
+      "title": "AI 质量未下降却在初次犯错或蜜月期后流失，如何区分算法厌恶、期望落差和真实价值不足？",
+      "file": "product-0011-algorithm-aversion-retention.md",
+      "language": "zh",
+      "category": "product",
+      "category_label": "AI 产品与落地",
+      "tags": [
+        "algorithm-aversion",
+        "expectations",
+        "retention",
+        "cohort-analysis",
+        "causal-inference"
+      ],
+      "difficulty": "medium",
+      "role": "pm",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "updated": "2026-09-17",
+      "answers_count": 1
     }
   ]
 }
