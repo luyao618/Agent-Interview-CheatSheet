@@ -3465,6 +3465,29 @@
       "updated": "2026-09-16",
       "answers_count": 1,
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
+      "id": "engineering-0029",
+      "title": "命令策略、沙箱与人工审批各管什么，如何避免组合命令和授权范围扩大绕过检查？",
+      "file": "engineering-0029-command-policy-sandbox-approval.md",
+      "language": "zh",
+      "category": "engineering",
+      "category_label": "工程化、部署、性能、成本",
+      "tags": [
+        "command-policy",
+        "sandbox",
+        "approval",
+        "parsing",
+        "authorization",
+        "scope"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-16",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     }
   ]
 }

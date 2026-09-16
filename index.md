@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：156** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：157** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -46,7 +46,7 @@
 | 🧠 大模型基础与原理 | 19 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 59 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
-| ⚙️ 工程化、部署、性能、成本 | 28 | [查看 ↓](#-工程化部署性能成本) |
+| ⚙️ 工程化、部署、性能、成本 | 29 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 6 | [查看 ↓](#-ai-产品与落地) |
 
 ---
@@ -202,7 +202,7 @@
 
 ## ⚙️ 工程化、部署、性能、成本
 
-<sub>分类 ID：`engineering` ｜ 共 28 题</sub>
+<sub>分类 ID：`engineering` ｜ 共 29 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -234,6 +234,7 @@
 | 26 | [模型流尚未结束就执行工具时，如何在断流或取消后保持 tool call/result 记录完整？](questions/engineering-0026-streaming-tool-transcript-closure.md) | 🔴 困难 |
 | 27 | [多层 Agent 配置如何确定有效值，整项替换、字段合并和强制策略分别应如何设计？](questions/engineering-0027-layered-config-resolution.md) | 🟡 进阶 |
 | 28 | [Agent Hook 与 Guard 的拒绝、异常、超时语义怎样定义，怎样防止后续插件撤销拒绝？](questions/engineering-0028-hook-guard-failure-contract.md) | 🔴 困难 |
+| 29 | [命令策略、沙箱与人工审批各管什么，如何避免组合命令和授权范围扩大绕过检查？](questions/engineering-0029-command-policy-sandbox-approval.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
