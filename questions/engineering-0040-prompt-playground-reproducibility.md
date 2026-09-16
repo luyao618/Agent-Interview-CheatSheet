@@ -77,28 +77,26 @@ answers:
 
 ### 4. 用失配反例验证实验装置
 
-完整记录应能导出、重新读取并按同一契约评分。示例校验 prompt/模型/参数/数据集/评分器版本、有效请求及响应指纹，要求成对矩阵完整、样本 ID 与来源调用不重复，并拒绝把缓存命中或 mock 结果标成真实执行。未知程序错误和写出故障继续传播，不变成“对照通过”。
+完整记录应能导出、重新读取并按同一契约评分。示例校验 prompt/模型/参数/数据集/评分器版本，先对**保存的有效请求与重新渲染的预期请求**做保留 JSON 类型的完整比较，再要求两者的指纹与响应 request_sha 一致。Python 普通字典相等会把 `True` 与 `1.0` 视为相等，不能用于这道门禁；只将响应指纹对着预期请求，也会漏掉保存记录的篡改。成对矩阵必须完整，样本槽和调用编号必须是整数且不重复，缓存命中或 mock 不能标成真实执行。未知程序错误和写出故障继续传播，不变成“对照通过”。
 
-缓存反例先对 C3/11 运行 P1，再请求 P2。故意不完整的 key 只含 input/model/params，漏掉 prompt 等请求身份；第二次取回 P1 响应时，其 request_sha 与 P2 请求不符，被拦住。改为完整有效请求的 canonical hash 后，P2 取得自己的 track，重复同一请求才返回已标注的缓存结果。以下为实际代码摘录，依赖完整复跑包中的 helper，不是供应商 SDK 或生产缓存实现：
+缓存反例先对 C3/11 运行 P1，再请求 P2。故意不完整的 key 只含 input/model/params，漏掉 prompt 等请求身份；第二次取回 P1 响应时，其 request_sha 与 P2 请求不符，被拦住。改为完整有效请求的 canonical hash 后，P2 取得自己的 track，重复同一请求才返回已标注的缓存结果。导出后的记录仍须执行下面的三方绑定，不能以运行时曾检查过为由跳过重验。以下为实际代码摘录，依赖完整包中的 helper，不是供应商 SDK 或生产缓存实现；canonical 只接受 JSON 原生类型、字符串对象键及有限数字，按固定 Python 序列化契约比较，保留数组顺序并忽略对象键顺序：
 
 ```python
-def observe(m, pid, case, slot, adapter, cache, enabled=False):
-    request=render_request(m,pid,case,slot)
-    try:
-        response,hit=cache.resolve(request,adapter,enabled)
-    except TimeoutError:
-        response=dict(request_sha=fingerprint(request),model_revision=MODEL['revision'],source='preprogrammed',
-                      source_call=adapter.calls,status='error',output=None,error='timeout')
-        hit=False
-    require(response['request_sha'] == fingerprint(request), 'cache_or_response_request_mismatch')
-    require(response['model_revision'] == m['model']['revision'], 'response_model_mismatch')
-    return dict(prompt_id=pid,case_id=case['id'],slot=slot,request=request,response=response,
-                response_cache_hit=hit,provider_prefix_cache='not_applicable',tokens=None,cost=None)
+def bind_request(saved, expected, response_sha):
+    saved_json = canonical(saved)
+    expected_json = canonical(expected)
+    require(saved_json == expected_json, 'effective_request_mismatch')
+    saved_sha = sha(saved_json.encode('utf-8'))
+    expected_sha = sha(expected_json.encode('utf-8'))
+    require(type(response_sha) is str and response_sha == saved_sha == expected_sha,
+            'response_request_mismatch')
 ```
 
 同一 `probe_cache.py` 对不完整 key 实跑 **3 tests / 1 failure / 0 errors，exit 1**，对完整 key **3 tests 全绿，exit 0**。probe 与输入/prompt/响应表 hash 不变；它揭示的是人工设置的缓存键缺陷，不能说成发现了 promptfoo 或真实 provider 的 bug。
 
-另有 **32 tests 通过**，覆盖版本/参数漂移、bool 冒充数值、实际请求与响应失配、缺失/重复样本和来源调用、缓存伪装新样本、虚构用量/真实执行、调用预算、超时、JSON 边界、输出写失败与导出重读。32 次输入不变检查通过，测试根和导出临时根均已清理。解压原创证据包可运行 `python3 test_playground.py`、`python3 run_experiment.py`；原始红绿 stderr、全部有效请求和原始 mock 输出随包保留。
+最初的 **32 tests 虽全绿，对 bool 冒充数值的检查只覆盖 manifest，漏测保存请求中的同类类型失配**。独立 reviewer 仅将保存请求 top_p 改为 true，保持 manifest 和响应不变，就复现了仍获评分的真实校验器缺陷。其原样三项测试在旧版为 exit 1 / 1 failure / 0 errors，修复后 exit 0 / 3 pass；没有改断言或输入掩盖失败。这项 P2 与上面的人工缓存键反例分开记录，也不代表发生了生产发布绕过。
+
+修复后原 32 项、reviewer 原样 3 项及新增 14 项边界测试通过，覆盖嵌套参数/消息/模型、保存请求与响应指纹同时被改、数值别名、非 JSON 容器、缺字段、数组顺序、合法对象键重排及相邻计数类型；原输入、两版 prompt、回复表、32 项测试和缓存 probe 的 bytes 均未改。原 24 条对照、超时阻断和便携验证通过，临时根已清理。包内 README 提供新旧 reviewer 回归和完整复跑命令；原始失败、全部有效请求和 mock 输出均保留。新增套件首跑时的共享临时目录观测误报另作 harness 记录，不计为请求失配缺陷。
 
 ### 5. 从实验装置走向业务验收
 
