@@ -3958,6 +3958,28 @@
       "updated": "2026-09-17",
       "answers_count": 1,
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
+      "id": "product-0007",
+      "title": "面对重度用户和不确定推理成本，AI 产品应如何设计订阅、按量与分层套餐？",
+      "file": "product-0007-ai-pricing-unit-economics.md",
+      "language": "zh",
+      "category": "product",
+      "category_label": "AI 产品与落地",
+      "tags": [
+        "pricing",
+        "unit-economics",
+        "subscriptions",
+        "usage-based",
+        "billing-transparency"
+      ],
+      "difficulty": "medium",
+      "role": "pm",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-17",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     }
   ]
 }
