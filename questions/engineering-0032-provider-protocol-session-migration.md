@@ -90,13 +90,13 @@ answers:
 
 ### 5. 协议输出与诊断分流，错误也要有边界
 
-CLI 机器模式需要明确 framing。JSON 本身不是分帧协议；重复写多个 JSON 值不会自动构成合法单个 JSON 文档。本例每帧一行，正文换行由 JSON 编码转义，协议流只输出 `prepared/error` 对象，诊断流只写不含正文的类型提示。CPython 的 parser 默认行为也不等于严格契约，本例额外拒绝重复键、非有限数和非法 UTF-8。
+CLI 机器模式需要明确 framing。JSON 本身不是分帧协议；重复写多个 JSON 值不会自动构成合法单个 JSON 文档。本例每帧一行，正文换行由 JSON 编码转义，协议流只输出 `prepared/error` 对象，诊断流只写不含正文的类型提示。CPython 的 parser 默认行为也不等于严格契约，本例额外拒绝重复键、非有限数和非法 UTF-8。Python 3.11 默认的整数转换长度防护还可能抛出普通 `ValueError`，不只 `JSONDecodeError`；本例仅在 JSON 解码范围将 `ValueError`（也涵盖 Unicode 解码错误）和 `RecursionError` 归一化为 `invalid_json`，保留整数长度防护及回调主动抛出的具体 `Refused`。后续投影的编程错误、写出/诊断故障不进入这个捕获范围。
 
 这是应用协议设计原则，也有具体标准实例：MCP **2025-06-18** 的 stdio transport 要求以换行分隔有效协议消息，stdout 不得混入非 MCP 消息，stderr 可写日志。**本例 `protocol=1` 不是 MCP 或 JSON-RPC 实现**。Web 的 HTTP/SSE/WebSocket 也须遵守各自 framing 和内容类型，诊断去服务端日志或单独定义的诊断消息，不能把调试文字插入事件数据。分流之外还需脱敏、访问与保留策略；将秘密从 stdout 移到 stderr 并不消除泄露。
 
 语义预检失败可以在写入前变成一个完整错误帧；真正的流写入失败可能已经留下部分字节，此时不应追加第二个“重试成功”或“已回滚”帧。本例短写会报错，诊断在完整协议帧之后失败也会传播错误，但不会撤回已写帧；调用方不能据异常盲目重放。消费者需检查完整帧，真实 transport 还需请求 ID、去重/对账与重连策略。
 
-下面的原创代码与附件中受 37 个测试验证的 fixture 逐字一致。保存为 `migration_fixture.py`，运行 `python3 migration_fixture.py` 即可独立复跑两例；只创建并清理脚本所在目录下的专属临时文件。
+下面的原创代码与附件中通过原 37 个测试及新增解析边界回归的 fixture 逐字一致。保存为 `migration_fixture.py`，运行 `python3 migration_fixture.py` 即可独立复跑两例；只创建并清理脚本所在目录下的专属临时文件。
 
 <details>
 <summary>展开历史读取、兼容检查、两个 adapter 与协议帧实现</summary>
@@ -191,7 +191,9 @@ def read_history(raw, reader):
         raise Refused('history_too_large')
     try:
         doc = json.loads(raw.decode('utf-8'), object_pairs_hook=pairs, parse_constant=invalid_constant)
-    except (UnicodeError, json.JSONDecodeError, RecursionError) as exc:
+    except (ValueError, RecursionError) as exc:
+        # Decode errors and the integer digit guard are ValueError subclasses.
+        # Keep this catch local to decoding; preserve Refused callback codes.
         raise Refused('invalid_json') from exc
     keys(doc, ('format', 'version', 'events'))
     if doc['format'] != 'fixture-history' or type(doc['version']) is not int or doc['version'] != 1:
@@ -407,6 +409,8 @@ if __name__ == '__main__':
 </details>
 
 2026-09-16 实跑结果：**37 个测试通过，0 failures / 0 errors**；37 个测试临时目录已删除，每个测试均检查当前输入字节未被投影/拒绝路径改写。测试内及汇总 demo 分别核对其临时目录已删除。独立 demo 输出 `same_namespace_private_preserved=true`、`foreign_private_without_ack=loss_ack_required`、`migration_mode=lossy_fork`、`old_reader_error=upgrade_required`、`new_reader_visible_ids=["a1"]`；成功输出一行协议和一行诊断，`source_unchanged=true`。附件另覆盖未知关键事件伪称可忽略、私有前缀变化、计划篡改、解析错误、短写和诊断失败等边界。
+
+本次修订另以默认 **4300 位**整数转换限制复跑 **5000 位 version（5051 bytes）**和普通 `version=2（52 bytes）`：旧实现的前者抛 `ValueError` 且两输出流为空，后者已有 `unsupported_container_version` 错误帧；修复后分别输出 `invalid_json` 与 `unsupported_container_version`，均恰好一条 error 帧、无 request 前缀、源文件不变。原样 reviewer 2 项断言从 1 failure 变为全部通过；新增 9 项边界断言从 2 failures 变为全部通过，并保留深层 JSON、具体回调拒绝及编程/写出异常传播检查。原 37 项与便携复跑无回归。没有提高或关闭整数限制；历史文件字节上限不能替代解析器自身的资源防护。
 
 这些结果仅验证本地转换、拒绝和输出契约。没有调用真实 provider/SDK、迁移用户会话或修改运行时配置；没有验证供应商接纳、原生续接保真、流式网络、持久提交、远端 exactly-once 或计费。`prepared` 明确只表示本地准备完成，未表示发送成功。
 
