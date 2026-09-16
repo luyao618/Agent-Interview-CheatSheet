@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：175** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：176** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -46,7 +46,7 @@
 | 🧠 大模型基础与原理 | 20 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
-| ⚙️ 工程化、部署、性能、成本 | 39 | [查看 ↓](#-工程化部署性能成本) |
+| ⚙️ 工程化、部署、性能、成本 | 40 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 6 | [查看 ↓](#-ai-产品与落地) |
 
 ---
@@ -210,7 +210,7 @@
 
 ## ⚙️ 工程化、部署、性能、成本
 
-<sub>分类 ID：`engineering` ｜ 共 39 题</sub>
+<sub>分类 ID：`engineering` ｜ 共 40 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -253,6 +253,7 @@
 | 37 | [AI 同时写实现和测试时，怎样独立验收一次变更，并防止发布混入未完成或未声明的内容？](questions/engineering-0037-ai-change-independent-review.md) | 🟡 进阶 |
 | 38 | [AI 协助排查故障时，如何从猜测修复转成可证伪假设，并避免吞错掩盖问题？](questions/engineering-0038-evidence-driven-ai-debugging.md) | 🟡 进阶 |
 | 39 | [AI 协作跨会话后，如何保留决策理由、被否决方案和用户可读的发布记录？](questions/engineering-0039-durable-agent-decision-records.md) | 🟡 进阶 |
+| 40 | [如何用 Prompt Playground 做可复现的对照实验，再判断改动是否能安全接入真实业务？](questions/engineering-0040-prompt-playground-reproducibility.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
