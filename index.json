@@ -3691,6 +3691,28 @@
       "language": "zh",
       "category_label": "工程化、部署、性能、成本",
       "answers_count": 1
+    },
+    {
+      "id": "agent-0063",
+      "title": "长任务跨多个上下文窗口时，Initializer 与执行 Agent 如何交接并防止过早宣布完成？",
+      "category": "agent",
+      "tags": [
+        "initializer",
+        "long-running-agent",
+        "handoff",
+        "acceptance",
+        "evidence"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "status": "published",
+      "updated": "2026-09-16",
+      "file": "agent-0063-long-task-initializer-handoff.md",
+      "language": "zh",
+      "category_label": "Agent 架构与编排",
+      "answers_count": 1
     }
   ]
 }
