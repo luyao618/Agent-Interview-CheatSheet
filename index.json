@@ -3825,6 +3825,28 @@
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     },
     {
+      "id": "engineering-0041",
+      "title": "让 AI 生成界面时，如何把审美与交互目标变成可验证规格，并覆盖真实输入和边界状态？",
+      "file": "engineering-0041-ai-ui-specification-verification.md",
+      "language": "zh",
+      "category": "engineering",
+      "category_label": "工程化、部署、性能、成本",
+      "tags": [
+        "ui-specification",
+        "design-tokens",
+        "composition",
+        "keyboard",
+        "accessibility"
+      ],
+      "difficulty": "medium",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-16",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
       "id": "agent-0063",
       "title": "长任务跨多个上下文窗口时，Initializer 与执行 Agent 如何交接并防止过早宣布完成？",
       "category": "agent",
