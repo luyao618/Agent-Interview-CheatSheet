@@ -4002,6 +4002,28 @@
       "updated": "2026-09-17",
       "answers_count": 1,
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
+      "id": "product-0009",
+      "title": "怎样让用户对 AI 的信任与真实能力匹配，答案旁的置信度和引用应如何设计？",
+      "file": "product-0009-trust-calibration-confidence.md",
+      "language": "zh",
+      "category": "product",
+      "category_label": "AI 产品与落地",
+      "tags": [
+        "trust-calibration",
+        "uncertainty",
+        "citations",
+        "evidence",
+        "appropriate-reliance"
+      ],
+      "difficulty": "medium",
+      "role": "pm",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "updated": "2026-09-17",
+      "answers_count": 1
     }
   ]
 }

@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：180** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：181** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -47,7 +47,7 @@
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 42 | [查看 ↓](#-工程化部署性能成本) |
-| 📦 AI 产品与落地 | 8 | [查看 ↓](#-ai-产品与落地) |
+| 📦 AI 产品与落地 | 9 | [查看 ↓](#-ai-产品与落地) |
 
 ---
 
@@ -261,7 +261,7 @@
 
 ## 📦 AI 产品与落地
 
-<sub>分类 ID：`product` ｜ 共 8 题</sub>
+<sub>分类 ID：`product` ｜ 共 9 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -273,6 +273,7 @@
 | 6 | [AI 产品上线后如何建立评测与迭代闭环？](questions/product-0006-ai-product-iteration-loop.md) | 🔴 困难 |
 | 7 | [面对重度用户和不确定推理成本，AI 产品应如何设计订阅、按量与分层套餐？](questions/product-0007-ai-pricing-unit-economics.md) | 🟡 进阶 |
 | 8 | [AI 产品的感知等待与真实延迟如何区分，怎样验证进度反馈有效且不制造虚假努力？](questions/product-0008-perceived-latency-experiments.md) | 🟡 进阶 |
+| 9 | [怎样让用户对 AI 的信任与真实能力匹配，答案旁的置信度和引用应如何设计？](questions/product-0009-trust-calibration-confidence.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
