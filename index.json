@@ -3603,6 +3603,28 @@
       "language": "zh",
       "category_label": "Agent 架构与编排",
       "answers_count": 1
+    },
+    {
+      "id": "engineering-0032",
+      "title": "同一 Agent 内核接不同 provider、CLI 和 Web 时，怎样设计协议投影并安全迁移历史？",
+      "category": "engineering",
+      "tags": [
+        "protocol-projection",
+        "history-migration",
+        "schema-evolution",
+        "provider-state",
+        "compatibility"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "status": "published",
+      "updated": "2026-09-16",
+      "file": "engineering-0032-provider-protocol-session-migration.md",
+      "language": "zh",
+      "category_label": "工程化、部署、性能、成本",
+      "answers_count": 1
     }
   ]
 }
