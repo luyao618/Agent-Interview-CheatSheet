@@ -3534,6 +3534,29 @@
       "updated": "2026-09-16",
       "answers_count": 1,
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
+      "id": "agent-0060",
+      "title": "MCP 客户端怎样做懒连接、重连和能力刷新，避免旧连接事件破坏新状态？",
+      "category": "agent",
+      "tags": [
+        "mcp",
+        "connection-lifecycle",
+        "recovery",
+        "generation",
+        "capability-snapshot",
+        "reliability"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "status": "published",
+      "updated": "2026-09-16",
+      "file": "agent-0060-mcp-connection-recovery.md",
+      "language": "zh",
+      "category_label": "Agent 架构与编排",
+      "answers_count": 1
     }
   ]
 }
