@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：182** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：183** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -47,7 +47,7 @@
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 42 | [查看 ↓](#-工程化部署性能成本) |
-| 📦 AI 产品与落地 | 10 | [查看 ↓](#-ai-产品与落地) |
+| 📦 AI 产品与落地 | 11 | [查看 ↓](#-ai-产品与落地) |
 
 ---
 
@@ -261,7 +261,7 @@
 
 ## 📦 AI 产品与落地
 
-<sub>分类 ID：`product` ｜ 共 10 题</sub>
+<sub>分类 ID：`product` ｜ 共 11 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -275,6 +275,7 @@
 | 8 | [AI 产品的感知等待与真实延迟如何区分，怎样验证进度反馈有效且不制造虚假努力？](questions/product-0008-perceived-latency-experiments.md) | 🟡 进阶 |
 | 9 | [怎样让用户对 AI 的信任与真实能力匹配，答案旁的置信度和引用应如何设计？](questions/product-0009-trust-calibration-confidence.md) | 🟡 进阶 |
 | 10 | [AI 产品点踩很少能否说明用户满意，如何校准复制、重生成、编辑等隐式反馈？](questions/product-0010-implicit-feedback-selection-bias.md) | 🟡 进阶 |
+| 11 | [AI 质量未下降却在初次犯错或蜜月期后流失，如何区分算法厌恶、期望落差和真实价值不足？](questions/product-0011-algorithm-aversion-retention.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
