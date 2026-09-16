@@ -3759,6 +3759,28 @@
       "answers_count": 1
     },
     {
+      "id": "engineering-0038",
+      "title": "AI 协助排查故障时，如何从猜测修复转成可证伪假设，并避免吞错掩盖问题？",
+      "category": "engineering",
+      "tags": [
+        "ai-debugging",
+        "hypothesis",
+        "observability",
+        "exception",
+        "counterfactual"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "contributor": "CX-Dev",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai LA-052；Google SRE；CPython v3.11.8；OWASP Logging Cheat Sheet",
+      "status": "published",
+      "updated": "2026-09-16",
+      "file": "engineering-0038-evidence-driven-ai-debugging.md",
+      "language": "zh",
+      "category_label": "工程化、部署、性能、成本",
+      "answers_count": 1
+    },
+    {
       "id": "agent-0063",
       "title": "长任务跨多个上下文窗口时，Initializer 与执行 Agent 如何交接并防止过早宣布完成？",
       "category": "agent",
