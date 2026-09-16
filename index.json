@@ -3936,6 +3936,28 @@
       "language": "zh",
       "category_label": "Agent 架构与编排",
       "answers_count": 1
+    },
+    {
+      "id": "engineering-0042",
+      "title": "AI 生成的代码功能正确但数据量一大就变慢，如何验收复杂度并选择更合适的数据结构？",
+      "file": "engineering-0042-ai-code-complexity-validation.md",
+      "language": "zh",
+      "category": "engineering",
+      "category_label": "工程化、部署、性能、成本",
+      "tags": [
+        "complexity",
+        "deduplication",
+        "hash-table",
+        "top-k",
+        "benchmarking"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-17",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     }
   ]
 }
