@@ -3130,6 +3130,28 @@
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     },
     {
+      "id": "llm-0020",
+      "title": "用强弱模型筛选合成训练题时，如何控制难度并证明数据有效而非筛选器偏好？",
+      "file": "llm-0020-synthetic-data-difficulty-verification.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "synthetic-data",
+        "curriculum",
+        "verifier",
+        "contamination",
+        "evaluation"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "CX-Dev",
+      "updated": "2026-09-16",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai LA-049；Autodata；Self-Instruct"
+    },
+    {
       "id": "engineering-0019",
       "title": "把生图 API 做成产品时，任务状态、取消、重试、计费和资源交付应怎样约定？",
       "file": "engineering-0019-async-generation-job-contract.md",
