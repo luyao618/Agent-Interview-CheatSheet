@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：184** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：185** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -47,7 +47,7 @@
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 42 | [查看 ↓](#-工程化部署性能成本) |
-| 📦 AI 产品与落地 | 12 | [查看 ↓](#-ai-产品与落地) |
+| 📦 AI 产品与落地 | 13 | [查看 ↓](#-ai-产品与落地) |
 
 ---
 
@@ -261,7 +261,7 @@
 
 ## 📦 AI 产品与落地
 
-<sub>分类 ID：`product` ｜ 共 12 题</sub>
+<sub>分类 ID：`product` ｜ 共 13 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -277,6 +277,7 @@
 | 10 | [AI 产品点踩很少能否说明用户满意，如何校准复制、重生成、编辑等隐式反馈？](questions/product-0010-implicit-feedback-selection-bias.md) | 🟡 进阶 |
 | 11 | [AI 质量未下降却在初次犯错或蜜月期后流失，如何区分算法厌恶、期望落差和真实价值不足？](questions/product-0011-algorithm-aversion-retention.md) | 🟡 进阶 |
 | 12 | [AI 产品应怎样决定拟人化程度，并在模型升级时处理人格变化、依恋与用户控制权？](questions/product-0012-ai-persona-emotional-boundaries.md) | 🟡 进阶 |
+| 13 | [AI 生成标签使内容评价下降时，如何同时做到透明披露、质量证明和可验证的产品实验？](questions/product-0013-ai-disclosure-value-perception.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
 
