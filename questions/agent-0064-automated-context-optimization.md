@@ -41,11 +41,11 @@ ACE、MCE 与 Meta-Harness 的优化对象有何不同？请为同一任务设�
 
 这些设计空间有重叠：MCE 可以产出代码，Meta-Harness 的某次编辑也可能只改提示文本。应比较各自的可编辑面、优化接口和反馈循环，不能按文件是 Markdown 还是 Python 来划绝对边界。
 
-ACE 论文的条目包括标识、内容和统计信息，Curator delta 与后续确定性合并分工。固定仓库的 `Curator.curate` 调用 `apply_curator_operations`，实现支持 ADD/UPDATE/MERGE/DELETE。论文所说的 grow-and-refine 包含扩展与去重，不能描述为“手册永远不会变厚”。确定性合并只能保证给定操作的执行语义，不能证明反思内容正确。
+ACE 论文的条目包括标识、内容和统计信息，Curator delta 与后续确定性合并分工。**论文机制、可解析的操作名与固定代码的执行能力要分开。** 在固定仓库 `82709de…` 中，`Curator.curate` 调用根目录 `playbook_utils.py::apply_curator_operations`；后者 `:100–104` 把 UPDATE/MERGE/DELETE 等列为未实现 TODO，`:143` 起实际操作分支仅 ADD。`curator.py:391–401` 虽列出多种操作名，却注明仅 ADD 完整支持，并只检查 ADD 必填字段，不能据此声称其它内容修改已实现。另一个 `update_bullet_counts` 函数能更新 helpful/harmful 统计，也不等于 Curator 的 UPDATE 内容操作。论文 §3.2 的 grow-and-refine、计数更新和去重作为论文机制解释，不能直接当作此固定实现的完整能力，更不能描述为“手册永远不会变厚”。
 
 MCE 的 context function 写作 `c(x) = (F_k ∘ … ∘ F_1)(x; ρ)`：`ρ` 是静态组件，如知识、规则、示例或代码库；`F` 是检索、选择、过滤、组合等动态算子。**生成这些产物的 skill，与生成出来的上下文函数，是不同对象。** meta-agent 从历史 `(skill, context, train 指标, validation 指标)` 中作 agentic crossover；base-agent 用训练轨迹优化产物。固定实现 `mce/main.py::run_iteration` 将训练批次和最后的 validation 评估分开。验证集参与选机制后，就不能再冒充未使用的最终测试集。
 
-Meta-Harness 论文让 proposer 通过文件系统按需读取经验，而非把全部历史塞入一条 Prompt；反馈来自 search set，test 结果不反馈给 proposer。固定作者代码的 `finalize_run` 先冻结本轮，再评估 frontier/baseline 的 test 结果。搜索结果是一组候选；哪一个适合部署，要结合约束与验收选定。其官方 README 还注明公开代码经过整理、测试范围有限，不能把“参考实现存在”当生产可靠性证明。
+Meta-Harness 论文让 proposer 通过文件系统按需读取经验，而非把全部历史塞入一条 Prompt；**论文实验约定**是反馈来自 search set，test 结果不反馈给 proposer。固定作者代码 `0cbc31e…` 的 `finalize_run` 在 test 前仅写入 `in_progress`（`:310–319`）；成功路径在评估和结果完整性检查通过后才写 `complete`（`:353–356`）。失败路径在 `:349–351` 退出并留下 `in_progress`，而 `run_evolve:395–402` 只拒绝 `complete`，因此失败后同一 run 的演化不会被这个检查拦截；源码也允许重试 `--test`。这不是“开始 test 就已冻结演化”的保证，更不能把本文 mock 的严格 frozen/一次 test 协议归给它。搜索结果仍需按约束与验收选定；官方 README 的有限测试范围也不能当作生产可靠性证明。
 
 ### 2. 根据故障选择可编辑面
 
@@ -82,7 +82,7 @@ Meta-Harness 论文让 proposer 通过文件系统按需读取经验，而非把
 
 每组预算相同：2 次提案、54 次 mock 样本执行、每候选上下文不超过 128 UTF-8 bytes。54 = `(基线 + 两个候选) × (8 train + 6 validation + 2 critical) + 6 test`。断言计数器核实执行器实际被调用 54 次；没有用第二次隐式执行去生成反馈。失败提案消耗提案额度；评估批次预先扣额度，执行错误保留为错误并停止，不冒充通过。本例只有有限同步步骤，没有后台任务或自动重试。
 
-接受规则为：critical 必须 2/2，基线已经答对的 validation 样本不能退化；在合格候选里计算“validation 正确数最大、上下文 bytes 最小”的 Pareto 前沿，预先约定从中优先选正确数最高者，平分再选更短者。冻结候选 hash 后才开启一次 test，之后禁止继续搜索或重复读取 test 评分。
+接受规则为：critical 必须 2/2，基线已经答对的 validation 样本不能退化；在合格候选里计算“validation 正确数最大、上下文 bytes 最小”的 Pareto 前沿，预先约定从中优先选正确数最高者，平分再选更短者。**本文 mock 自行规定**冻结候选 hash 后才开启一次 test，执行失败也消耗该机会，之后禁止继续搜索或重复读取 test 评分；这不复现或证明上述作者参考实现的失败后冻结行为。
 
 2026-09-16，Python 3.11.8 的真实本地结果：
 
@@ -137,6 +137,6 @@ def pareto(rows):
 ## 参考
 
 - 洛小山，《AI 产品从入门到精通》learn-ai，固定 `5a933d287dd5074cc1543cb849146f3261d47521`：[slides/11-3.html](https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/11-3.html)、[slides/interview-5.html](https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/interview-5.html)。仅作学习线索；未搬运 AGPL 正文、代码或图片。
-- Qizheng Zhang 等，[*Agentic Context Engineering: Evolving Contexts for Self-Improving Language Models*，arXiv:2510.04618v1](https://arxiv.org/html/2510.04618v1)，2025-10-06，§3、§4；[官方 Curator 源码](https://github.com/ace-agent/ace/blob/82709de050e1db6e6ef2f07bcb0393560b94992a/ace/core/curator.py)，固定 `82709de050e1db6e6ef2f07bcb0393560b94992a`，`Curator.curate`。
+- Qizheng Zhang 等，[*Agentic Context Engineering: Evolving Contexts for Self-Improving Language Models*，arXiv:2510.04618v1](https://arxiv.org/html/2510.04618v1)，2025-10-06，§3、§4；[官方 Curator 源码](https://github.com/ace-agent/ace/blob/82709de050e1db6e6ef2f07bcb0393560b94992a/ace/core/curator.py) 的 `Curator.curate` 与 `:391` 限定；[playbook_utils.py](https://github.com/ace-agent/ace/blob/82709de050e1db6e6ef2f07bcb0393560b94992a/playbook_utils.py) 的 `apply_curator_operations:96`、TODO `:100` 和 ADD 分支 `:143`，固定 `82709de050e1db6e6ef2f07bcb0393560b94992a`。
 - Haoran Ye 等，[*Meta Context Engineering via Agentic Skill Evolution*，arXiv:2601.21557v1](https://arxiv.org/html/2601.21557v1)，2026-01-29，§3.1–3.4、§4；[官方训练与验证编排](https://github.com/metaevo-ai/meta-context-engineering/blob/c4b7a7c2ce3ffc4bf4a74c52d2dd8a9a8fb14c30/mce/main.py)，固定 `c4b7a7c2ce3ffc4bf4a74c52d2dd8a9a8fb14c30`，`run_iteration`。
-- Yoonho Lee 等，[*Meta-Harness: End-to-End Optimization of Model Harnesses*，arXiv:2603.28052v1](https://arxiv.org/html/2603.28052v1)，2026-03-30，§3–4；[官方参考实现](https://github.com/stanford-iris-lab/meta-harness/blob/0cbc31e97c9e6d24232d1dc754827c02e1ec415c/reference_examples/text_classification/meta_harness.py)，固定 `0cbc31e97c9e6d24232d1dc754827c02e1ec415c`，`finalize_run`；[README 的测试范围说明](https://github.com/stanford-iris-lab/meta-harness/blob/0cbc31e97c9e6d24232d1dc754827c02e1ec415c/README.md)。三份作者实现均只读，未安装或执行。
+- Yoonho Lee 等，[*Meta-Harness: End-to-End Optimization of Model Harnesses*，arXiv:2603.28052v1](https://arxiv.org/html/2603.28052v1)，2026-03-30，§3–4；[官方参考实现](https://github.com/stanford-iris-lab/meta-harness/blob/0cbc31e97c9e6d24232d1dc754827c02e1ec415c/reference_examples/text_classification/meta_harness.py)，固定 `0cbc31e97c9e6d24232d1dc754827c02e1ec415c`，`finalize_run:286` 的状态写入/失败分支及 `run_evolve:395` 的 complete 检查；[README 的测试范围说明](https://github.com/stanford-iris-lab/meta-harness/blob/0cbc31e97c9e6d24232d1dc754827c02e1ec415c/README.md)。三份作者实现均只读，未安装或执行。
