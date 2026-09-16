@@ -3737,6 +3737,28 @@
       "answers_count": 1
     },
     {
+      "id": "engineering-0037",
+      "title": "AI 同时写实现和测试时，怎样独立验收一次变更，并防止发布混入未完成或未声明的内容？",
+      "category": "engineering",
+      "tags": [
+        "ai-coding",
+        "code-review",
+        "acceptance",
+        "integration",
+        "release"
+      ],
+      "difficulty": "medium",
+      "role": "both",
+      "contributor": "CX-Dev",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai LA-051；Google Engineering Practices；Git v2.46.0文档",
+      "status": "published",
+      "updated": "2026-09-16",
+      "file": "engineering-0037-ai-change-independent-review.md",
+      "language": "zh",
+      "category_label": "工程化、部署、性能、成本",
+      "answers_count": 1
+    },
+    {
       "id": "agent-0063",
       "title": "长任务跨多个上下文窗口时，Initializer 与执行 Agent 如何交接并防止过早宣布完成？",
       "category": "agent",
