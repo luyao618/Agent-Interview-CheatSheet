@@ -4090,6 +4090,28 @@
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
       "updated": "2026-09-17",
       "answers_count": 1
+    },
+    {
+      "id": "product-0013",
+      "title": "AI 生成标签使内容评价下降时，如何同时做到透明披露、质量证明和可验证的产品实验？",
+      "category": "product",
+      "tags": [
+        "ai-disclosure",
+        "label-effects",
+        "blind-evaluation",
+        "provenance",
+        "product-experiments"
+      ],
+      "difficulty": "medium",
+      "role": "pm",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "file": "product-0013-ai-disclosure-value-perception.md",
+      "language": "zh",
+      "category_label": "AI 产品与落地",
+      "updated": "2026-09-17",
+      "answers_count": 1
     }
   ]
 }
