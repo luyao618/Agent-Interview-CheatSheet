@@ -3511,6 +3511,29 @@
       "updated": "2026-09-16",
       "answers_count": 1,
       "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
+    },
+    {
+      "id": "engineering-0031",
+      "title": "Agent 插件从发现到执行经过哪些信任状态，如何防范路径穿越、同名抢占和更新投毒？",
+      "file": "engineering-0031-plugin-marketplace-trust.md",
+      "language": "zh",
+      "category": "engineering",
+      "category_label": "工程化、部署、性能、成本",
+      "tags": [
+        "plugins",
+        "supply-chain",
+        "provenance",
+        "lifecycle",
+        "capabilities",
+        "updates"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-09-16",
+      "answers_count": 1,
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）"
     }
   ]
 }
