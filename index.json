@@ -3713,6 +3713,29 @@
       "language": "zh",
       "category_label": "Agent 架构与编排",
       "answers_count": 1
+    },
+    {
+      "id": "agent-0064",
+      "title": "ACE、MCE 与 Meta-Harness 的优化对象有何不同，怎样设计一个可验证的上下文优化实验？",
+      "category": "agent",
+      "tags": [
+        "context-engineering",
+        "ace",
+        "mce",
+        "meta-harness",
+        "evaluation",
+        "pareto"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "status": "published",
+      "updated": "2026-09-16",
+      "file": "agent-0064-automated-context-optimization.md",
+      "language": "zh",
+      "category_label": "Agent 架构与编排",
+      "answers_count": 1
     }
   ]
 }
