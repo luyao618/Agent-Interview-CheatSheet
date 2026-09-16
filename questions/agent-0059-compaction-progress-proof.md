@@ -39,6 +39,10 @@ answers:
 
 压缩提案还必须匹配它读取的原请求快照。若期间用户插话、工具定义或模型发生变化，不能把旧提案覆盖到新上下文。本例在本地锁内比较请求 key 并提交；key 包含世代、完整输入、模型/encoding/版本和预算。hash 用于本地比对，不认证压缩插件身份，也不证明持久化成功。
 
+错误归属与准入本身也必须使用同一快照：在一个锁区间内校验 `failed_key` 并把**被校验的那个 key** 加入 rejected；不能先校验一次、再重新读取另一个 key 登记。准入判断和返回的 receipt 共用同一 meter，receipt 的 `checked_key` 必须等于 `meter.key`。本例先取得观察值，再在锁内复核；期间 key 改变就返回 `stale_overflow` 或 `stale_snapshot`，不会把新输入当作旧错误的恢复目标。
+
+这项复核还覆盖压缩领取前、替换完成后、模型切换前后以及最终熔断前。压缩回调保持锁外；已经合法领取的旧快照压缩会计入尝试数，但迟到结果不能覆盖新输入，也不能据旧结果熔断新请求。receipt 只证明它标记的快照在检查时满足本地条件；返回后若输入改变，发送方仍须匹配该 key，不能用旧 ready 包装新请求。
+
 ### 2. 当前请求、未来余量与 UI 各算什么
 
 | 数量 | 来源与口径 | 用途与限制 |
@@ -186,90 +190,138 @@ class Planner:
 
     def meter(self, history=None):
         with self._lock:
-            c=self.contract
-            payload=canonical(dict(**self.fixed, history=self.history if history is None else history,
-                                   user=self.user,tools=self.tools,serializer='synthetic-json-v1'))
-            tokens=len(self.encoders[c.encoding].encode(payload, disallowed_special=()))
-            headroom=c.window-tokens-c.output-c.safety
-            return dict(key=digest(dict(payload=payload,contract=asdict(c),generation=self.generation)),
-                        generation=self.generation, model=c.model, encoding=c.encoding,
-                        input_tokens=tokens,window=c.window,output=c.output,safety=c.safety,
-                        tool_margin=c.tool_margin,headroom=headroom,
-                        request_fit=headroom >= 0,planning_fit=headroom >= c.tool_margin)
+            return self._meter_locked(history)
+
+    def _meter_locked(self, history=None):
+        # Caller holds _lock; no external callbacks in this snapshot calculation.
+        c=self.contract
+        payload=canonical(dict(**self.fixed, history=self.history if history is None else history,
+                               user=self.user,tools=self.tools,serializer='synthetic-json-v1'))
+        tokens=len(self.encoders[c.encoding].encode(payload, disallowed_special=()))
+        headroom=c.window-tokens-c.output-c.safety
+        return dict(key=digest(dict(payload=payload,contract=asdict(c),generation=self.generation)),
+                    generation=self.generation, model=c.model, encoding=c.encoding,
+                    input_tokens=tokens,window=c.window,output=c.output,safety=c.safety,
+                    tool_margin=c.tool_margin,headroom=headroom,
+                    request_fit=headroom >= 0,planning_fit=headroom >= c.tool_margin)
 
     def change_user(self, text):
         with self._lock:
             self.user=text  # models a new host input arriving while a proposal is being made
 
     def compact_once(self, compactor):
+        return self._compact_once(compactor)[0]
+
+    def _compact_once(self, compactor, expected_key=None):
+        # Return the committed snapshot along with the outcome, never sample it later.
         with self._lock:
-            before=self.meter()
+            before=self._meter_locked()
+            if expected_key is not None and expected_key != before['key']:
+                self.events.append({'event':'stale_input'})
+                return False,before
             if self.circuit or self.compactions >= self.max_compactions or before['key'] in self.attempted:
                 self.events.append({'event':'compaction_limit'})
-                return False
+                return False,before
             self.compactions += 1
             self.attempted.add(before['key'])
             source_history=self.history
         try:
             proposal=compactor(source_history,before['key'])  # bounded, trusted local mock
         except Exception as exc:
-            self.events.append({'event':'compactor_error','type':type(exc).__name__})
-            return False
+            with self._lock:
+                self.events.append({'event':'compactor_error','type':type(exc).__name__})
+                return False,self._meter_locked()
         with self._lock:
+            current=self._meter_locked()
             if (not isinstance(proposal,Proposal) or type(proposal.success) is not bool or
                     not proposal.success or type(proposal.history) is not str):
                 self.events.append({'event':'invalid_or_failed_proposal'})
-                return False
-            if proposal.source_key != before['key'] or self.meter()['key'] != before['key']:
+                return False,current
+            if proposal.source_key != before['key'] or current['key'] != before['key']:
                 self.events.append({'event':'stale_proposal'})
-                return False
+                return False,current
             if proposal.history == source_history:
                 self.events.append({'event':'no_content_change','generation':self.generation})
-                return False
-            after=self.meter(proposal.history)
+                return False,current
+            after=self._meter_locked(proposal.history)
             if after['input_tokens'] >= before['input_tokens']:
                 self.events.append({'event':'no_token_reduction'})
-                return False
+                return False,current
             self.history=proposal.history
             self.generation += 1  # only committed, reducing replacement advances this counter
             self.events.append(dict(event='replaced',generation=self.generation,
                                     before=before['input_tokens'],after=after['input_tokens']))
-            return True
+            return True,self._meter_locked()
+
+    def _receipt_locked(self, status, meter):
+        # Decision and receipt share this exact locked snapshot; no second meter call.
+        if status == 'local_budget_ready':
+            assert meter['planning_fit'] and meter['key'] not in self.rejected and not self.circuit
+        return dict(status=status,checked_key=meter['key'],meter=deepcopy(meter),
+                    compactions=self.compactions,switches=self.switches,events=deepcopy(self.events))
+
+    def _unchanged_locked(self, observed, expected_key):
+        current=self._meter_locked()
+        return current, observed['key'] == current['key'] == expected_key
 
     def prepare(self, compactor, cause='proactive', fallback=None, failed_key=None):
-        # A single recovery driver calls prepare; callback may update user through the lock.
-        if cause not in ('proactive','context_overflow'):
-            return self.result('not_context_overflow')
-        if self.circuit:
-            return self.result('circuit_open')
-        if cause == 'context_overflow':
-            if failed_key != self.meter()['key']:
-                return self.result('stale_overflow')
-            self.rejected.add(self.meter()['key'])
+        # One recovery driver. Optimistic observations are revalidated under _lock.
+        observed=self.meter()
+        with self._lock:
+            m,unchanged=self._unchanged_locked(observed,observed['key'])
+            if cause not in ('proactive','context_overflow'):
+                return self._receipt_locked('not_context_overflow',m)
+            if self.circuit:
+                return self._receipt_locked('circuit_open',m)
+            if cause == 'context_overflow':
+                if not unchanged or failed_key != m['key']:
+                    return self._receipt_locked('stale_overflow',m)
+                self.rejected.add(m['key'])  # validate and register ONE locked key
+            elif not unchanged:
+                return self._receipt_locked('stale_snapshot',m)
+            expected_key=m['key']
         for _ in range(self.max_compactions + 1):
-            m=self.meter()
-            if m['planning_fit'] and m['key'] not in self.rejected:
-                return self.result('local_budget_ready')
-            if not self.compact_once(compactor):
-                break
-        # fallback is supplied by the trusted host as a preauthorized fictional contract.
-        if fallback is not None and self.switches < 1:
+            observed=self.meter()
             with self._lock:
+                m,unchanged=self._unchanged_locked(observed,expected_key)
+                if not unchanged:
+                    return self._receipt_locked('stale_snapshot',m)
+                if m['planning_fit'] and m['key'] not in self.rejected:
+                    return self._receipt_locked('local_budget_ready',m)
+            applied,committed=self._compact_once(compactor,expected_key)
+            if not applied:
+                break
+            expected_key=committed['key']
+        # fallback is supplied by the trusted host as a preauthorized fictional contract.
+        observed=self.meter()
+        with self._lock:
+            m,unchanged=self._unchanged_locked(observed,expected_key)
+            if not unchanged:
+                return self._receipt_locked('stale_snapshot',m)
+            if fallback is not None and self.switches < 1:
                 if fallback.encoding in self.encoders and fallback.window > self.contract.window:
                     previous=self.contract.model
                     self.contract=fallback
                     self.switches += 1
                     self.events.append(dict(event='model_switched',previous=previous,
                                             current=fallback.model,generation=self.generation))
-        m=self.meter()  # different encoding, output reserve and denominator must all be re-read
-        if m['planning_fit'] and m['key'] not in self.rejected:
-            return self.result('local_budget_ready')
-        self.circuit=True
-        return self.result('circuit_open')
+                    expected_key=self._meter_locked()['key']
+        observed=self.meter()  # reprice the new contract before the final locked gate
+        with self._lock:
+            m,unchanged=self._unchanged_locked(observed,expected_key)
+            if not unchanged:
+                return self._receipt_locked('stale_snapshot',m)
+            if m['planning_fit'] and m['key'] not in self.rejected:
+                return self._receipt_locked('local_budget_ready',m)
+            self.circuit=True
+            return self._receipt_locked('circuit_open',m)
 
     def result(self, status):
-        return dict(status=status,meter=self.meter(),compactions=self.compactions,
-                    switches=self.switches,events=deepcopy(self.events))
+        with self._lock:
+            m=self._meter_locked()
+            if status == 'local_budget_ready' and (self.circuit or not m['planning_fit'] or m['key'] in self.rejected):
+                status='circuit_open' if self.circuit else 'stale_snapshot'
+            return self._receipt_locked(status,m)
 
     def ui_view(self, previous):
         m=self.meter()
@@ -301,6 +353,8 @@ if __name__ == '__main__':
 ### 4. 真实验证的范围
 
 CPython3.11.8 / tiktoken0.9.0 上的原创 `test_compaction.py` **17个测试通过**。覆盖 no-op、同 Token 数的不同文本、膨胀候选、失败/异常/非法提案、真实替换与固定部分不变、减量仍超限、过期提案、压缩中新增输入、工具 schema 增长、工具余量与当前预算的区别、等号边界、输出限制、模型切换重计量、旧模型迟到错误、二次 overflow 与计数不重置、非上下文错误和过期 UI。
+
+独立 review 另发现了“校验 A、登记 B”和“判断 A ready、返回 B meter”两个确定切点。新增 `test_snapshot_receipts.py` **10个测试通过**，包括这两处、切换后的最终准入、压缩领取前、替换后、熔断前、锁外回调及 receipt 的时效/独立副本。最终回归的7个输入线程均在断言前 join；相同10项测试在旧代码上为8失败，修复后0失败，旧证据保留。reviewer 原始脚本以“缺陷存在”为通过条件：它们在旧代码上 exit 0，在修复后输出正确状态并因原缺陷断言不成立而 exit 1；这些退出码不能代替正向回归的通过记录。
 
 测试只对合成输入操作；一项文件测试在专属临时目录写入合成历史，核对前后文件字节和集合未变化，并确认目录删除。两个公开 BPE 缓存文件的 SHA-256 与 tiktoken0.9.0 固定源码中的 expected_hash 一致，测试加载时阻止 cache-miss 下载。**收费模型调用数为0**；所有压缩与 overflow 都是本地 mock，不是供应商观测。
 
@@ -337,5 +391,5 @@ CPython3.11.8 / tiktoken0.9.0 上的原创 `test_compaction.py` **17个测试通
 以下来源核对于2026-09-16；正文和实验均独立编写。课程是学习线索，未将其项目判断、阈值或数字当作通用产品保证，没有搬运 AGPL 正文、代码或图片。
 
 - 洛小山《AI 产品从入门到精通》，learn-ai 固定 commit `5a933d287dd5074cc1543cb849146f3261d47521`：[slides/dsh-4.html](https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/dsh-4.html)（主动/被动与世代线索）、[slides/dsh-9.html](https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/dsh-9.html)（请求计量与 UI 投影）、[slides/12-11.html](https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/12-11.html)（阈值边界与余量）。[LICENSE](https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/LICENSE) 为 AGPL-3.0，只作链接与独立讨论。
-- Mario Zechner / Pi **v0.57.1**，固定 commit `a9cedccdde77e9d765303463d8a6cd11c58f7a7f`：[agent-session.ts](https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/packages/coding-agent/src/core/agent-session.ts) 的 `_checkCompaction`（1673起）区分 threshold/overflow，检查同模型及压缩边界，并限制 overflow 恢复；`_runAutoCompaction`（1837附近）先记录和重建消息再发送完成事件；`getContextUsage`（2925起）在缺少压缩后 usage 时返回 null。[compaction.ts](https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/packages/coding-agent/src/core/compaction/compaction.ts#L209-L215) 的 `shouldCompact` 给出这个版本的具体阈值比较。以上为源码阅读，未运行 Pi；本文的世代/单调减量门禁是原创教学策略，不声称 Pi 使用同一算法。[MIT LICENSE](https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/LICENSE)。
+- Mario Zechner / Pi **v0.57.1**，固定 commit `a9cedccdde77e9d765303463d8a6cd11c58f7a7f`：[agent-session.ts](https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/packages/coding-agent/src/core/agent-session.ts) 的 `_checkCompaction`（1673起）区分 threshold/overflow，检查同模型及压缩边界，并限制 overflow 恢复；`_runAutoCompaction`（1837附近）先记录和重建消息再发送完成事件；`getContextUsage`（2925起）在缺少压缩后 usage 时返回对象，其 `tokens` 与 `percent` 字段为 null，仍保留 `contextWindow`。[compaction.ts](https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/packages/coding-agent/src/core/compaction/compaction.ts#L209-L215) 的 `shouldCompact` 给出这个版本的具体阈值比较。以上为源码阅读，未运行 Pi；本文的世代/单调减量门禁是原创教学策略，不声称 Pi 使用同一算法。[MIT LICENSE](https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/LICENSE)。
 - OpenAI / **tiktoken0.9.0**，tag 对应固定 commit `e35ab0915e37b919946b70947f1d0854196cb72c`：[core.py](https://github.com/openai/tiktoken/blob/e35ab0915e37b919946b70947f1d0854196cb72c/tiktoken/core.py) 的 Encoding.encode；[openai_public.py](https://github.com/openai/tiktoken/blob/e35ab0915e37b919946b70947f1d0854196cb72c/tiktoken_ext/openai_public.py#L75-L120) 定义 cl100k_base/o200k_base 及词表数据校验哈希；[load.py](https://github.com/openai/tiktoken/blob/e35ab0915e37b919946b70947f1d0854196cb72c/tiktoken/load.py#L32-L83) 说明缓存命中与校验路径。[MIT LICENSE](https://github.com/openai/tiktoken/blob/e35ab0915e37b919946b70947f1d0854196cb72c/LICENSE)。库提供编码计数，不提供本例虚构模型的窗口规格或供应商准入保证。
