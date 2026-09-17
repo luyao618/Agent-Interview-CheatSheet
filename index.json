@@ -4178,6 +4178,28 @@
       "category_label": "AI 产品与落地",
       "updated": "2026-09-17",
       "answers_count": 1
+    },
+    {
+      "id": "engineering-0044",
+      "title": "AI 文本检测器的分数能否证明作者身份，如何评估误报并设计合理使用边界？",
+      "category": "engineering",
+      "tags": [
+        "ai-text-detection",
+        "base-rate",
+        "precision-recall",
+        "distribution-shift",
+        "provenance"
+      ],
+      "difficulty": "medium",
+      "role": "both",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "file": "engineering-0044-ai-text-detector-reliability.md",
+      "language": "zh",
+      "category_label": "工程化、部署、性能、成本",
+      "updated": "2026-09-17",
+      "answers_count": 1
     }
   ]
 }
