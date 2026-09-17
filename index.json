@@ -4156,6 +4156,28 @@
       "category_label": "工程化、部署、性能、成本",
       "updated": "2026-09-17",
       "answers_count": 1
+    },
+    {
+      "id": "product-0015",
+      "title": "GEO 与 SEO 的目标有什么不同，怎样评估内容被 AI 引用而不把抓取量当成业务收益？",
+      "category": "product",
+      "tags": [
+        "geo",
+        "seo",
+        "citation-evaluation",
+        "attribution",
+        "content-freshness"
+      ],
+      "difficulty": "medium",
+      "role": "pm",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "洛小山《AI 产品从入门到精通》learn-ai（固定版本见参考）",
+      "file": "product-0015-geo-citation-measurement.md",
+      "language": "zh",
+      "category_label": "AI 产品与落地",
+      "updated": "2026-09-17",
+      "answers_count": 1
     }
   ]
 }
