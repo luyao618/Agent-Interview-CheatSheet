@@ -1,6 +1,6 @@
 # README 截图素材
 
-截图于 2026-09-22，来源为 [AI 面试手记在线站点](https://luyao.blog/ai-interview/)，使用 agent-browser 在独立浏览器会话中拍摄。PNG 为实际页面截图，未修改页面布局。
+截图于 2026-09-22，来源为 [AI 题典在线站点](https://luyao.blog/ai-interview/)，使用 agent-browser 在独立浏览器会话中拍摄。PNG 为实际页面截图，未修改页面布局。
 
 | 文件 | 内容 | 页面地址 | 视口尺寸 |
 | :--- | :--- | :--- | :--- |

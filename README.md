@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="./templates/brand.svg" width="64" height="64" alt="AI 面试手记标志">
+  <img src="./templates/brand.svg" width="64" height="64" alt="AI 题典标志">
 </p>
 
-# AI 面试手记
+# AI 题典
 
 面向开发者与产品经理的开源 AI 面试题库。**先用自己的话回答，再展开参考答案，把理解留成笔记。**
 
@@ -12,7 +12,7 @@
 
 **[开始练习 →](https://luyao.blog/ai-interview/)** · [浏览 Markdown 题目目录](./index.md) · [贡献指南](./CONTRIBUTING.md)
 
-[![AI 面试手记首页：五个方向、推荐起点与学习流程](./assets/screenshots/home.png)](https://luyao.blog/ai-interview/)
+[![AI 题典首页：五个方向、推荐起点与学习流程](./assets/screenshots/home.png)](https://luyao.blog/ai-interview/)
 
 ## 在这里练什么
 
