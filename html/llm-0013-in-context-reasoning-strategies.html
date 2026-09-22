@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。Few-shot、Chain-of-Thought、Self-Consistency 与 Think Tool 分别何时有用，怎样验证额外推理值得？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0013-in-context-reasoning-strategies.md">
+  <meta name="source-sha256" content="ffd067776566c3056da8b46c5508763ed3190211d20f230b7b28907aa120566e">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>Few-shot、Chain-of-Thought、Self-Consistency 与 Think Tool 分别何时有用，怎样验证额外推理值得？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0013</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title"><em>Few-shot</em>、Chain-of-Thought、Self-Consistency 与 Think Tool 分别何时有用，怎样验证额外推理值得？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>进阶</span><span class="meta-dot" aria-hidden="true"></span><span>工程师 / 产品经理</span></div>
+<div class="question-context prose"><p>Few-shot、Chain-of-Thought、Self-Consistency 与 Think Tool 分别何时有用，怎样验证额外推理值得？请用同一业务规则题比较直接回答、示例提示与多样本投票，明确真值、聚合规则和质量—成本对照。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-15</span></p><div class="prose"><p><strong>Few-shot 提供示范，CoT 帮助分解求解，Self-Consistency 聚合多个样本，Think Tool 在工具流程中提供一次整理信息的机会。</strong> 它们改变上下文、推理过程或推理时的计算分配，不等于重新训练权重，也不能保证答案正确。是否值得，应由同一批任务上的真实质量提升、延迟和总成本决定，而不是解释长度或投票一致率。</p>
+<h3 id="1-四种方法分别解决什么问题">1. 四种方法分别解决什么问题</h3>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>机制与适用条件</th>
+<th>代价与不适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Few-shot</td>
+<td>在上下文中给输入—输出示例，让模型识别格式、映射、规则例外；适合仅靠说明仍有歧义的任务</td>
+<td>占输入预算，错误或偏斜示例会带偏结果；简单且已有可靠格式约束的任务不一定需要更多示例</td>
+</tr>
+<tr>
+<td>Chain-of-Thought（CoT）</td>
+<td>原论文用中间求解步骤示范引导复杂算术、规则组合等任务；工程中可用任务检查项或受支持的原生推理能力帮助分解</td>
+<td>更长的生成和推理可能增加延迟，也可能放大错误前提；简单查表、精确计算应优先使用可靠代码或工具</td>
+</tr>
+<tr>
+<td>Self-Consistency</td>
+<td>从同一任务采样多个可能的求解结果，将可比较的最终答案归一化后聚合，降低单次偶然错误的影响</td>
+<td>多次调用付出更多成本；同模型的系统性偏差可能反复出现，无法靠多数票修正共享的错误规则或缺失资料</td>
+</tr>
+<tr>
+<td>Think Tool</td>
+<td>在较长工具链中插入整理已知事实、缺失项和规则约束的步骤，再继续行动</td>
+<td>工具本身不提供新事实，不替代验证器；会增加上下文、日志和调用开销，简单任务可能只是多绕一圈</td>
+</tr>
+</tbody>
+</table></div>
+<p>Few-shot 是 in-context learning 的一种方式：示例改变条件输入，通常不更新参数，边界见 <a href="llm-0008-next-token-training-inference.html">llm-0008</a>。CoT 论文中的公开求解示范，也不能等同于某个模型的私有隐藏推理。<strong>不要把更长的解释当成更正确，也不要求展示模型隐藏推理。</strong> 对产品输出可以要求结论、命中的规则编号、引用证据和缺失字段；这些是可核验的决策记录，不是索取完整内部思考轨迹。</p>
+<p>Self-Consistency 的重点是多样性与聚合，而非把同一条结果复制多份。原论文结合 CoT 采样多个求解输出并选择一致答案；生产系统可以只聚合可见的最终答案，不需要提取隐藏推理。各次请求应避免看到其他候选答案，但<strong>采样过程独立不等于错误统计上独立</strong>：相同权重、提示或知识缺口仍会使样本一起犯错。</p>
+<h3 id="2-think-tool-的作用与时效边界">2. Think Tool 的作用与时效边界</h3>
+<p>Anthropic 2025-03-20 的官方文章讨论了在复杂工具调用中加入 <code>think</code> 步骤的做法：工具不查询外部信息、不改变业务数据库，而是让模型有一个整理当前情况的空间。它仍然可能把内容写入日志或对话上下文，所以不能叫作“任何状态都不变”或“零成本”。工具执行器的业务权限也不会因出现一个 think 步骤而自动更安全。</p>
+<p><strong>该官方文章在 2025-12-15 增补说明：多数场景更推荐原生 extended thinking，而不是专用 think 工具。</strong> 本题于 2026-09-15 核实了这项更新。因此，Think Tool 应被视为一种需要按当前模型能力验证的流程设计，不是普遍必装组件；也不能把旧版“原生思考在开头、Think Tool 在中途”的对比分界永久化。</p>
+<p>若要评估它，可在收到关键工具结果之后增加一个简短检查点，只记录“已知事实、缺失字段、适用规则、下一动作是否可执行”。必须同时评估不加工具、原生推理和专用工具方案，统计工具说明与调用本身的 token、延迟和失败率。原文章的特定模型/基准收益不是所有业务的效果承诺；更完整的行动—反馈编排见 <a href="agent-0025-react-pattern-working-principle.html">agent-0025：ReAct</a>。</p>
+<h3 id="3-同一业务题先定义独立真值">3. 同一业务题，先定义独立真值</h3>
+<p>下面是自编的售后规则，不代表任何真实公司的政策。所有候选模型接收同一规则快照和目标输入，按顺序应用：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">R0：days必须为非负整数；custom/opened/defect必须为已知布尔值。
+    任一输入无效或未知，返回ESCALATE。
+R1：质量缺陷已确认（defect=true）且days&lt;=30，优先返回EXCHANGE。
+    这条对定制商品、已拆封商品同样适用。
+R2：非定制、未拆封且days&lt;=7，返回REFUND。
+R3：其他情况返回DENY。
+
+目标：custom=true, opened=true, days=20, defect=true。
+要求：只输出action和命中的rule_ids；不要假定缺失事实。
+</code></pre>
+<p><strong>评测器真值为 <code>EXCHANGE</code>，命中 R1。</strong> 这里由规则引擎按明示政策计算真值；正式业务还应独立核验政策和标注。目标答案不附加到待测 prompt 中，也不由多数票或模型自称的信心决定。如果真实业务规则已经能可靠形式化，应让确定性引擎判断资格，模型用于提取信息或解释结果，不必为了“多思考”而重复调用模型。</p>
+<p>Few-shot 臂额外加入以下开发示例，目标 case 不在示例中：</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>示例输入（custom, opened, days, defect）</th>
+<th>示例输出</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>false, false, 7, false</td>
+<td><code>REFUND</code>，R2</td>
+</tr>
+<tr>
+<td>true, true, 31, true</td>
+<td><code>DENY</code>，R3</td>
+</tr>
+<tr>
+<td>true, true, 10, true</td>
+<td><code>EXCHANGE</code>，R1</td>
+</tr>
+</tbody>
+</table></div>
+<p>正式测试还要保留不同实体和未见组合，覆盖 7/8 天、30/31 天、缺失信息及规则优先级，避免只复测与示例几乎相同的题。若要提示任务分解，可以增加“检查输入完整性和规则优先级，只返回结论及依据编号”的要求；这不要求隐藏推理，也不能单凭可见说明判断内部过程是否忠实。</p>
+<h3 id="4-对照设计与采样聚合协议">4. 对照设计与采样/聚合协议</h3>
+<p>主对照设三臂：A 直接使用共同规则与问题，调用一次；B 加上述示例，调用一次；C 使用与 B <strong>同一提示</strong>，独立调用五次再聚合。A/B/C 固定模型与版本、原生模板、规则/资料、输出 schema、单次输出预算和采样配置。比如选择支持相应设置的模型，在开发集上预先固定 <code>T=0.7、top_p=0.9</code>；这里只是示意实验配置，不是通用推荐值。</p>
+<p>C 的五次请求使用不同随机流/seed（若支持），彼此不带入其他候选答案；不能缓存同一输出后复制五遍当成五次样本。为单独检验 CoT 或 Think Tool 的收益，应增设“一次调用加检查项/原生推理”和“同一工具流程加检查点”的消融臂，不能同时改变多种因素后把全部增益归给某一种方法。采样与确定性限制见 <a href="llm-0012-decoding-sampling-beam.html">llm-0012</a>。</p>
+<p>本例的聚合规则预先规定为：</p>
+<ol>
+<li>真实流水线先验证 JSON/schema，再从 <code>action</code> 字段提取合法动作；下面的代码只演示已提取字段的标签归一化，不替代完整解析器。</li>
+<li>C 必须保留五个槽位，超时、拒绝或解析失败填 <code>None</code>。无效项不投票，但不能从分母和成本中删掉；也不按答案对错选择性补采样。</li>
+<li>某合法动作严格超过全部槽位的一半才选它；否则弃权并转人工/规则核验。严格多数门槛是本例的业务选择，<strong>不是 Self-Consistency 唯一规定</strong>；论文的答案聚合常用众数，还需要单独约定平票处理。</li>
+<li>聚合时不看真值、不根据解释长短加权。<code>3/5</code> 是样本的一致程度，不是“答案有60%概率正确”。动作正确性、规则依据正确性和关键违规应分别评分。</li>
+</ol>
+<p>这里 C 演示的是多样本答案聚合端，不声称复现了论文全部 CoT 路径采样流程。没有相互独立的权威依据时，五个错误候选仍可能投出一个很稳定的错误结果。</p>
+<h3 id="5-人工候选与成本算例实际运行的是校验代码">5. 人工候选与成本算例：实际运行的是校验代码</h3>
+<p><strong>以下候选答案、token 数和单价全部为人工示意，没有调用或评测真实模型。</strong> 假设 A 单次输入/输出为 <code>160/8 token</code>，B 为 <code>240/8 token</code>，C 的每次用量与 B 相同；输入费 <code>2</code>、输出费 <code>8</code> 美元/百万 token，无缓存或工具费。O 应理解为该服务全部计费输出，若包含 reasoning token 就已包含在 O 中，不能重复加；本例不声称这些假设用量就是上面 prompt 的实际长度。</p>
+<p>成本按全部调用累计：<code>Σ(I×输入单价 + O×输出单价)/1,000,000</code>。将以下代码保存为 <code>reasoning_strategy_demo.py</code>，执行 <code>python3 reasoning_strategy_demo.py</code>，仅依赖标准库：</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">from collections import Counter
+from decimal import Decimal as D
+
+def oracle(case):
+    days = case.get(&quot;days&quot;)
+    flags = [case.get(k) for k in (&quot;custom&quot;, &quot;opened&quot;, &quot;defect&quot;)]
+    if type(days) is not int or days &lt; 0 or any(type(x) is not bool for x in flags):
+        return &quot;ESCALATE&quot;  # R0：无效或未知输入。
+    if case[&quot;defect&quot;] and days &lt;= 30:
+        return &quot;EXCHANGE&quot;  # R1优先。
+    if not case[&quot;custom&quot;] and not case[&quot;opened&quot;] and days &lt;= 7:
+        return &quot;REFUND&quot;    # R2。
+    return &quot;DENY&quot;          # R3。
+
+LEGAL = {&quot;EXCHANGE&quot;, &quot;REFUND&quot;, &quot;DENY&quot;, &quot;ESCALATE&quot;}
+
+def vote(samples):
+    # 无效输出不投票，但仍计入预设K和成本；必须严格超过K/2。
+    normalized = [s.strip().upper() if isinstance(s, str) else None for s in samples]
+    counts = Counter(s for s in normalized if s in LEGAL)
+    for action, count in counts.items():
+        if count * 2 &gt; len(samples):
+            return action, count
+    return None, 0  # 弃权交人工/规则核验，不偷看gold选赢家。
+
+target = {&quot;custom&quot;: True, &quot;opened&quot;: True, &quot;days&quot;: 20, &quot;defect&quot;: True}
+gold = oracle(target)
+assert gold == &quot;EXCHANGE&quot;
+# 以下输出与token数全部为人工示意；没有调用或测量真实模型。
+arms = {
+    &quot;direct&quot;: ([&quot;DENY&quot;], 160, 8),
+    &quot;few_shot&quot;: ([&quot;EXCHANGE&quot;], 240, 8),
+    &quot;vote_5&quot;: ([&quot;EXCHANGE&quot;, &quot;DENY&quot;, &quot; exchange &quot;, &quot;EXCHANGE&quot;, None], 240, 8),
+}
+input_price, output_price = D(&quot;2&quot;), D(&quot;8&quot;)  # 假设美元/百万token，无缓存/工具费。
+costs = {}
+print(&quot;gold=&quot; + gold)
+for name, (samples, input_each, output_each) in arms.items():
+    assert len(samples) == (5 if name == &quot;vote_5&quot; else 1)
+    action, votes = vote(samples)
+    input_total = len(samples) * input_each
+    output_total = len(samples) * output_each
+    cost = (D(input_total) * input_price + D(output_total) * output_price) / D(1_000_000)
+    costs[name] = cost
+    print(f&quot;{name}: action={action or &#x27;ABSTAIN&#x27;} votes={votes}/{len(samples)} &quot;
+          f&quot;correct={int(action == gold)} input={input_total} output={output_total} usd={cost:.6f}&quot;)
+assert costs[&quot;vote_5&quot;] == 5 * costs[&quot;few_shot&quot;]
+print(f&quot;vote_5/few_shot cost ratio={costs[&#x27;vote_5&#x27;] / costs[&#x27;few_shot&#x27;]:.1f}&quot;)
+wrong, count = vote([&quot;DENY&quot;, &quot;DENY&quot;, &quot;DENY&quot;, &quot;EXCHANGE&quot;, None])
+assert wrong == &quot;DENY&quot; and wrong != gold
+print(f&quot;wrong-majority: action={wrong} votes={count}/5 correct=0&quot;)
+assert vote([&quot;EXCHANGE&quot;, &quot;DENY&quot;, None, None, None])[0] is None
+assert vote([&quot;EXCHANGE&quot;, &quot;EXCHANGE&quot;, None, None, None])[0] is None
+assert vote([])[0] is None
+assert oracle({**target, &quot;days&quot;: 30}) == &quot;EXCHANGE&quot;
+assert oracle({**target, &quot;days&quot;: 31}) == &quot;DENY&quot;
+assert oracle({**target, &quot;defect&quot;: None}) == &quot;ESCALATE&quot;
+print(&quot;boundary checks: OK&quot;)
+</code></pre>
+<p><strong>真实运行 stdout（2026-09-15，macOS arm64，Python 3.11.8）</strong>：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">gold=EXCHANGE
+direct: action=DENY votes=1/1 correct=0 input=160 output=8 usd=0.000384
+few_shot: action=EXCHANGE votes=1/1 correct=1 input=240 output=8 usd=0.000544
+vote_5: action=EXCHANGE votes=3/5 correct=1 input=1200 output=40 usd=0.002720
+vote_5/few_shot cost ratio=5.0
+wrong-majority: action=DENY votes=3/5 correct=0
+boundary checks: OK
+</code></pre>
+<p>这里 <code>correct</code> 仅是这个人工 case 的动作是否等于真值，不是模型准确率。B/C 的结论相同，C 的假设成本为 B 的五倍；反例又显示多数可以投错。它们只证明规则、聚合和算术按设计执行，不能证明 Few-shot 或 Self-Consistency 在生产环境有收益。</p>
+<p>真实质量—成本评估应在保留测试集上按 case 配对，报告动作正确率、依据/引用正确率、关键违规率、弃权率和自动处理覆盖率，并用与独立业务单位匹配的区间估计。比较 <code>K=1/3/5</code> 等预定预算点及同预算基线，确认提升是否覆盖总 token、重试、工具调用、人工接管和 p95 延迟。并行五次能缩短部分墙钟等待，却不会自动省掉五次用量；缓存或不同计费档位可能改变成本比，需查真实 usage。</p>
+<p>采用方案前先设质量底线与最小值得关注的提升。若增益不稳定、只改善解释长度，或额外成本超过目标，应保留更简单的基线；不要只展示被投票“救回”的例子，而遗漏被多数票改错或被弃权的任务。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>“解释越长越正确，所以应强制展示隐藏推理。”</strong> 长度不是正确性或忠实性证明；应请求简短、可验证的结果依据。</li>
+<li><strong>“多数票能产生真值。”</strong> 多数只反映这些样本的聚合结果，可能共享错误，且平票/弃权规则必须预先约定。</li>
+<li><strong>“Few-shot 就是在线微调，Think Tool 不做业务写入所以没有成本。”</strong> 示例通常不更新权重；额外上下文、工具消息和生成仍有代价。</li>
+<li><strong>“单题从错变对，足以证明额外推理值得。”</strong> 必须在配对测试集上比较质量、覆盖率、风险和总成本，本题人工样本不构成这种证据。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><p>答案、业务规则和人工候选独立编写，learn-ai 仅作学习线索，未移植其 AGPL 正文、代码或图片。本文没有要求或展示模型隐藏推理，也未把示意 token、报价或候选当作真实模型实验。</p>
+<ul>
+<li>洛小山，《AI 产品从入门到精通》learn-ai，固定版本 <code>5a933d287dd5074cc1543cb849146f3261d47521</code>：<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/6-1.html" target="_blank" rel="noopener noreferrer">slides/6-1.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/6-2.html" target="_blank" rel="noopener noreferrer">slides/6-2.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/10-6.html" target="_blank" rel="noopener noreferrer">slides/10-6.html</a>。</li>
+<li>Brown et al., <em>Language Models are Few-Shot Learners</em>, NeurIPS 2020：<a href="https://papers.nips.cc/paper/2020/hash/1457c0d6bfcb4967418bfb8ac142f64a-Abstract.html" target="_blank" rel="noopener noreferrer">论文主页与摘要</a>，few-shot 文本示例与不进行梯度更新的设置。</li>
+<li>Wei et al., <em>Chain of Thought Prompting Elicits Reasoning in Large Language Models</em>, 2022，固定 <a href="https://arxiv.org/abs/2201.11903v1" target="_blank" rel="noopener noreferrer">arXiv:2201.11903v1</a>：CoT 示范与推理任务的实验，不作为所有模型/任务的效果保证。</li>
+<li>Wang et al., <em>Self-Consistency Improves Chain of Thought Reasoning in Language Models</em>, 2022，固定 <a href="https://arxiv.org/abs/2203.11171v1" target="_blank" rel="noopener noreferrer">arXiv:2203.11171v1</a>：多样采样与一致答案聚合的一手研究。</li>
+<li>Anthropic, <a href="https://www.anthropic.com/engineering/claude-think-tool" target="_blank" rel="noopener noreferrer">The “think” tool: Enabling Claude to stop and think in complex tool use situations</a>，发表于2025-03-20；特别核对页面顶部 <strong>2025-12-15 Extended thinking update</strong>。以上来源访问与核实日期均为2026-09-15；Think Tool 页面通过浏览器实际读取，本文不沿用课件中的固定收益数字。</li>
+</ul>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">五次都给同一个答案，是不是已经足够可信？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：五次都给同一个答案，是不是已经足够可信？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不能。共同的错误规则、缺失事实、同一模型偏差或重复缓存输出都可能导致高度一致。先验证样本来源，再用独立真值和失败切片测量正确率；不要把一致率直接当作置信概率。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">Few-shot 加得越多是不是越好？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：Few-shot 加得越多是不是越好？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不一定。示例要覆盖目标格式和重要边界，避免矛盾、冗余及测试泄漏；增加示例会占上下文和预算。用相同测试集比较少量代表性示例、更多示例及无示例基线，观察质量而不是输入长度。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">为什么不要求模型把所有推理都打印出来，方便验收？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么不要求模型把所有推理都打印出来，方便验收？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>验收需要可验证的动作、规则和事实依据，不需要模型私有隐藏推理；更长的可见解释也可能包含错误或事后合理化。对本例用独立规则引擎和输入边界测试验收，比按解释是否流畅打分更直接。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-4">
+          <div class="followup-label">追问 04</div><h3 id="followup-4">Think Tool 能把缺失的工具结果“想出来”吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：Think Tool 能把缺失的工具结果“想出来”吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不能。它只能整理已有信息，缺失事实必须通过适当工具、用户补充或人工核验取得。当前模型若已有合适的原生推理能力，应先按官方接口和任务评测比较，不默认再套一个空工具。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0013 · 单题笔记</span><a href="../questions/llm-0013-in-context-reasoning-strategies.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0013", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

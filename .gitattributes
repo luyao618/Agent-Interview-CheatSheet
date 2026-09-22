@@ -1,0 +1,3 @@
+# Review source templates and scripts instead of generated copies.
+html/** linguist-generated=true
+templates/question/diagrams/*.svg linguist-generated=true

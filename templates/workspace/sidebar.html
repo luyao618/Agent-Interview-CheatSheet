@@ -1,0 +1,18 @@
+<div class="rail-brand"><a href="#home" aria-label="AI 面试手记，返回开始"><span class="brand-mark">{{brand_icon}}</span><span class="brand-words"><strong>AI 面试手记</strong><small>AI INTERVIEW NOTES</small></span></a></div>
+<div class="rail-scroll">
+  <div class="rail-section-label">学习空间</div>
+  <nav class="main-navigation" aria-label="主要导航">
+    <a href="#home" data-nav="home"><svg class="w-icon" aria-hidden="true"><use href="#w-home"/></svg><span>开始</span></a>
+    <a href="#questions" data-nav="questions"><svg class="w-icon" aria-hidden="true"><use href="#w-book"/></svg><span>全部题目</span><span class="nav-count">{{total}}</span></a>
+    <a href="#answers" data-nav="answers"><svg class="w-icon" aria-hidden="true"><use href="#w-pen"/></svg><span>我的回答</span><span class="nav-count" data-answer-count>0</span></a>
+  </nav>
+  <div class="rail-section-label category-nav-label">按方向练习</div>
+  <nav class="category-navigation" aria-label="题目方向">{{category_navigation}}</nav>
+  <div class="rail-current" data-current-question hidden><span class="rail-section-label">正在作答</span><a data-current-link><span class="rail-current-id" data-current-id></span><span class="rail-current-title" data-current-title></span></a></div>
+</div>
+<div class="rail-bottom">
+  <div class="record-summary"><span>已记录回答</span><span><b data-answer-count>0</b> / {{total}}</span></div>
+  <div class="record-track" aria-hidden="true"><span data-record-progress></span></div>
+  <button class="rail-export" type="button" data-export disabled><svg class="w-icon" aria-hidden="true"><use href="#w-download"/></svg>导出我的回答</button>
+  <p class="local-note">保存在此浏览器，可导出备份。</p>
+</div>

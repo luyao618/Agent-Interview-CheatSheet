@@ -4,3 +4,8 @@
 
 # OS / editor cruft
 .DS_Store
+
+# Local HTML build environment
+.venv/
+__pycache__/
+node_modules/

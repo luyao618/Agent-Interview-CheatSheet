@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。Token、字符与词有什么区别，BPE 如何影响多语言产品的上下文和成本预算？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0007-tokenization-bpe-budget.md">
+  <meta name="source-sha256" content="2e8cf931bd8cdd66e8cb5130e2347970e9626d1653e5f99926445f9934904fc3">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>Token、字符与词有什么区别，BPE 如何影响多语言产品的上下文和成本预算？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0007</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class=""><em>Token</em>、字符与词有什么区别，BPE 如何影响多语言产品的上下文和成本预算？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>进阶</span><span class="meta-dot" aria-hidden="true"></span><span>工程师 / 产品经理</span></div>
+<div class="question-context prose"><p>Token、字符与词有什么区别，BPE 如何影响多语言产品的上下文和成本预算？请用指定 tokenizer 实测同一语义的中文、英文与代码，并说明估算与实际账单的边界。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-15</span></p><div class="prose"><p><strong>Token 是 tokenizer 输出序列中的单位，字符是文本表示的单位，词是语言学单位，三者没有固定换算比例。</strong> 模型处理的是 token ID 序列；同一句话换了 tokenizer，序列长度就可能改变。多语言产品应按目标模型的编码规则测量真实内容，再分别做上下文容量预算和计费预算。</p>
+<h3 id="1-从文本到-token-id">1. 从文本到 token ID</h3>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>含义</th>
+<th>为什么不能直接换算</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>字符</td>
+<td>必须先约定口径：Unicode code point、用户看到的字素簇，或其他计数单位</td>
+<td><code>é</code> 可以用一个 code point 表示，也可由 <code>e</code> 加组合重音表示；UTF-8 字节数又不同</td>
+</tr>
+<tr>
+<td>词</td>
+<td>有语言意义的单位，如英文单词或中文词语</td>
+<td>中文不靠空格自然分词；一个英文单词也可能拆成多个 token</td>
+</tr>
+<tr>
+<td>Token</td>
+<td>词表中某个条目在序列里的一次出现，编码为整数 ID</td>
+<td>可能是整词、子词、空格加词、标点，甚至一个字符的部分字节；不保证独立有语义</td>
+</tr>
+</tbody>
+</table></div>
+<p>词表把可编码片段映射为 ID；<strong>token 数数的是序列长度，不是不同 ID 的个数</strong>。对 byte-level BPE，普通条目表示字节片段，完整序列的字节拼回后才解码为文本。单个 token 未必恰好落在 UTF-8 字符边界。这里讨论有效 Unicode 文本；不能把无损往返的结论推广到非法 surrogate 输入或任意截断的 token 序列。</p>
+<h3 id="2-bpe训练时学合并编码时用既定规则">2. BPE：训练时学合并，编码时用既定规则</h3>
+<p>以本题实测的 <strong>tiktoken 0.12.0</strong> 为例，主线是：</p>
+<ol>
+<li><strong>训练阶段的概念模型</strong>：先按预切分规则形成片段，再将片段表示为 UTF-8 字节。以 256 个单字节为基础，反复统计当前相邻符号对，合并频率最高的一对，并记录优先级，直到达到词表目标。合并后的符号还可以参与下一次合并。这是 byte-level BPE 的教学过程，不表示本题重新训练了官方词表。</li>
+<li><strong>编码阶段</strong>：加载固定词表、merge ranks 和预切分正则；在每个普通片段内，优先合并 rank 最小的可合并相邻对，直到不能合并，输出 ID。不会根据当前用户的一句话重新统计频率、更新词表。</li>
+<li><strong>special tokens 另行处理</strong>：结束标记、填空标记等是协议约定的保留 ID，不靠普通 BPE 频次自然产生。哪些标记受支持、是否自动添加、如何解释，取决于 tokenizer、chat template 和模型协议；仅对字符串调用 <code>encode()</code> 不等于构造了完整聊天请求。</li>
+</ol>
+<p>可核对一手源码：<code>tiktoken/_educational.py</code> 的 <code>bpe_train</code> / <code>bpe_encode</code> 展示前两步；实际 Rust 编码入口 <code>src/lib.rs::encode_ordinary</code> 先正则切片，整片命中词表时直接返回 ID，否则进入 <code>byte_pair_encode</code> / <code>_byte_pair_merge</code>。词表文件、校验 hash 和正则在 <code>tiktoken_ext/openai_public.py</code>，见参考中的固定 commit。</p>
+<p><strong>Trie 是数据结构，BPE 是切分算法，不能把所有 tokenizer 等同于 Trie 最长匹配。</strong> 一个纯示意反例：初始符号为 <code>a,b,c</code>，先学到 <code>b+c→bc</code>，后学到 <code>a+b→ab</code>，没有 <code>abc</code>。对 <code>abc</code>，按合并优先级得到 <code>a | bc</code>；从左侧贪婪最长匹配会得到 <code>ab | c</code>。词表相同也不足以保证结果相同，还必须看算法、merge rank、预切分及 special-token 策略。</p>
+<h3 id="3-多语言取舍词表覆盖影响长度长度不是总成本">3. 多语言取舍：词表覆盖影响长度，长度不是总成本</h3>
+<p>训练语料的语言分布、词表大小、预切分与合并规则，会影响哪些文本片段能够合成一个 token。罕见字、专业术语、代码命名、空白与 Unicode 表示都可能改变计数。字节基础让有效文本即使没有整词条目也可编码，但不保证切分紧凑，也不表示模型理解了这个词。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>产品方案</th>
+<th>适用条件</th>
+<th>代价与不适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>保留用户原语言，用目标模型的 tokenizer 测量和限额</td>
+<td>要保留原话、术语、引用或代码；通常作为基线</td>
+<td>需要按语言和任务评测长度、质量、延迟；当前模型若对主要语言表现很差，仅放宽 token 限额不足以解决问题</td>
+</tr>
+<tr>
+<td>先翻译成统一语言，再调用模型，必要时回译</td>
+<td>可接受语义改写，且实测端到端质量、成本更合适的任务</td>
+<td>多出翻译调用、延迟和语义损失；精确引文、合同措辞或代码标识符处理不适合仅为省 token 而翻译</td>
+</tr>
+</tbody>
+</table></div>
+<p>若多个候选模型都满足任务质量，也可以对比它们在真实语料上的 tokenizer 压缩率；但应同时计算单价与生成量。<strong>不能给现成模型随意换一个更省 token 的词表</strong>：ID 必须与该模型训练时的 embedding 和输出词表对应。更大的词表也增加相关参数与计算开销，不能据 token 数断言模型一定更快、更便宜。</p>
+<h3 id="4-可复现计数同一任务的中文英文与代码">4. 可复现计数：同一任务的中文、英文与代码</h3>
+<p>共同语义为“返回两个数的和”：中文和英文描述该操作，Python 代码实现该操作；这不是把三种输入当成相同的任务完成度。为控制变量，代码仅考虑数值参数。所有字符串保持原样，不做归一化；代码含四个缩进空格和最后一个换行。</p>
+<p><strong>真实运行口径：2026-09-15，macOS arm64，Python 3.11.8，tiktoken 0.12.0；分别指定 <code>cl100k_base</code> 和 <code>o200k_base</code>。</strong> 只计算普通文本，不包含消息角色、chat template、工具 schema 或服务端开销。未调用模型 API，也未产生实际账单。首次加载 encoding 需要联网下载词表，库按固定 hash 校验。</p>
+<p>在 Python 环境安装 <code>python -m pip install tiktoken==0.12.0</code>，将下列代码保存为 <code>token_counts.py</code>，执行 <code>python token_counts.py</code>：</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import tiktoken
+
+assert tiktoken.__version__ == &quot;0.12.0&quot;
+samples = {
+    &quot;zh&quot;: &quot;返回两个数的和。&quot;,
+    &quot;en&quot;: &quot;Return the sum of two numbers.&quot;,
+    &quot;code&quot;: &quot;def add(a, b):\n    return a + b\n&quot;,
+}
+print(&quot;encoding label codepoints utf8_bytes tokens&quot;)
+for name in (&quot;cl100k_base&quot;, &quot;o200k_base&quot;):
+    enc = tiktoken.get_encoding(name)
+    for label, text in samples.items():
+        ids = enc.encode(text)
+        assert enc.decode(ids, errors=&quot;strict&quot;) == text
+        print(name, label, len(text), len(text.encode(&quot;utf-8&quot;)), len(ids))
+
+    # 边界验证：空串、special-token 策略、不同 Unicode 表示。
+    assert enc.encode(&quot;&quot;) == []
+    marker = &quot;&lt;|endoftext|&gt;&quot;
+    try:
+        enc.encode(marker)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError(&quot;默认应拒绝此 special-token 字面量&quot;)
+    assert len(enc.encode(marker, allowed_special={marker})) == 1
+    assert len(enc.encode(marker, disallowed_special=())) == 7
+    assert len(enc.encode(&quot;é&quot;)) == 1
+    assert len(enc.encode(&quot;e\u0301&quot;)) == 2
+    assert len(enc.encode(&quot;🙂&quot;)) == (2 if name == &quot;cl100k_base&quot; else 1)
+print(&quot;boundary checks: OK&quot;)
+</code></pre>
+<p>实际输出（<code>codepoints</code> 为 Python <code>len(str)</code>，不是屏幕上看到的字符数）：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">encoding label codepoints utf8_bytes tokens
+cl100k_base zh 8 24 7
+cl100k_base en 30 30 7
+cl100k_base code 32 32 12
+o200k_base zh 8 24 6
+o200k_base en 30 30 7
+o200k_base code 32 32 12
+boundary checks: OK
+</code></pre>
+<p>这个小样本中，中英文本在 <code>cl100k_base</code> 下相同，在 <code>o200k_base</code> 下中文反而更少；足以反驳“中文固定贵若干倍”，<strong>不足以估计整个产品的平均比例</strong>。代码虽实现同一操作，语法与空白也参与编码，不能按自然语言字数推算。两个 encoding 下代码长度相同也不意味着 token ID 相同。</p>
+<p>special-token 检查中的两种设置含义不同：<code>allowed_special={marker}</code> 将它识别为保留 ID；<code>disallowed_special=()</code> 将它当普通文本编码，<strong>不会删除它</strong>。处理用户原文时按接口协议选择拒绝或普通文本编码，不应为了消除异常就允许所有保留标记。</p>
+<h3 id="5-把计数用于上下文与费用预算">5. 把计数用于上下文与费用预算</h3>
+<p><strong>容量预算按完整请求算。</strong> 设 <code>I</code> 为组装后的输入 token 数，含系统指令、历史、检索内容、工具定义/结果及协议开销；<code>R</code> 为本次生成预留，<code>M</code> 为安全余量，<code>W</code> 为目标模型的上下文上限，单位都是 token：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">I + R + M ≤ W
+R ≤ 该模型/接口的最大输出上限
+</code></pre>
+<p>若接口还有独立输入限制，也必须满足。对 OpenAI reasoning 接口，<code>R</code> 需覆盖 reasoning、可见文本及相应生成格式开销；不能只给最终回答留空间。上限、截断策略和计算规则须按具体模型 snapshot 核对。原始字符串的本地计数仅覆盖 <code>I</code> 的一部分；应使用服务商计数接口或模型匹配的完整 template 估算，再以实际 <code>usage</code> 校准，不能硬编码“每条消息固定加几个 token”通用于所有模型。</p>
+<p><strong>费用预算按实际用量分类计价。以下简式仅适用于无独立 cache-write 费率的纯文本请求。</strong> 设 <code>I_c</code> 是 <code>I</code> 中命中缓存读取的部分，<code>O</code> 为实际计费输出，单价 <code>p_in</code>、<code>p_cache</code>、<code>p_out</code> 的单位为美元 / 百万 token：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">费用（美元）= ((I - I_c) × p_in + I_c × p_cache + O × p_out) / 1,000,000
+</code></pre>
+<p>这里 <code>I_c</code> 是输入的子集，不能再加一次完整输入价；输出预留 <code>R</code> 用于限额和预算，不代表最终消耗了 <code>R</code>。OpenAI <code>usage.output_tokens</code> 已包含其中的 reasoning tokens，不能再把 <code>output_tokens_details.reasoning_tokens</code> 重复相加。多次调用逐次求和；工具费、图像/音频或其他计费项目另按合同规则核算，不套用本地文本计数。</p>
+<p><strong>以下是无独立 cache-write 费率的预算算例，不是模型报价或实测账单（编写于 2026-09-15）</strong>：假设 <code>I=5,000</code>、<code>I_c=3,000</code>、<code>O=1,000</code> token，三种单价分别为 <code>2</code>、<code>0.5</code>、<code>8</code> 美元 / 百万 token，则费用为 <code>(2,000×2 + 3,000×0.5 + 1,000×8)/1,000,000 = 0.0135</code> 美元。即便有缓存折扣，缓存内容仍占本次上下文容量；价格优惠不会把窗口变大。</p>
+<p><strong>存在独立缓存写入用量及费率时，须分为普通输入、缓存读取、缓存写入三类。</strong> 以 OpenAI 的 <code>usage</code> 口径为例，<code>I_c</code> 对应 <code>input_tokens_details.cached_tokens</code>，另设 <code>I_w</code> 对应 <code>input_tokens_details.cache_write_tokens</code>；两者是总输入 <code>I=input_tokens</code> 中互斥的部分，普通输入为 <code>I-I_c-I_w</code>，三类数量均应非负。设 <code>p_write</code> 为缓存写入的完整单价，单位同为美元 / 百万 token：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">费用（美元）= ((I - I_c - I_w) × p_in + I_c × p_cache + I_w × p_write + O × p_out) / 1,000,000
+</code></pre>
+<p>不能把 <code>I_w</code> 一概按普通输入价处理，也不能在已经为它收取普通输入价后，再叠加完整的 <code>p_write</code>。OpenAI 官方 Prompt caching 文档在 <strong>2026-09-15 核实</strong>时规定，GPT-5.6 及以后模型的缓存写入、读取费率分别为普通输入价的 <strong>1.25 倍、0.1 倍</strong>；其他模型、服务商或后续版本须核对自己的字段与费率，不能套用这两个倍数。</p>
+<p><strong>分类计价算例（2026-09-15 验证，仅计算输入费）</strong>：采用官方文档第二次请求的示例用量 <code>I=15,000</code>、<code>I_c=12,000</code>、<code>I_w=3,000</code> token，另假设普通输入单价为 <code>2</code> 美元 / 百万 token（不是模型报价）。按上述已核实比例，读取价为 <code>0.2</code>、写入价为 <code>2.5</code>，普通输入数量为 <code>0</code>。输入费为 <code>(0×2 + 12,000×0.2 + 3,000×2.5)/1,000,000 = 0.0099</code> 美元；误用简式会得到 <code>0.0084</code> 美元，少计 <code>0.0015</code> 美元。输出费仍需另加，示例用量也不代表本题实际调用过 API。</p>
+<p>上线前按语言、代码比例和任务类型抽样，记录 token 分布、输出长度与失败率；容量关注长尾和最大值，费用预测结合调用量与真实单价。模型或 template 升级后重测。具体 Agent 降本手段参见 <a href="agent-0038-reduce-agent-token-cost.html">agent-0038：Agent 节省 Token 成本</a>，本题聚焦这些优化之前的计量基础。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>“一个汉字 / 单词固定等于若干 token。”</strong> 不能把字数比例当常数；编码、文本分布、空白和 Unicode 表示都会影响结果。</li>
+<li><strong>“所有 tokenizer 都是 Trie 最长匹配。”</strong> 数据结构不能代替算法定义；本题固定版本的 tiktoken 按预切分与 merge rank 工作。</li>
+<li><strong>“本地 <code>encode()</code> 的长度就是 API 账单。”</strong> 它只测传入字符串；完整请求与输出还有协议、工具或 reasoning 等开销，结算应核对服务端用量及费率。</li>
+<li><strong>“BPE 学会了语义，新词会自动加入词表。”</strong> 编码期通常使用固定词表；能用字节表示新词，与模型能否正确理解它是两回事。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><p>以下内容为独立组织的问答与自编实验；learn-ai 仅作为选题和学习线索，未移植其 AGPL 课件正文、代码或图片，也未沿用其示意价格或固定语言倍数。</p>
+<ul>
+<li>洛小山，《AI 产品从入门到精通》learn-ai，固定版本 <code>5a933d287dd5074cc1543cb849146f3261d47521</code>，学习路径：<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/1-2-vocab.html" target="_blank" rel="noopener noreferrer">slides/1-2-vocab.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/cost-2.html" target="_blank" rel="noopener noreferrer">slides/cost-2.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/ds-9.html" target="_blank" rel="noopener noreferrer">slides/ds-9.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/zero-q-token.html" target="_blank" rel="noopener noreferrer">slides/zero-q-token.html</a>。</li>
+<li>OpenAI，<strong>tiktoken 0.12.0</strong>，固定 commit <code>97e49cbadd500b5cc9dbb51a486f0b42e6701bee</code>：<a href="https://github.com/openai/tiktoken/blob/97e49cbadd500b5cc9dbb51a486f0b42e6701bee/tiktoken/_educational.py#L83" target="_blank" rel="noopener noreferrer">教学训练与编码 <code>tiktoken/_educational.py</code>，<code>bpe_encode</code> L83 / <code>bpe_train</code> L119</a>；<a href="https://github.com/openai/tiktoken/blob/97e49cbadd500b5cc9dbb51a486f0b42e6701bee/src/lib.rs#L17" target="_blank" rel="noopener noreferrer">运行时 <code>src/lib.rs</code>，<code>_byte_pair_merge</code> L17</a>、<a href="https://github.com/openai/tiktoken/blob/97e49cbadd500b5cc9dbb51a486f0b42e6701bee/src/lib.rs#L232" target="_blank" rel="noopener noreferrer"><code>encode_ordinary</code> L232</a>。用于核对机制，而非从课程推断实现。</li>
+<li>同一 tiktoken commit：<a href="https://github.com/openai/tiktoken/blob/97e49cbadd500b5cc9dbb51a486f0b42e6701bee/tiktoken_ext/openai_public.py#L75" target="_blank" rel="noopener noreferrer">编码定义及词表 hash <code>tiktoken_ext/openai_public.py</code>，L75 / L95</a>；<a href="https://github.com/openai/tiktoken/blob/97e49cbadd500b5cc9dbb51a486f0b42e6701bee/tiktoken/core.py#L79" target="_blank" rel="noopener noreferrer">special-token 策略 <code>tiktoken/core.py::encode</code>，L79</a>；<a href="https://github.com/openai/tiktoken/blob/97e49cbadd500b5cc9dbb51a486f0b42e6701bee/tiktoken/core.py#L272" target="_blank" rel="noopener noreferrer">解码与 UTF-8 边界 <code>decode</code>，L272</a>。</li>
+<li>OpenAI 官方文档，<a href="https://developers.openai.com/api/docs/guides/conversation-state#managing-the-context-window" target="_blank" rel="noopener noreferrer">Conversation state — Managing the context window</a>，访问日期 2026-09-15；上下文与输出限制按模型核对。</li>
+<li>OpenAI 官方文档，<a href="https://developers.openai.com/api/docs/guides/reasoning#managing-the-context-window" target="_blank" rel="noopener noreferrer">Reasoning models — Managing the context window</a>，访问日期 2026-09-15；核对 reasoning 的上下文占用、输出计费和 <code>usage</code> 字段。</li>
+<li>OpenAI 官方文档，Prompt caching：<a href="https://developers.openai.com/api/docs/guides/prompt-caching#how-caching-works-gpt-5-6-and-later" target="_blank" rel="noopener noreferrer">How caching works — GPT-5.6 and later</a>、<a href="https://developers.openai.com/api/docs/guides/prompt-caching#monitor-cache-performance" target="_blank" rel="noopener noreferrer">Monitor cache performance</a>，访问并核实日期 2026-09-15；核对缓存写入/读取费率比例、第二次请求示例用量，以及按 <code>input_tokens</code>、<code>cached_tokens</code>、<code>cache_write_tokens</code> 分类计价的口径。本文中的美元绝对单价均是假设，并非具体模型报价。</li>
+</ul>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">换模型后，同样的文本从 1,000 token 降到 700，是否就便宜 30%？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：换模型后，同样的文本从 1,000 token 降到 700，是否就便宜 30%？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不能直接下结论。先确认 tokenizer 与模型匹配，再比较普通输入/缓存读取/缓存写入/输出单价、输出量、翻译或重试调用以及任务质量；更少的输入 token 只改变成本公式中的一个量。重新计数后也要验证 template 开销和上下文余量，不能沿用旧模型的整数 ID。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">按 token 数截取中文，为什么有时末尾出现 <code>�</code>？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：按 token 数截取中文，为什么有时末尾出现 �？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>byte-level token 的边界可能位于 UTF-8 字符内部，截断后默认宽容解码会插入替换字符。应在合法文本边界选择截断点，严格解码验证，再重新编码并确认仍符合预算；必要时继续缩短。不能把每个 token 分别解码为字符串再拼接；排查时可用 <code>decode_single_token_bytes</code> 看真实字节。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">本地只数出 2,000 token，API 却报告更大的输入量，是 tokenizer 一定错了吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：本地只数出 2,000 token，API 却报告更大的输入量，是 tokenizer 一定错了吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不一定。先核对实际发送的完整请求、模型/encoding 版本、历史消息、工具 schema、附件和 special-token/template 规则；本地文本计数与服务端完整输入可能本来就不是同一口径。输出账单也可能含不可见 reasoning 开销，应结合 <code>usage</code> 的分类字段定位差异。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0007 · 单题笔记</span><a href="../questions/llm-0007-tokenization-bpe-budget.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0007", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。部署量化模型时怎样估算内存与吞吐，为什么 MoE 的激活参数量不能直接当显存需求？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0016-quantization-local-memory-budget.md">
+  <meta name="source-sha256" content="4f2ffae55059aafeeacf5095ccaa5b9a8ee14797912d8416285fcfabb12598bb">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>部署量化模型时怎样估算内存与吞吐，为什么 MoE 的激活参数量不能直接当显存需求？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0016</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="">部署量化模型时怎样估算内存与吞吐，为什么 MoE 的激活参数量不能直接当显存需求？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>进阶</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>部署量化模型时怎样估算内存与吞吐，为什么 MoE 的激活参数量不能直接当显存需求？请对同一模型计算 FP16/INT4 权重下限，再加入上下文、并发及运行时开销，说明估算的适用边界。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-15</span></p><div class="prose"><p><strong>先算需要驻留的数据，再算运行期间的峰值，最后在目标硬件上验证速度。</strong> <code>参数量 × 位宽 / 8</code> 只是按指定编码保存权重数值的原始字节数下限；部署还需要量化元数据、KV Cache、临时张量和运行时内存。MoE 每个 token 只计算部分专家，不代表其他专家权重可以从内存预算中删除。</p>
+<h3 id="1-位宽降低了什么又没有降低什么">1. 位宽降低了什么，又没有降低什么</h3>
+<p>以均匀仿射量化为例，<code>q = clip(round(w / scale) + zero_point)</code>，重建值为 <code>w_hat = scale × (q - zero_point)</code>；对称量化可以不存独立 zero point。分组、舍入、裁剪和异常值处理会影响误差。4 bit 有 16 种编码，但 INT4、NF4 和不同混合精度格式并非同一种数值表示。</p>
+<p>FP16/BF16 每个数占 2 bytes，4-bit 权重理想打包后平均占 0.5 bytes；<strong>weight-only INT4 不等于激活、KV Cache 和全部计算都变成 INT4</strong>。例如 W4A16 表示权重 4 bit、激活 16 bit，内核可能在计算过程中解码权重。量化误差可能改变输出，应在任务保留集上比较 FP16/BF16 与量化版本，不能仅凭权重误差或位宽承诺准确率。</p>
+<p>量化和蒸馏的区别见 <a href="llm-0015-knowledge-distillation-tradeoffs.html">llm-0015</a>；本题聚焦部署账本，不复写开闭源选型，相关讨论见 <a href="llm-0002-open-source-vs-closed-source-models.html">llm-0002</a>。</p>
+<h3 id="2-分项建立内存账本">2. 分项建立内存账本</h3>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>基本估算</th>
+<th>需要核对的边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>权重数值</td>
+<td>对实际驻留的参数按位宽求和；统一位宽时为 <code>ceil(P × bits / 8)</code> bytes</td>
+<td>混合精度层、共享权重是否复用、分片与副本；文件大小也可能含容器头、对齐和其他数据</td>
+</tr>
+<tr>
+<td>量化元数据</td>
+<td>每个量化组的 scale、zero point、码本等，加上补齐或布局开销</td>
+<td>分组通常按张量/行进行，应分别取整；不能总是对全模型参数除一次 group size。某些层保留高精度</td>
+</tr>
+<tr>
+<td>KV Cache</td>
+<td>按各层 K/V 的真实形状、dtype 和驻留 token 数计算</td>
+<td>GQA/MQA 的 KV head 数、生成长度、并发、beam、前缀共享、滑动窗口和缓存量化</td>
+</tr>
+<tr>
+<td>激活与 workspace</td>
+<td>prefill、decode、反量化和算子临时张量的阶段峰值</td>
+<td>Prefill 的临时峰值可能大于稳定 decode；attention 内核、分块和 graph capture 会改变占用</td>
+</tr>
+<tr>
+<td>引擎与余量</td>
+<td>运行上下文、allocator、内存池、调度/通信缓冲，以及预留空间</td>
+<td>allocated 与 reserved 口径不同，避免重复加同一内存池；系统/其他进程占用要从可用预算扣除</td>
+</tr>
+</tbody>
+</table></div>
+<p>更准确的表达是 <code>M_peak = max_t [M_weights + M_KV(t) + M_workspace(t) + M_engine(t)]</code>，加载期间的转换或双份权重也要纳入峰值观察；预算再加明确的安全空间。各组件的最大值未必同时出现，简单求和可用于保守规划，但不能替代测量。纯推理通常不需要训练用梯度和优化器状态，也不要把训练显存公式直接搬过来。</p>
+<p>磁盘 checkpoint、CPU RAM、独立 GPU 显存是不同账本。统一内存机器上 CPU/GPU 共享同一物理池，也不能把系统可用内存和 GPU 限额当两份容量相加；可用量、系统保留和运行时限制要按实际设备读取，不能固定假定所有机器都有某个可分配比例。</p>
+<h3 id="3-kv-cache-为什么会随上下文和并发增长">3. KV Cache 为什么会随上下文和并发增长</h3>
+<p>对普通 full-attention decoder、各层配置相同、K/V 维度相同且不共享前缀的情况：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">M_KV = 2 × L × H_kv × d_head × bytes_cache × Σ_i S_i
+</code></pre>
+<p>这里 <code>2</code> 代表 K 和 V，<code>L</code> 是层数，<code>H_kv</code> 是 KV heads 数，<code>d_head</code> 是每头维度，<code>S_i</code> 是第 i 条序列当时保留的 token 数。<code>S_i</code> 包含已处理的 prompt 和已缓存的生成 token；规划最大长度时应覆盖预计输出空间。各序列等长时 <code>Σ_i S_i = B × S</code>，<code>B</code> 指实际驻留缓存的序列数，不是排队请求总数。Beam 等解码方式还可能产生多份分支缓存。</p>
+<p>GQA 中多组 query heads 共享 K/V，MQA 通常只有一组 K/V，所以不能直接用 query heads 代替 <code>H_kv</code>。KV Cache 保存的内容及 prefill/decode 边界见 <a href="llm-0010-causal-attention-architecture.html">llm-0010</a>。降低权重位宽不会自动降低 <code>bytes_cache</code>；KV 量化需要单独的内核支持、元数据预算和质量验证。</p>
+<p>这条公式给的是<strong>逻辑缓存数值大小</strong>。实际引擎可能按最大长度预分配，或按固定 token block 向上取整；前缀共享可减少物理副本，写时复制又会增加副本，allocator 还可能保留空闲池。PagedAttention 主要改善分配与共享，并不会让每条独立上下文的 K/V 信息凭空消失。滑动窗口、MLA、混合 attention 层或 K/V 不同形状要按实际缓存结构逐层求和，不能盲套此式。</p>
+<h3 id="4-同一假想模型的-fp16--int4-算例">4. 同一假想模型的 FP16 / INT4 算例</h3>
+<p>以下是<strong>自编容量规划数据，不对应某个真实模型或显卡实测</strong>：</p>
+<ul>
+<li>模型恰有 <code>8,000,000,000</code> 个参数；同一组权重比较全 FP16 与全 INT4。INT4 使用人工设定的对称分组格式：每 128 个权重配一个 FP16 scale（2 bytes），无 zero point；最后一组补齐。主算例恰好整除，无额外对齐、码本、副本或高精度层。这不是某个 GGUF/GPTQ 格式的规格。</li>
+<li><code>L=32</code>、<code>H_kv=8</code>、<code>d_head=128</code>，两种权重精度均用 FP16 KV Cache；full attention，无前缀共享、beam、offload 或多卡切分。只按已保留 token 数计算，无额外静态预分配。</li>
+<li>可供这个推理进程规划的设备预算为 <strong>16 GiB</strong>。暂以 <strong>1.5 GiB</strong> 代表该场景的全部非权重/非 KV 运行时开销，另留 <strong>1 GiB</strong> 空间；二者都是人工预算假设，必须用加载与运行峰值替换，不能外推到任意上下文或 batch。</li>
+<li>单位：<code>1 GB = 10^9 bytes</code>，<code>1 GiB = 2^30 bytes</code>；参数量中的 B 表示十亿，与并发符号 B 不同。</li>
+</ul>
+<p>原始权重下限：FP16 为 <code>8e9 × 2 = 16e9 bytes = 16 GB ≈ 14.901161 GiB</code>；INT4 为 <code>8e9 × 0.5 = 4 GB ≈ 3.725290 GiB</code>。INT4 的 scale 为 <code>8e9 / 128 × 2 = 125,000,000 bytes</code>，故此示意格式的权重与 scale 合计 <strong>4.125 GB ≈ 3.841706 GiB</strong>。</p>
+<p>每个缓存 token 占 <code>2 × 32 × 8 × 128 × 2 = 131,072 bytes = 128 KiB</code>，得到：</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>驻留序列数 B × 每序列缓存长度 S</th>
+<th style="text-align:right">KV（GiB）</th>
+<th style="text-align:right">FP16 总规划（GiB）</th>
+<th style="text-align:right">INT4 含 scale 总规划（GiB）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 × 4096</td>
+<td style="text-align:right">0.5</td>
+<td style="text-align:right">17.901161</td>
+<td style="text-align:right">6.841706</td>
+</tr>
+<tr>
+<td>4 × 4096</td>
+<td style="text-align:right">2</td>
+<td style="text-align:right">19.401161</td>
+<td style="text-align:right">8.341706</td>
+</tr>
+<tr>
+<td>4 × 8192</td>
+<td style="text-align:right">4</td>
+<td style="text-align:right">21.401161</td>
+<td style="text-align:right">10.341706</td>
+</tr>
+<tr>
+<td>8 × 16384</td>
+<td style="text-align:right">16</td>
+<td style="text-align:right">33.401161</td>
+<td style="text-align:right">22.341706</td>
+</tr>
+</tbody>
+</table></div>
+<p>总规划均包含上述 1.5 GiB 运行时项和 1 GiB 余量。FP16 权重本身小于 16 GiB，第一行仍超预算；INT4 在前几行满足这个假设预算，最后一行仍不满足。<strong>“满足规划”不是已经验证能加载或稳定运行</strong>：若实际 prefill 峰值、量化布局或预分配大于假设，需要重算。也不能因为 INT4 权重数值缩小到四分之一，就把整进程内存也除以四。</p>
+<h3 id="5-moe总参数决定哪些权重要存激活参数只描述部分计算">5. MoE：总参数决定哪些权重要存，激活参数只描述部分计算</h3>
+<p>把一组简化 MoE 参数写成 <code>P_total = P_shared + E × P_expert</code>、<code>P_active = P_shared + k × P_expert</code>：<code>E</code> 是专家数，<code>k</code> 是每 token 选中的专家数，共享项包括 attention 等始终参与的权重。真实模型应按层及实际专家大小分别求和。</p>
+<p>假设共享参数 2B、8 个各 1B 的专家、每 token 选 2 个，则总参数 10B，激活参数 4B。若所有专家驻留同一设备，<strong>只算原始 INT4 权重也要 5 GB，而不是按激活量得到的 2 GB</strong>，两者都还未加 scale 和缓存。不同 token 会选择不同专家；不能因为当前 token 没选中某个专家，就默认它不需要存储。</p>
+<p>Expert parallel 或其他切分可以把权重分布到多卡，offload 可以把部分专家放到 CPU RAM；这改变的是每个设备的驻留位置和传输需求，不是把整个模型缩成激活参数量。每卡还可能有共享层副本、KV、路由与通信缓冲，不能简单把全模型预算除以卡数。</p>
+<p>激活参数量有助于理解稀疏 FFN 的运算量，却不能直接推出“速度等于同参数稠密模型”。吞吐还取决于一批 token 触及多少专家、负载不均、路由与 all-to-all 通信、显存/互联带宽、内核效率和 attention 长度。MoE 的专家数也不是 KV Cache 的直接乘数：若专家位于 FFN，缓存仍由其 attention 结构决定。Mixtral 原论文提供了“每 token 选部分专家、不同 token 可选不同专家”的一手实例。</p>
+<h3 id="6-吞吐只能先算约束再做部署评测">6. 吞吐只能先算约束，再做部署评测</h3>
+<p>Roofline 模型用计算能力和内存流量共同给出上界。对某一明确的执行步，在相同硬件层级与计数口径下，可写成 <code>t_step ≥ max(F_step / C_peak, Bytes_moved / BW_peak)</code>。这里的流量是穿过所讨论内存层级的实际数据量，不是 checkpoint 文件大小；缓存复用、batch 复用、反量化和多卡通信都会改变它。</p>
+<p>一个<strong>单请求 decode 的人工上界示例</strong>：假定每生成一个 token 都从设备内存读一次完整稠密权重，INT4 连同 scale 一起读，带宽上限假设为 <strong>200 GB/s</strong>，忽略 KV 读取、计算、调度与其他开销。FP16 读权重至少 <code>16 GB / 200 GB/s = 80 ms</code>，仅此约束下最多 <code>12.5 token/s</code>；INT4 至少 <code>4.125 / 200 = 20.625 ms</code>，最多约 <code>48.485 token/s</code>。这是指定假设下的读权重时间下界和速度上界，<strong>不是实测速度或保证的加速比</strong>；不能把它用于有权重复用的 batch 或专家稀疏访问而不重算流量。</p>
+<p>Prefill 可并行处理已知 prompt，常能提高矩阵计算利用率；小 batch decode 常受权重/KV 访问约束，长上下文 attention 或其他算子也可能成为瓶颈。提高并发可能增加整体 output token/s，却同时增加缓存、排队及单请求延迟。量化还可能受反量化或硬件内核限制，不能只看 GPU 理论算力或文件体积选型。</p>
+<p>下面原样运行可复算容量与带宽示例。代码只进行整数/Fraction 算术，没有分配模型权重、加载量化内核或执行 GPU benchmark：</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">from fractions import Fraction as F
+
+GB, GiB = 10**9, 2**30
+
+def nonnegative_int(value):
+    if type(value) is not int or value &lt; 0:
+        raise ValueError(&quot;nonnegative integer required&quot;)
+
+def ceil_div(n, d):
+    nonnegative_int(n)
+    if type(d) is not int or d &lt;= 0:
+        raise ValueError(&quot;positive divisor required&quot;)
+    return (n + d - 1) // d
+
+def packed_bytes(params, bits):
+    if type(bits) is not int or bits &lt;= 0:
+        raise ValueError(&quot;positive bit width required&quot;)
+    nonnegative_int(params)
+    return ceil_div(params * bits, 8)
+
+def grouped_int4_bytes(params, group=128, scale_bytes=2):
+    nonnegative_int(scale_bytes)
+    groups = ceil_div(params, group)
+    # 此示意格式将最后一组补齐，再存每组一个 scale，无 zero point。
+    return packed_bytes(groups * group, 4) + groups * scale_bytes
+
+def kv_bytes(lengths, layers=32, kv_heads=8, head_dim=128, cache_bytes=2):
+    for value in (layers, kv_heads, head_dim, cache_bytes):
+        if type(value) is not int or value &lt;= 0:
+            raise ValueError(&quot;positive cache dimensions required&quot;)
+    for length in lengths:
+        nonnegative_int(length)
+    return 2 * layers * kv_heads * head_dim * cache_bytes * sum(lengths)
+
+params = 8_000_000_000
+fp16 = packed_bytes(params, 16)
+int4_min = packed_bytes(params, 4)
+int4_stored = grouped_int4_bytes(params)
+for name, size in ((&quot;FP16&quot;, fp16), (&quot;INT4_raw&quot;, int4_min), (&quot;INT4_with_scales&quot;, int4_stored)):
+    print(f&quot;{name}: bytes={size}, GB={size / GB:.3f}, GiB={size / GiB:.6f}&quot;)
+
+# 人工预算：运行时项 1.5 GiB，另留 1 GiB 安全空间；并非实测。
+runtime, headroom, capacity = 3 * GiB // 2, GiB, 16 * GiB
+for batch, length in ((1, 4096), (4, 4096), (4, 8192), (8, 16384)):
+    cache = kv_bytes([length] * batch)
+    totals = [w + cache + runtime + headroom for w in (fp16, int4_stored)]
+    flags = [total &lt;= capacity for total in totals]
+    print(f&quot;B={batch}, S={length}: KV={cache / GiB:.3f} GiB, &quot;
+          f&quot;FP16={totals[0] / GiB:.6f}, INT4={totals[1] / GiB:.6f}, within_plan={flags}&quot;)
+
+# 单请求、每步读权重一次，假设带宽上限 200 GB/s，忽略其他耗时。
+bandwidth = 200 * GB
+for name, size in ((&quot;FP16&quot;, fp16), (&quot;INT4_with_scales&quot;, int4_stored)):
+    time_lower_bound = F(size, bandwidth)
+    rate_upper_bound = 1 / time_lower_bound
+    print(f&quot;{name}: weight_read_ms&gt;={float(time_lower_bound * 1000):.3f}, &quot;
+          f&quot;tokens_per_s&lt;={float(rate_upper_bound):.3f}&quot;)
+
+# 另一假想 MoE：共享 2B，8 个各 1B 的专家，每 token 选 2 个。
+total_params, active_params = 2 * GB + 8 * GB, 2 * GB + 2 * GB
+print(&quot;MoE raw INT4 GB (total/active):&quot;,
+      packed_bytes(total_params, 4) / GB, packed_bytes(active_params, 4) / GB)
+</code></pre>
+<p><strong>真实运行 stdout：2026-09-15，macOS arm64，Python 3.11.8。所有配置、带宽及余量均为示意假设。</strong></p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">FP16: bytes=16000000000, GB=16.000, GiB=14.901161
+INT4_raw: bytes=4000000000, GB=4.000, GiB=3.725290
+INT4_with_scales: bytes=4125000000, GB=4.125, GiB=3.841706
+B=1, S=4096: KV=0.500 GiB, FP16=17.901161, INT4=6.841706, within_plan=[False, True]
+B=4, S=4096: KV=2.000 GiB, FP16=19.401161, INT4=8.341706, within_plan=[False, True]
+B=4, S=8192: KV=4.000 GiB, FP16=21.401161, INT4=10.341706, within_plan=[False, True]
+B=8, S=16384: KV=16.000 GiB, FP16=33.401161, INT4=22.341706, within_plan=[False, False]
+FP16: weight_read_ms&gt;=80.000, tokens_per_s&lt;=12.500
+INT4_with_scales: weight_read_ms&gt;=20.625, tokens_per_s&lt;=48.485
+MoE raw INT4 GB (total/active): 5.0 2.0
+</code></pre>
+<h3 id="7-从预算到上线要补哪些实测">7. 从预算到上线，要补哪些实测</h3>
+<p>先固定 checkpoint、量化工具及格式版本、group size、敏感层精度、KV dtype、推理引擎/内核、设备和并行方式。读取实际张量清单与加载日志，区分权重驻留、缓存池和临时缓冲；观察加载、冷启动 prefill、长输出 decode、并发压力下的峰值，而不只看模型刚加载完的一次占用。</p>
+<p>用同一输入/输出长度分布及任务保留集比较原精度、不同量化档位和必要的较小模型方案。记录质量、格式/工具调用正确率、OOM/失败率、TTFT、每输出 token 延迟（TPOT）、整体输出 token/s、请求延迟分位数，并注明并发、batch、排队、缓存命中和是否包含 prefill。硬件异步执行时要用正确的同步或事件计时，稳态吞吐与冷启动分开。</p>
+<p>内存不够可以降低并发或上下文、采用受支持的 KV 量化、分片/offload，或换更小模型；这些方案分别付出容量、质量、通信、尾延迟或能力代价。仅受权重容量限制时 INT4 值得试；若关键质量回归无法接受，高一档精度或更小但较高精度的模型也是合理候选。没有跨模型、任务和硬件普适的“优先保尺寸”或“固定选 Q4”结论。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>“参数量乘固定精度系数就包含所有开销。”</strong> 固定余量系数不是通用公式；模型结构、上下文、并发和引擎都影响预算。</li>
+<li><strong>“装得下就代表跑得快。”</strong> 容量是存储约束，速度还受计算、带宽、内核、路由和通信限制。</li>
+<li><strong>“MoE 只需存激活参数，速度等于同激活量的稠密模型。”</strong> 未激活专家仍需放在某处，稀疏计算也有调度和通信代价。</li>
+<li><strong>“INT4 会让 KV 与整个进程内存一起变为四分之一。”</strong> 权重位宽与 KV dtype 分开；scale、保留高精度层和临时缓冲也不能省略。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>课程学习线索：洛小山《AI 产品从入门到精通》<a href="https://github.com/itshen/learn-ai/tree/5a933d287dd5074cc1543cb849146f3261d47521" target="_blank" rel="noopener noreferrer">learn-ai</a>，固定 commit <code>5a933d287dd5074cc1543cb849146f3261d47521</code>；具体路径：<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/oss-8.html" target="_blank" rel="noopener noreferrer">slides/oss-8.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/oss-9.html" target="_blank" rel="noopener noreferrer">slides/oss-9.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/zero-q-parameters.html" target="_blank" rel="noopener noreferrer">slides/zero-q-parameters.html</a>。本文独立编写文字、表格与代码，未搬运 AGPL 素材；未将课程固定系数、硬件可用比例或工具偏好作为通用结论。</li>
+<li>Jacob et al., <em>Quantization and Training of Neural Networks for Efficient Integer-Arithmetic-Only Inference</em>, CVPR 2018，<a href="https://openaccess.thecvf.com/content_cvpr_2018/html/Jacob_Quantization_and_Training_CVPR_2018_paper.html" target="_blank" rel="noopener noreferrer">正式论文</a>：量化表示及配套训练的一手依据；本文不移用其图像任务的性能收益。</li>
+<li>Ainslie et al., <em>GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints</em>, 2023，<a href="https://arxiv.org/abs/2305.13245v1" target="_blank" rel="noopener noreferrer">arXiv:2305.13245v1</a>，§2 的 GQA/MQA 与 KV head 共享关系。</li>
+<li>Kwon et al., <em>Efficient Memory Management for Large Language Model Serving with PagedAttention</em>, 2023，<a href="https://arxiv.org/abs/2309.06180v1" target="_blank" rel="noopener noreferrer">arXiv:2309.06180v1</a>：请求级 KV Cache、分块、共享和碎片管理；本文不承诺该论文的特定吞吐增益。</li>
+<li>Jiang et al., <em>Mixtral of Experts</em>, 2024，<a href="https://arxiv.org/abs/2401.04088v1" target="_blank" rel="noopener noreferrer">arXiv:2401.04088v1</a>，§2 的专家路由与稀疏计算；本文 MoE 数字为另行构造的示例，不是 Mixtral 规格。</li>
+<li>Williams, Waterman &amp; Patterson, <em>Roofline: An Insightful Visual Performance Model for Floating-Point Programs and Multicore Architectures</em>, <a href="https://www2.eecs.berkeley.edu/Pubs/TechRpts/2008/EECS-2008-134.html" target="_blank" rel="noopener noreferrer">UCB/EECS-2008-134</a>，§3 的计算/带宽上界与内存流量口径。以上一手链接核实日期 <strong>2026-09-15</strong>。</li>
+</ul>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">4-bit 文件只有几 GB，为什么长对话仍会 OOM？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：4-bit 文件只有几 GB，为什么长对话仍会 OOM？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>权重量化没有自动压缩 KV；上下文和驻留序列增加后，KV 或 prefill 临时峰值可能占主导。检查 KV dtype、实际分配策略和峰值，再决定限长、限并发或使用受支持的缓存优化，不能再乘一个固定余量系数猜答案。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">MoE 做了专家 offload，就能按激活参数规划 GPU 显存吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：MoE 做了专家 offload，就能按激活参数规划 GPU 显存吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>需要按实际驻留与预取策略计算 GPU、CPU 和传输缓冲。激活参数只是某个 token 的计算子集，不等于引擎始终只保留这些权重；专家切换、batch 内专家集合以及传输重叠都会影响占用和吞吐。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">并发翻倍，吞吐会翻倍吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：并发翻倍，吞吐会翻倍吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不会保证。权重复用和更大矩阵可能提高利用率，但 KV、队列、内核和通信也会增长。需要同时看整体吞吐、单请求延迟和内存峰值；满足显存预算只是实验的起点。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0016 · 单题笔记</span><a href="../questions/llm-0016-quantization-local-memory-budget.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0016", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

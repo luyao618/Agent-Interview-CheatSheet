@@ -1,0 +1,872 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。上下文压缩后仍溢出时，如何证明重试取得了进展，并区分 UI 占用率与下一次请求预算？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/agent-0059-compaction-progress-proof.md">
+  <meta name="source-sha256" content="265a26ba1ec4dfc96b59f85ce8292ebc2a84aa6928a1262504dcd2f6923bea3e">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>上下文压缩后仍溢出时，如何证明重试取得了进展，并区分 UI 占用率与下一次请求预算？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">AGENT-0059</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="">上下文压缩后仍溢出时，如何证明重试取得了进展，并区分 UI 占用率与下一次请求预算？</h1>
+        <div class="question-meta"><span>Agent 架构与编排</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>上下文压缩后仍溢出时，如何证明重试取得了进展，并区分 UI 占用率与下一次请求预算？如果压缩器返回成功但内容不变，随后切换到更大窗口模型，系统应怎样行动？</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-16</span></p><div class="prose"><p>让运行时给每次请求建立可核对的快照，并在提交压缩替换后重新组装、计量请求。允许恢复的依据应是<strong>实际条件改变且新的预算检查成立</strong>：例如一次确实减小输入的替换，或一次获授权、重新计量后可用的模型切换。压缩函数返回 <code>success</code> 只说明它报告成功；旧 UI 百分比只描述某个过去的观测，都不能单独证明继续重试会前进。</p>
+<p>信息保留、工具台账与缓存取舍见 <a href="agent-0043-kv-cache-friendly-context-compression.html">agent-0043</a>，长期记忆分层见 <a href="agent-0023-long-context-memory-module.html">agent-0023</a>。本题关注压缩恢复循环如何终止，以及怎样解释当前请求的预算；Token 减少不证明摘要语义正确，信息完整性仍要单独验收。</p>
+<h3 id="1-压缩触发与进展凭证">1. 压缩触发与进展凭证</h3>
+<p><strong>主动压缩</strong>发生在请求前：当前请求预计逼近窗口或下一次工具结果没有足够余量时，提前压缩。它能减少可预见的溢出，但依赖计量准确性。<strong>被动压缩</strong>是在已确认的 context overflow 后恢复：先把错误关联到失败请求的模型、输入世代与请求身份，再决定是否压缩或换模型。限流、认证失败、网络超时和取消有自己的处理方式，不能仅因“模型调用失败”就压缩并重发。</p>
+<p>进展凭证至少有三个层次：</p>
+<ul>
+<li><strong>替换确实提交</strong>：记录压缩前的内容摘要、请求快照及 <code>replacement_generation</code>；只有运行时实际替换模型可见历史后，才递增世代。本例对 no-op 和没有减量的候选先拒绝，世代不变；世代不是压缩尝试次数。</li>
+<li><strong>对同一口径有正向变化</strong>：在相同模型、tokenizer、序列化器与预算规则下比较替换前后的完整输入计数，要求 <code>ΔI = I_before − I_after &gt; 0</code>。只有字节变化或世代增加，仍可能得到更长的摘要，不能充分证明容量改善。</li>
+<li><strong>下一步确实可规划</strong>：替换后重新检查当前请求和余量。减了 1 个 Token 仍然超限也算一次真实减量，却不足以发送；只能在剩余恢复预算内再采取动作，否则熔断。</li>
+</ul>
+<p>压缩提案还必须匹配它读取的原请求快照。若期间用户插话、工具定义或模型发生变化，不能把旧提案覆盖到新上下文。本例在本地锁内比较请求 key 并提交；key 包含世代、完整输入、模型/encoding/版本和预算。hash 用于本地比对，不认证压缩插件身份，也不证明持久化成功。</p>
+<p>错误归属与准入本身也必须使用同一快照：在一个锁区间内校验 <code>failed_key</code> 并把<strong>被校验的那个 key</strong> 加入 rejected；不能先校验一次、再重新读取另一个 key 登记。准入判断和返回的 receipt 共用同一 meter，receipt 的 <code>checked_key</code> 必须等于 <code>meter.key</code>。本例先取得观察值，再在锁内复核；期间 key 改变就返回 <code>stale_overflow</code> 或 <code>stale_snapshot</code>，不会把新输入当作旧错误的恢复目标。</p>
+<p>这项复核还覆盖压缩领取前、替换完成后、模型切换前后以及最终熔断前。压缩回调保持锁外；已经合法领取的旧快照压缩会计入尝试数，但迟到结果不能覆盖新输入，也不能据旧结果熔断新请求。receipt 只证明它标记的快照在检查时满足本地条件；返回后若输入改变，发送方仍须匹配该 key，不能用旧 ready 包装新请求。</p>
+<h3 id="2-当前请求未来余量与-ui-各算什么">2. 当前请求、未来余量与 UI 各算什么</h3>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>数量</th>
+<th>来源与口径</th>
+<th>用途与限制</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>I</code>：本次输入 Token 估计</td>
+<td>组装<strong>即将发送</strong>的系统指令、事实、历史、工具 schema、最新输入及包装后计量；记录 tokenizer、serializer、模型版本</td>
+<td>请求准入和压缩决策；不是只数历史文本。本地编码器不知道供应商全部隐藏包装或多模态规则</td>
+</tr>
+<tr>
+<td><code>O</code>：本次输出预留</td>
+<td>当前模型/API 的输出参数及上限；适用时还要核对 reasoning 是否计入同一额度</td>
+<td>要同时满足该模型的单次输出限制，不能机械沿用上一模型的参数</td>
+</tr>
+<tr>
+<td><code>S</code>：估计误差余量</td>
+<td>本次计量方案的保守余量</td>
+<td>降低低估风险；任何固定余量都不是供应商接纳保证</td>
+</tr>
+<tr>
+<td><code>T</code>：未来工具结果余量</td>
+<td>下一步工具结果及其包装的受控上界或规划额度</td>
+<td>此时尚未生成，<strong>不重复算入当前输入 I</strong>；结果真的到达后重新计量，不能继续沿用旧估计</td>
+</tr>
+<tr>
+<td>UI 百分比/最近 usage</td>
+<td>已完成请求的统计或投影，带请求身份、模型、窗口、观测时点</td>
+<td>用来展示并标记 stale/unknown；不要把旧 numerator 除以新模型窗口后当成当前请求测量</td>
+</tr>
+</tbody>
+</table></div>
+<p>在“输入与输出共享一个上下文窗口”的<strong>本题假设</strong>下，令窗口为 <code>C</code>，当前本地预算条件为 <code>I + O + S ≤ C</code>；额外保留工具余量的主动规划条件为 <code>I + O + S + T ≤ C</code>。定义 <code>headroom = C − I − O − S</code>，前者要求 <code>headroom ≥ 0</code>，后者要求 <code>headroom ≥ T</code>。等号允许；未知或非正窗口应报口径错误，不能用 UI 的 0% 表示安全。</p>
+<p>这只是给预计增长留空间。下一步还要计入已生成的 assistant 消息和下一次输出预留，T 本身不保证下一步完整请求可用；每个请求边界都要重新检查。</p>
+<p>fixture 把规划条件作为自动准入门槛。产品也可以选择在当前请求满足硬预算时继续，同时严格限制后续工具增长；这是不同的恢复策略，应明确记录。</p>
+<p>不同产品的输入/输出上限、reasoning、图片、工具协议包装和 cache usage 口径必须单独适配。不要把累计账单 Token 或 cached input 的优惠数量从上下文占用中随意扣除。模型切换时，窗口、tokenizer、输出上限、输出预留和误差余量一起重新确认；更大窗口并不保证旧配置有效，也不保证更便宜。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>恢复方案</th>
+<th>适用条件与收益</th>
+<th>代价及不适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>压缩或外置历史</td>
+<td>历史存在冗余，关键约束和工具台账能保留；可降低后续输入体积</td>
+<td>有摘要开销和信息损失风险。若主因是巨大工具 schema、固定指令或刚到达的工具结果，反复压旧历史可能无用</td>
+</tr>
+<tr>
+<td>切换更大窗口模型</td>
+<td>已有切换授权，任务、工具协议和模型能力兼容，重算后确有余量</td>
+<td>可能提高成本/延迟，改变 tokenizer 与输出规则。新窗口仍不足、缺授权或能力不兼容时不能强行切换</td>
+</tr>
+</tbody>
+</table></div>
+<p>无论采用哪种方案，都应限制恢复次数、压缩自身的 Token/墙钟预算、模型切换次数和总耗费。本例一个恢复 episode 最多调用压缩器 <strong>2 次</strong>、切换模型 <strong>1 次</strong>；相同请求 key 不重复调用压缩器，切换不重置计数，无可用恢复路径时进入熔断并停止自动准入。明确的用户修订或新任务可以由 host 创建新的 episode，不能把每次失败自动当成“重新开始”。若供应商再次拒绝，即使本地显示可容纳，也要保留这次拒绝事实。</p>
+<h3 id="3-示例no-op-成功之后切换窗口">3. 示例：no-op 成功之后切换窗口</h3>
+<p>以下是2026-09-16实际运行原创 fixture 的结果。上下文全部合成，两个模型只是 <strong>mock-small/mock-large</strong> 标签，窗口和预留数是教学配置，<strong>不是这些 encoding 所对应真实模型的规格</strong>。tiktoken 固定为0.9.0；本例只对 <code>synthetic-json-v1</code> 完整 JSON 包装编码，未模拟供应商真实 Chat Template，也未调用模型。</p>
+<p>合成历史是 <code>步骤记录：查找合成文档，保留任务结论，继续分析。 item alpha beta.</code> 加换行，重复35次；固定 system/facts、read_mock 工具 schema 和当前 user 文本见下面代码。上一条 UI 观测为虚构的 <code>300 / 1024 = 29.296875%</code>，其 request key 与当前请求不匹配。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>状态</th>
+<th>世代与计量</th>
+<th>本地判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mock-small 请求</td>
+<td><code>g=0</code>；cl100k_base 得 <code>I=1231</code>；<code>C=1024, O=200, S=24, T=300</code></td>
+<td><code>headroom=1024−1231−200−24=−431</code>，当前请求已超预算；旧 UI 29.30% 是 stale</td>
+</tr>
+<tr>
+<td>压缩器返回 success=true，历史原样返回</td>
+<td><code>g</code> 仍为0，内容和请求 key 不变，<code>I</code> 仍为1231</td>
+<td>记录 <code>no_content_change</code>；不能因成功返回而重发原请求</td>
+</tr>
+<tr>
+<td>host 使用预授权 mock-large 合同</td>
+<td><code>g=0</code>；改用 o200k_base 重算得 <code>I=914</code>；<code>C=2048, O=256, S=32, T=300</code></td>
+<td><code>headroom=2048−914−256−32=846≥300</code>，返回 <code>local_budget_ready</code></td>
+</tr>
+<tr>
+<td>若新请求又收到模拟 overflow</td>
+<td>错误关联到新请求 key；压缩仍 no-op，计数不因切换归零</td>
+<td>用完剩余压缩预算后返回 <code>circuit_open</code>；本地 fit 不能抹掉已知拒绝</td>
+</tr>
+</tbody>
+</table></div>
+<p>这里发生的是<strong>模型合同变化后的容量恢复</strong>，没有发生压缩替换；1231→914 还换了 tokenizer，不能把317计为压缩节省量。旧 UI 继续显示旧观测并标记 stale，不参与 gate。旧模型的迟到溢出错误也不能归到新模型请求上；缺少或不匹配的失败请求 key 在本例返回 <code>stale_overflow</code>。</p>
+<p>若不提供允许的 fallback，no-op 后立即熔断；若把 mock-large 窗口改成1100，即便比1024大，重算后仍不足，也要熔断。真正短摘要会提交替换并推进世代；测试另外覆盖了连续两次各减1 Token但仍超限的情况，第三次不能继续压缩。</p>
+<details>
+<summary>可运行的原创 fixture：公开 tokenizer 数据预取，随后只读本地缓存</summary>
+<p>使用 Python3.11.8、<code>tiktoken==0.9.0</code>。把两个代码块分别保存为对应文件，先运行 <code>python3 prefetch_tokenizers.py</code>，再运行 <code>python3 compaction_fixture.py</code>。前者仅下载公开 tokenizer 数据到脚本旁的专属 <code>tokenizer-cache</code>，不调用模型；后者禁止 pinned tiktoken 的 cache-miss 读取路径，缺缓存会报错。无需 API key。</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python"># file: prefetch_tokenizers.py
+&quot;&quot;&quot;Fetch only public tokenizer data into this fixture&#x27;s dedicated cache.&quot;&quot;&quot;
+import hashlib,json,os
+from pathlib import Path
+import tiktoken
+ROOT=Path(__file__).resolve().parent
+cache=ROOT/&#x27;tokenizer-cache&#x27;
+os.environ[&#x27;TIKTOKEN_CACHE_DIR&#x27;]=str(cache)
+for name in (&#x27;cl100k_base&#x27;,&#x27;o200k_base&#x27;):
+    tiktoken.get_encoding(name)
+rows=[dict(file=p.name,bytes=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest())
+      for p in sorted(cache.iterdir()) if p.is_file()]
+(ROOT/&#x27;tokenizer-cache-manifest.json&#x27;).write_text(json.dumps(rows,indent=2)+&#x27;\n&#x27;)
+print(&#x27;Prepared public tokenizer cache:&#x27;,len(rows),&#x27;files; no model call&#x27;)
+</code></pre>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python"># file: compaction_fixture.py
+&quot;&quot;&quot;Original local budget planner. No provider call, real session or runtime config.&quot;&quot;&quot;
+from copy import deepcopy
+from dataclasses import asdict, dataclass
+import hashlib,json,os
+from pathlib import Path
+from threading import RLock
+from unittest.mock import patch
+import tiktoken
+
+
+def canonical(value):
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(&#x27;,&#x27;, &#x27;:&#x27;))
+
+
+def digest(value):
+    return hashlib.sha256(canonical(value).encode()).hexdigest()
+
+
+def load_encoders():
+    os.environ[&#x27;TIKTOKEN_CACHE_DIR&#x27;] = str(Path(__file__).resolve().parent/&#x27;tokenizer-cache&#x27;)
+    # Pinned tiktoken loader uses read_file only on a cache miss; forbid that path.
+    with patch(&#x27;tiktoken.load.read_file&#x27;, side_effect=RuntimeError(&#x27;prefetch tokenizer data first&#x27;)):
+        return {n: tiktoken.get_encoding(n) for n in (&#x27;cl100k_base&#x27;, &#x27;o200k_base&#x27;)}
+
+
+@dataclass(frozen=True)
+class Contract:
+    model: str
+    encoding: str
+    window: int
+    max_output: int
+    output: int
+    tool_margin: int
+    safety: int
+    revision: str = &#x27;mock-v1&#x27;
+
+    def __post_init__(self):
+        values=(self.window,self.max_output,self.output,self.tool_margin,self.safety)
+        if (any(type(v) is not int or v &lt; 0 for v in values) or
+                self.window == 0 or self.max_output == 0 or self.output == 0 or
+                self.output &gt; self.max_output):
+            raise ValueError(&#x27;invalid budget contract&#x27;)
+
+
+SMALL=Contract(&#x27;mock-small&#x27;,&#x27;cl100k_base&#x27;,1024,256,200,300,24)
+LARGE=Contract(&#x27;mock-large&#x27;,&#x27;o200k_base&#x27;,2048,512,256,300,32)
+HISTORY=&#x27;步骤记录：查找合成文档，保留任务结论，继续分析。 item alpha beta.\n&#x27; * 35
+
+
+@dataclass(frozen=True)
+class Proposal:
+    success: bool
+    source_key: str
+    history: str
+
+
+class Planner:
+    def __init__(self, encoders, history=HISTORY, contract=SMALL, max_compactions=2):
+        if type(max_compactions) is not int or not 0 &lt;= max_compactions &lt;= 10:
+            raise ValueError(&#x27;invalid recovery limit&#x27;)
+        if contract.encoding not in encoders:
+            raise ValueError(&#x27;unknown encoding&#x27;)
+        self._lock=RLock()
+        self.encoders=encoders
+        self.history=history
+        self.contract=contract
+        self.generation=0
+        self.user=&#x27;请根据合成记录继续。&#x27;
+        self.tools=[{&#x27;name&#x27;:&#x27;read_mock&#x27;,&#x27;description&#x27;:&#x27;Read a synthetic document.&#x27;,
+                     &#x27;inputSchema&#x27;:{&#x27;type&#x27;:&#x27;object&#x27;,&#x27;properties&#x27;:{&#x27;id&#x27;:{&#x27;type&#x27;:&#x27;string&#x27;}}}}]
+        self.fixed={&#x27;system&#x27;:&#x27;Use only synthetic data.&#x27;, &#x27;facts&#x27;:&#x27;decision_id=F7; no external actions.&#x27;}
+        self.max_compactions=max_compactions
+        self.compactions=0
+        self.switches=0
+        self.attempted=set()
+        self.rejected=set()
+        self.circuit=False
+        self.events=[]
+
+    def meter(self, history=None):
+        with self._lock:
+            return self._meter_locked(history)
+
+    def _meter_locked(self, history=None):
+        # Caller holds _lock; no external callbacks in this snapshot calculation.
+        c=self.contract
+        payload=canonical(dict(**self.fixed, history=self.history if history is None else history,
+                               user=self.user,tools=self.tools,serializer=&#x27;synthetic-json-v1&#x27;))
+        tokens=len(self.encoders[c.encoding].encode(payload, disallowed_special=()))
+        headroom=c.window-tokens-c.output-c.safety
+        return dict(key=digest(dict(payload=payload,contract=asdict(c),generation=self.generation)),
+                    generation=self.generation, model=c.model, encoding=c.encoding,
+                    input_tokens=tokens,window=c.window,output=c.output,safety=c.safety,
+                    tool_margin=c.tool_margin,headroom=headroom,
+                    request_fit=headroom &gt;= 0,planning_fit=headroom &gt;= c.tool_margin)
+
+    def change_user(self, text):
+        with self._lock:
+            self.user=text  # models a new host input arriving while a proposal is being made
+
+    def compact_once(self, compactor):
+        return self._compact_once(compactor)[0]
+
+    def _compact_once(self, compactor, expected_key=None):
+        # Return the committed snapshot along with the outcome, never sample it later.
+        with self._lock:
+            before=self._meter_locked()
+            if expected_key is not None and expected_key != before[&#x27;key&#x27;]:
+                self.events.append({&#x27;event&#x27;:&#x27;stale_input&#x27;})
+                return False,before
+            if self.circuit or self.compactions &gt;= self.max_compactions or before[&#x27;key&#x27;] in self.attempted:
+                self.events.append({&#x27;event&#x27;:&#x27;compaction_limit&#x27;})
+                return False,before
+            self.compactions += 1
+            self.attempted.add(before[&#x27;key&#x27;])
+            source_history=self.history
+        try:
+            proposal=compactor(source_history,before[&#x27;key&#x27;])  # bounded, trusted local mock
+        except Exception as exc:
+            with self._lock:
+                self.events.append({&#x27;event&#x27;:&#x27;compactor_error&#x27;,&#x27;type&#x27;:type(exc).__name__})
+                return False,self._meter_locked()
+        with self._lock:
+            current=self._meter_locked()
+            if (not isinstance(proposal,Proposal) or type(proposal.success) is not bool or
+                    not proposal.success or type(proposal.history) is not str):
+                self.events.append({&#x27;event&#x27;:&#x27;invalid_or_failed_proposal&#x27;})
+                return False,current
+            if proposal.source_key != before[&#x27;key&#x27;] or current[&#x27;key&#x27;] != before[&#x27;key&#x27;]:
+                self.events.append({&#x27;event&#x27;:&#x27;stale_proposal&#x27;})
+                return False,current
+            if proposal.history == source_history:
+                self.events.append({&#x27;event&#x27;:&#x27;no_content_change&#x27;,&#x27;generation&#x27;:self.generation})
+                return False,current
+            after=self._meter_locked(proposal.history)
+            if after[&#x27;input_tokens&#x27;] &gt;= before[&#x27;input_tokens&#x27;]:
+                self.events.append({&#x27;event&#x27;:&#x27;no_token_reduction&#x27;})
+                return False,current
+            self.history=proposal.history
+            self.generation += 1  # only committed, reducing replacement advances this counter
+            self.events.append(dict(event=&#x27;replaced&#x27;,generation=self.generation,
+                                    before=before[&#x27;input_tokens&#x27;],after=after[&#x27;input_tokens&#x27;]))
+            return True,self._meter_locked()
+
+    def _receipt_locked(self, status, meter):
+        # Decision and receipt share this exact locked snapshot; no second meter call.
+        if status == &#x27;local_budget_ready&#x27;:
+            assert meter[&#x27;planning_fit&#x27;] and meter[&#x27;key&#x27;] not in self.rejected and not self.circuit
+        return dict(status=status,checked_key=meter[&#x27;key&#x27;],meter=deepcopy(meter),
+                    compactions=self.compactions,switches=self.switches,events=deepcopy(self.events))
+
+    def _unchanged_locked(self, observed, expected_key):
+        current=self._meter_locked()
+        return current, observed[&#x27;key&#x27;] == current[&#x27;key&#x27;] == expected_key
+
+    def prepare(self, compactor, cause=&#x27;proactive&#x27;, fallback=None, failed_key=None):
+        # One recovery driver. Optimistic observations are revalidated under _lock.
+        observed=self.meter()
+        with self._lock:
+            m,unchanged=self._unchanged_locked(observed,observed[&#x27;key&#x27;])
+            if cause not in (&#x27;proactive&#x27;,&#x27;context_overflow&#x27;):
+                return self._receipt_locked(&#x27;not_context_overflow&#x27;,m)
+            if self.circuit:
+                return self._receipt_locked(&#x27;circuit_open&#x27;,m)
+            if cause == &#x27;context_overflow&#x27;:
+                if not unchanged or failed_key != m[&#x27;key&#x27;]:
+                    return self._receipt_locked(&#x27;stale_overflow&#x27;,m)
+                self.rejected.add(m[&#x27;key&#x27;])  # validate and register ONE locked key
+            elif not unchanged:
+                return self._receipt_locked(&#x27;stale_snapshot&#x27;,m)
+            expected_key=m[&#x27;key&#x27;]
+        for _ in range(self.max_compactions + 1):
+            observed=self.meter()
+            with self._lock:
+                m,unchanged=self._unchanged_locked(observed,expected_key)
+                if not unchanged:
+                    return self._receipt_locked(&#x27;stale_snapshot&#x27;,m)
+                if m[&#x27;planning_fit&#x27;] and m[&#x27;key&#x27;] not in self.rejected:
+                    return self._receipt_locked(&#x27;local_budget_ready&#x27;,m)
+            applied,committed=self._compact_once(compactor,expected_key)
+            if not applied:
+                break
+            expected_key=committed[&#x27;key&#x27;]
+        # fallback is supplied by the trusted host as a preauthorized fictional contract.
+        observed=self.meter()
+        with self._lock:
+            m,unchanged=self._unchanged_locked(observed,expected_key)
+            if not unchanged:
+                return self._receipt_locked(&#x27;stale_snapshot&#x27;,m)
+            if fallback is not None and self.switches &lt; 1:
+                if fallback.encoding in self.encoders and fallback.window &gt; self.contract.window:
+                    previous=self.contract.model
+                    self.contract=fallback
+                    self.switches += 1
+                    self.events.append(dict(event=&#x27;model_switched&#x27;,previous=previous,
+                                            current=fallback.model,generation=self.generation))
+                    expected_key=self._meter_locked()[&#x27;key&#x27;]
+        observed=self.meter()  # reprice the new contract before the final locked gate
+        with self._lock:
+            m,unchanged=self._unchanged_locked(observed,expected_key)
+            if not unchanged:
+                return self._receipt_locked(&#x27;stale_snapshot&#x27;,m)
+            if m[&#x27;planning_fit&#x27;] and m[&#x27;key&#x27;] not in self.rejected:
+                return self._receipt_locked(&#x27;local_budget_ready&#x27;,m)
+            self.circuit=True
+            return self._receipt_locked(&#x27;circuit_open&#x27;,m)
+
+    def result(self, status):
+        with self._lock:
+            m=self._meter_locked()
+            if status == &#x27;local_budget_ready&#x27; and (self.circuit or not m[&#x27;planning_fit&#x27;] or m[&#x27;key&#x27;] in self.rejected):
+                status=&#x27;circuit_open&#x27; if self.circuit else &#x27;stale_snapshot&#x27;
+            return self._receipt_locked(status,m)
+
+    def ui_view(self, previous):
+        m=self.meter()
+        return dict(last_percent=(100*previous[&#x27;tokens&#x27;]/previous[&#x27;window&#x27;])
+                    if previous[&#x27;window&#x27;] &gt; 0 else None,
+                    stale=previous[&#x27;key&#x27;] != m[&#x27;key&#x27;] or previous[&#x27;model&#x27;] != m[&#x27;model&#x27;],
+                    source=&#x27;synthetic_previous_usage&#x27;)
+
+
+def no_op(history, key):
+    return Proposal(True,key,history)
+
+
+def demo(encoders):
+    p=Planner(encoders)
+    before=p.meter()
+    previous=dict(key=&#x27;previous-request&#x27;,model=SMALL.model,window=1024,tokens=300)
+    ui_before=p.ui_view(previous)
+    result=p.prepare(no_op,cause=&#x27;context_overflow&#x27;,fallback=LARGE,failed_key=before[&#x27;key&#x27;])
+    return dict(before=before,ui_before=ui_before,result=result,ui_after=p.ui_view(previous))
+
+
+if __name__ == &#x27;__main__&#x27;:
+    print(json.dumps(demo(load_encoders()),ensure_ascii=False,indent=2))
+</code></pre>
+</details>
+<h3 id="4-真实验证的范围">4. 真实验证的范围</h3>
+<p>CPython3.11.8 / tiktoken0.9.0 上的原创 <code>test_compaction.py</code> <strong>17个测试通过</strong>。覆盖 no-op、同 Token 数的不同文本、膨胀候选、失败/异常/非法提案、真实替换与固定部分不变、减量仍超限、过期提案、压缩中新增输入、工具 schema 增长、工具余量与当前预算的区别、等号边界、输出限制、模型切换重计量、旧模型迟到错误、二次 overflow 与计数不重置、非上下文错误和过期 UI。</p>
+<p>独立 review 另发现了“校验 A、登记 B”和“判断 A ready、返回 B meter”两个确定切点。新增 <code>test_snapshot_receipts.py</code> <strong>10个测试通过</strong>，包括这两处、切换后的最终准入、压缩领取前、替换后、熔断前、锁外回调及 receipt 的时效/独立副本。最终回归的7个输入线程均在断言前 join；相同10项测试在旧代码上为8失败，修复后0失败，旧证据保留。reviewer 原始脚本以“缺陷存在”为通过条件：它们在旧代码上 exit 0，在修复后输出正确状态并因原缺陷断言不成立而 exit 1；这些退出码不能代替正向回归的通过记录。</p>
+<p>测试只对合成输入操作；一项文件测试在专属临时目录写入合成历史，核对前后文件字节和集合未变化，并确认目录删除。两个公开 BPE 缓存文件的 SHA-256 与 tiktoken0.9.0 固定源码中的 expected_hash 一致，测试加载时阻止 cache-miss 下载。<strong>收费模型调用数为0</strong>；所有压缩与 overflow 都是本地 mock，不是供应商观测。</p>
+<p>本例支持单个恢复驱动，锁仅保护本地快照比较和替换；没有验证多进程持久化、崩溃恢复、真实供应商准入或摘要语义质量。压缩器是即时且有界的原创函数，计数上限不能中断真实阻塞函数；生产还需独立的 deadline/取消监督和费用控制。<code>local_budget_ready</code> 只表示本地规划条件满足，不能当成实际请求已发送、已被接纳或已成功。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>“压缩器成功返回就证明有进展。”</strong> 需要实际提交、同口径减量和预算复查；no-op 不提供重试凭证。</li>
+<li><strong>“UI 占用率低就可以发送。”</strong> 过期 usage、投影和新窗口可能不属于同一请求，必须标注来源并单独计量。</li>
+<li><strong>“换成大窗口后沿用原 Token 数和输出预留。”</strong> tokenizer、输入包装和输出限制可能同时改变，必须重算；跨 tokenizer 差值不叫压缩率。</li>
+<li><strong>“给重试加次数上限就保证了硬时限与费用。”</strong> 次数限制阻止循环增长，阻塞调用仍需监督，实际费用仍需对应计费口径。</li>
+<li><strong>“输入变短就等于答案质量、权限和供应商接纳都得到保证。”</strong> 本题的进展证明只管可测的容量和有界恢复，其他保证各有独立证据。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><p>以下来源核对于2026-09-16；正文和实验均独立编写。课程是学习线索，未将其项目判断、阈值或数字当作通用产品保证，没有搬运 AGPL 正文、代码或图片。</p>
+<ul>
+<li>洛小山《AI 产品从入门到精通》，learn-ai 固定 commit <code>5a933d287dd5074cc1543cb849146f3261d47521</code>：<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/dsh-4.html" target="_blank" rel="noopener noreferrer">slides/dsh-4.html</a>（主动/被动与世代线索）、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/dsh-9.html" target="_blank" rel="noopener noreferrer">slides/dsh-9.html</a>（请求计量与 UI 投影）、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/12-11.html" target="_blank" rel="noopener noreferrer">slides/12-11.html</a>（阈值边界与余量）。<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/LICENSE" target="_blank" rel="noopener noreferrer">LICENSE</a> 为 AGPL-3.0，只作链接与独立讨论。</li>
+<li>Mario Zechner / Pi <strong>v0.57.1</strong>，固定 commit <code>a9cedccdde77e9d765303463d8a6cd11c58f7a7f</code>：<a href="https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/packages/coding-agent/src/core/agent-session.ts" target="_blank" rel="noopener noreferrer">agent-session.ts</a> 的 <code>_checkCompaction</code>（1673起）区分 threshold/overflow，检查同模型及压缩边界，并限制 overflow 恢复；<code>_runAutoCompaction</code>（1837附近）先记录和重建消息再发送完成事件；<code>getContextUsage</code>（2925起）在缺少压缩后 usage 时返回对象，其 <code>tokens</code> 与 <code>percent</code> 字段为 null，仍保留 <code>contextWindow</code>。<a href="https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/packages/coding-agent/src/core/compaction/compaction.ts#L209-L215" target="_blank" rel="noopener noreferrer">compaction.ts</a> 的 <code>shouldCompact</code> 给出这个版本的具体阈值比较。以上为源码阅读，未运行 Pi；本文的世代/单调减量门禁是原创教学策略，不声称 Pi 使用同一算法。<a href="https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/LICENSE" target="_blank" rel="noopener noreferrer">MIT LICENSE</a>。</li>
+<li>OpenAI / <strong>tiktoken0.9.0</strong>，tag 对应固定 commit <code>e35ab0915e37b919946b70947f1d0854196cb72c</code>：<a href="https://github.com/openai/tiktoken/blob/e35ab0915e37b919946b70947f1d0854196cb72c/tiktoken/core.py" target="_blank" rel="noopener noreferrer">core.py</a> 的 Encoding.encode；<a href="https://github.com/openai/tiktoken/blob/e35ab0915e37b919946b70947f1d0854196cb72c/tiktoken_ext/openai_public.py#L75-L120" target="_blank" rel="noopener noreferrer">openai_public.py</a> 定义 cl100k_base/o200k_base 及词表数据校验哈希；<a href="https://github.com/openai/tiktoken/blob/e35ab0915e37b919946b70947f1d0854196cb72c/tiktoken/load.py#L32-L83" target="_blank" rel="noopener noreferrer">load.py</a> 说明缓存命中与校验路径。<a href="https://github.com/openai/tiktoken/blob/e35ab0915e37b919946b70947f1d0854196cb72c/LICENSE" target="_blank" rel="noopener noreferrer">MIT LICENSE</a>。库提供编码计数，不提供本例虚构模型的窗口规格或供应商准入保证。</li>
+</ul>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">为什么不能只看替换世代增加？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么不能只看替换世代增加？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>世代证明运行时提交了一次替换；候选可能等长、更长，或丢了关键语义。还要在同一计量合同下验证 Token 改善并检查最终预算，语义与工具台账完整性另行验收。本例对无减量候选不提交，因而不会推进世代。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">切换模型后 UI 从90%变成45%，能否直接重试？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：切换模型后 UI 从90%变成45%，能否直接重试？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不能据此决定。比例降低可能只因为分母变大；应重新组装请求、确认 tokenizer/输出参数并计量。错误与 usage 必须绑定原请求，旧模型事件不能自动应用到新模型。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">当前请求放得下，但下一个工具返回可能非常大，怎么办？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：当前请求放得下，但下一个工具返回可能非常大，怎么办？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>提前留出 T，并给工具返回设置截断、分页或外置读取契约。T 是规划余量，不是无限扩容；返回到达后加进实际输入重新测量，不把 T 和该返回重复相加，也不因为只保留短 UI 文本就假设模型输入也变短。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-4">
+          <div class="followup-label">追问 04</div><h3 id="followup-4">已明显压短且本地 fit，供应商还报 overflow 呢？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：已明显压短且本地 fit，供应商还报 overflow 呢？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>先核对供应商、具体模型版本、输入/输出/reasoning 与包装口径，保留拒绝对应的请求 key。在剩余恢复预算内修正计量或换获准模型；无法证明新的恢复条件就熔断。不能靠把同一个 key 的“成功压缩”再报告一次来无限重试。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>AGENT-0059 · 单题笔记</span><a href="../questions/agent-0059-compaction-progress-proof.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "agent-0059", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

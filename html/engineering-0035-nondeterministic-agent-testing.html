@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。如何测试非确定性的 Agent 运行时，让回放、故障注入与性质测试各自覆盖真实风险？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/engineering-0035-nondeterministic-agent-testing.md">
+  <meta name="source-sha256" content="fc69a91f79a29a7fe70a4a6a5d795ace294e4671d9beb153db34206e017eaa81">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>如何测试非确定性的 Agent 运行时，让回放、故障注入与性质测试各自覆盖真实风险？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">ENGINEERING-0035</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="">如何测试非确定性的 Agent 运行时，让回放、故障注入与性质测试各自覆盖真实风险？</h1>
+        <div class="question-meta"><span>工程化、部署、性能、成本</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>如何测试非确定性的 Agent 运行时，让回放、故障注入与性质测试各自覆盖真实风险？请为重复 block-end、缺 block-start、工具超时选择测试层，并说明怎样发现分片顺序、取消竞态及测试断言自身的问题。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-16</span></p><div class="prose"><p><strong>先固定可控的外部输入和调度条件，再用独立的预期结果与状态不变量检查运行时；不能要求真实模型每次说同一句话，也不能只重放几条成功轨迹。</strong> 运行时协议是否正确、模型决策质量如何、真实服务能否接通，是不同的测试目标。</p>
+<p><a href="engineering-0013-llm-as-judge-bias-calibration.html">engineering-0013</a> 讨论 Judge 校准，<a href="engineering-0014-agent-benchmark-leakage-resistant-evaluation.html">engineering-0014</a> 讨论评估数据污染，<a href="agent-0032-parallel-tool-calling.html">agent-0032</a> 讨论并行一致性。本题测试协议与时序，不用一次模型评分或 benchmark 分数代替这些检查；流内执行的收尾机制另见 <a href="engineering-0026-streaming-tool-transcript-closure.html">engineering-0026</a>。</p>
+<h3 id="1-固定的不只是模型文本还包括时间和边界">1. 固定的不只是模型文本，还包括时间和边界</h3>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>不确定性来源</th>
+<th>可重复测试怎样控制</th>
+<th>需要保留的证据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>provider 响应与协议形状</td>
+<td>固定 raw response/SSE fixture；保留外部字段名与版本，不先转换成自己喜欢的内部对象</td>
+<td>原始字节、fixture hash、协议/adapter 版本、独立标注的预期计划</td>
+</tr>
+<tr>
+<td>工具返回、错误和副作用</td>
+<td>用有约束的 mock 返回值/异常，并在派发处记录调用 ID 与次数</td>
+<td>输入、结果、错误类别、派发次数；断言实际 mock 状态而非 Agent 的“成功”文案</td>
+</tr>
+<tr>
+<td>时间、重试、随机值</td>
+<td>注入虚拟 clock、固定随机 seed、ID/generation；等待点用 barrier/Event 控制</td>
+<td>时间单位、deadline 边界、事件顺序和 seed；不能只说“加了 sleep”</td>
+</tr>
+<tr>
+<td>并发完成与取消</td>
+<td>在特定切点释放结果、触发 timeout/cancel，检查每步不变量</td>
+<td>第一份终态、迟到回调处置、任务 done/结果消费/资源释放记录</td>
+</tr>
+</tbody>
+</table></div>
+<p>“生产格式 fixture”说的是外部契约形状，不要求读取生产日志。本题用固定 Anthropic Python SDK v1.6.0 的 raw event 类型命名组织原创合成 SSE，所有 ID、工具名、参数、usage 和 model 都是虚构值。golden 文件直接写成外部字节，预期参数另写为 <code>{&quot;q&quot;:&quot;茶&quot;,&quot;n&quot;:12}</code>，不是先用被测序列化器生成输入，再用同一份逻辑生成答案。</p>
+<p>真实系统若有经过授权、脱敏的录制样本，可补充真实 SDK/网关产生的格式变化；也要保留独立 oracle 和负例。不能因为一份 fixture 来自真实录制就认为其中所有行为都正确，更不能把生产日志中的秘密搬进测试。本次没有读取生产日志、用户会话或凭据。</p>
+<h3 id="2-三个例子分别放在哪一层">2. 三个例子分别放在哪一层</h3>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>用例与输入</th>
+<th>首选层及关键步骤</th>
+<th>应断言什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>start → delta → end → end</code></td>
+<td>block 组装器的状态机单测；再把重复 <code>content_block_stop</code> 插入外部 SSE 做 adapter 契约测试</td>
+<td>本例严格策略报 <code>duplicate_stop</code>，整份计划不可交付；不能生成两份相同调用。若某产品支持重投递，必须先定义有身份/世代的去重契约，不能看到同名 end 就盲目吞掉</td>
+</tr>
+<tr>
+<td>没有 start 却出现 delta 或 end</td>
+<td>非法轨迹/负面 fixture；从字节解码到 block 状态过一遍</td>
+<td>报 <code>missing_start</code>，不得补造空 block、假调用 ID 或默认参数；半截消息不能假装完整。只测已构造好的内部 block 对象会漏掉这一层</td>
+</tr>
+<tr>
+<td>工具超时，随后结果或取消到达</td>
+<td>虚拟时钟下的 lease/调度器集成测试，加实际协作式 mock task 的取消/drain 检查</td>
+<td>deadline 后到达的结果不能变成功；终态只接受一次，旧 generation 不改变新任务；timeout/cancel 后 task 已结束、异常已消费、资源已释放，而非只设置一个 timeout 标志</td>
+</tr>
+</tbody>
+</table></div>
+<p>deadline 取舍要提前写清。本例用逻辑 tick：开始在 t=4，deadline=5，只有 <code>t&lt;5</code> 的当前 generation 结果可成功；结果恰在 t=5 到达，即使 timeout 回调还没执行，也归为 timed_out。这个选择是教学 host 契约，不是供应商或 asyncio 默认时限语义。</p>
+<p>取消竞态也不能只跑一次顺序。对 result、timeout、cancel 的六个排列，本例用显式 oracle 指定“第一份合法终态保持不变”，逐步断言终态记录不超过一条。在一个真实系统里，若选择别的优先级，测试要验证那份契约，而不是把偶然调度顺序当规范。</p>
+<h3 id="3-回放故障注入与性质测试互相补什么">3. 回放、故障注入与性质测试互相补什么</h3>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>适合与收益</th>
+<th>代价及不能替代的检查</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>固定 trace 回放 / golden</td>
+<td>将已知输入下的解析、组装和决策变成稳定回归，便于定位版本变化</td>
+<td>样本窄，容易把旧 bug 固化为正确答案；不能覆盖未录到的顺序、重试或真实服务可达性</td>
+</tr>
+<tr>
+<td>故障注入 / 受控调度</td>
+<td>明确制造缺帧、重复 end、超时、取消、异常及迟到回调；定位失败边界</td>
+<td>切点若绕开真实入口，可能只测 mock；内存抛异常不证明真实 HTTP reset、TLS、重连或 OS 清理正确</td>
+</tr>
+<tr>
+<td>性质测试 / 小状态空间枚举</td>
+<td>生成多种数据/动作序列，用独立模型或 invariant 检查，保存最小反例</td>
+<td>不变量可能写错，输入域/步骤上限仍有限；固定 seed 不冻结 provider、系统时间或全部线程调度</td>
+</tr>
+<tr>
+<td>少量真实端到端评测</td>
+<td>补真实 SDK、协议版本、部署、权限和模型行为的集成证据</td>
+<td>有费用与波动，需要隔离数据/额度及稳定副作用验证；不适合替代每次提交的确定性边界测试，本次未执行</td>
+</tr>
+</tbody>
+</table></div>
+<p>字节分片与逻辑事件乱序要分开。对同一条有序字节流，在 UTF-8 字符、SSE 行或 JSON 字段中间切开，解码结果应不变。单条有序传输不会因为分包就自动打乱字节；“把 delta 换顺序”应标为应用队列/回调故障或额外协议场景，不能随意当合法传输。</p>
+<p>一个有用的反例是：参数分片为 <code>{&quot;n&quot;:</code>、<code>1</code>、<code>2</code>、<code>}</code> 时得到 12；交换中间两个分片仍是合法 JSON，却得到 21。没有序号、原始顺序凭证或更强语义约束，block 生命周期检查无法识别这个变化。本例测试明确记录这种局限，不宣称“所有乱序都被拒绝”。生产中若需要恢复乱序，应在已定义的排序/世代边界验证，而不是按内容猜顺序。</p>
+<h3 id="4-一组可复跑的原创建模与反例">4. 一组可复跑的原创建模与反例</h3>
+<p>下面两份文件用于 Python3.11.8。本例只支持一条有工具调用的 message、tool_use/input_json_delta 与列明终止事件，执行前先读取完整有界 capture；不实现流内提前派发、text/thinking、服务端工具、全部 usage 更新或完整 Anthropic SDK。重复 end 失败、未知关键事件拒绝、严格 UTF-8/JSON 校验都是这里明确选定的 host 策略，不冒称实际 SDK 的全部行为。</p>
+<p>SSE 部分覆盖 UTF-8/BOM、LF/CRLF/CR、event/data 行和注释，忽略的 id/retry 不代表已实现重连。固定 W3C 2021 EventSource 快照说明 EOF 不派发未完成事件；本 fixture 额外把未完整 capture 报成错误，且选择严格拒绝非法 UTF-8，并非完整浏览器 EventSource。上限为65,536 bytes和64事件，是本地实验口径。</p>
+<details>
+<summary>展开原创外部格式 golden 与被测状态模型</summary>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text"># file: golden.sse（保存时去掉这一行标记）
+event: message_start
+data: {&quot;type&quot;:&quot;message_start&quot;,&quot;message&quot;:{&quot;id&quot;:&quot;msg_synthetic&quot;,&quot;type&quot;:&quot;message&quot;,&quot;role&quot;:&quot;assistant&quot;,&quot;model&quot;:&quot;synthetic-model&quot;,&quot;content&quot;:[],&quot;stop_reason&quot;:null,&quot;stop_sequence&quot;:null,&quot;usage&quot;:{&quot;input_tokens&quot;:4,&quot;output_tokens&quot;:0}}}
+
+event: content_block_start
+data: {&quot;type&quot;:&quot;content_block_start&quot;,&quot;index&quot;:0,&quot;content_block&quot;:{&quot;type&quot;:&quot;tool_use&quot;,&quot;id&quot;:&quot;call_synthetic&quot;,&quot;name&quot;:&quot;lookup&quot;,&quot;input&quot;:{}}}
+
+event: content_block_delta
+data: {&quot;type&quot;:&quot;content_block_delta&quot;,&quot;index&quot;:0,&quot;delta&quot;:{&quot;type&quot;:&quot;input_json_delta&quot;,&quot;partial_json&quot;:&quot;{\&quot;q\&quot;:\&quot;茶\&quot;,\&quot;n\&quot;:&quot;}}
+
+event: content_block_delta
+data: {&quot;type&quot;:&quot;content_block_delta&quot;,&quot;index&quot;:0,&quot;delta&quot;:{&quot;type&quot;:&quot;input_json_delta&quot;,&quot;partial_json&quot;:&quot;12}&quot;}}
+
+event: content_block_stop
+data: {&quot;type&quot;:&quot;content_block_stop&quot;,&quot;index&quot;:0}
+
+event: message_delta
+data: {&quot;type&quot;:&quot;message_delta&quot;,&quot;delta&quot;:{&quot;stop_reason&quot;:&quot;tool_use&quot;,&quot;stop_sequence&quot;:null},&quot;usage&quot;:{&quot;output_tokens&quot;:8}}
+
+event: message_stop
+data: {&quot;type&quot;:&quot;message_stop&quot;}
+
+</code></pre>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python"># file: runtime_fixture.py
+&quot;&quot;&quot;Original bounded test target: SSE subset, strict tool-block model and virtual-time lease.&quot;&quot;&quot;
+import codecs
+from copy import deepcopy
+import json
+
+
+class ProtocolError(Exception):
+    pass
+
+
+def pairs(items):
+    result = {}
+    for key, value in items:
+        if key in result:
+            raise ProtocolError(&#x27;duplicate_json_key&#x27;)
+        result[key] = value
+    return result
+
+
+def constant(_):
+    raise ProtocolError(&#x27;nonfinite_number&#x27;)
+
+
+def parse(text):
+    try:
+        return json.loads(text, object_pairs_hook=pairs, parse_constant=constant)
+    except (ValueError, RecursionError) as exc:
+        raise ProtocolError(&#x27;invalid_json&#x27;) from exc
+
+
+def field(obj, key, kind):
+    if type(obj) is not dict or key not in obj or type(obj[key]) is not kind:
+        raise ProtocolError(&#x27;invalid_field:&#x27; + key)
+    return obj[key]
+
+
+class SSE:
+    &quot;&quot;&quot;Bounded capture reader. Not an HTTP client, reconnect layer or general SDK.&quot;&quot;&quot;
+    def __init__(self):
+        self.decoder = codecs.getincrementaldecoder(&#x27;utf-8-sig&#x27;)(&#x27;strict&#x27;)
+        self.total, self.line, self.skip_lf = 0, &#x27;&#x27;, False
+        self.event, self.data, self.frames = &#x27;&#x27;, [], []
+        self.closed = False
+
+    def _line(self):
+        line, self.line = self.line, &#x27;&#x27;
+        if not line:
+            if self.data:
+                value = parse(&#x27;\n&#x27;.join(self.data))
+                if field(value, &#x27;type&#x27;, str) != (self.event or &#x27;message&#x27;):
+                    raise ProtocolError(&#x27;event_type_mismatch&#x27;)
+                self.frames.append(value)
+                if len(self.frames) &gt; 64:
+                    raise ProtocolError(&#x27;too_many_events&#x27;)
+            self.event, self.data = &#x27;&#x27;, []
+        elif not line.startswith(&#x27;:&#x27;):
+            key, separator, value = line.partition(&#x27;:&#x27;)
+            if separator and value.startswith(&#x27; &#x27;): value = value[1:]
+            if key == &#x27;event&#x27;: self.event = value
+            elif key == &#x27;data&#x27;: self.data.append(value)
+            # id/retry and unknown SSE fields are not used by this offline reader.
+
+    def feed(self, chunk):
+        if self.closed or type(chunk) is not bytes:
+            raise ProtocolError(&#x27;invalid_feed&#x27;)
+        self.total += len(chunk)
+        if self.total &gt; 65536:
+            raise ProtocolError(&#x27;capture_too_large&#x27;)
+        try:
+            text = self.decoder.decode(chunk)
+        except UnicodeError as exc:
+            raise ProtocolError(&#x27;invalid_utf8&#x27;) from exc
+        for char in text:
+            if self.skip_lf:
+                self.skip_lf = False
+                if char == &#x27;\n&#x27;: continue
+            if char in (&#x27;\r&#x27;, &#x27;\n&#x27;):
+                self._line()
+                self.skip_lf = char == &#x27;\r&#x27;
+            else:
+                self.line += char
+
+    def finish(self):
+        if self.closed:
+            raise ProtocolError(&#x27;reader_closed&#x27;)
+        self.closed = True
+        try:
+            self.decoder.decode(b&#x27;&#x27;, final=True)
+        except UnicodeError as exc:
+            raise ProtocolError(&#x27;invalid_utf8&#x27;) from exc
+        if self.line or self.data or self.event:
+            raise ProtocolError(&#x27;truncated_frame&#x27;)
+        return deepcopy(self.frames)
+
+
+class Blocks:
+    &quot;&quot;&quot;Strict host policy for one tool-use message; no incremental tool dispatch.&quot;&quot;&quot;
+    def __init__(self):
+        self.state, self.blocks, self.tools = &#x27;new&#x27;, {}, []
+        self.ids, self.stop_reason = set(), None
+
+    def _block(self, index):
+        if index not in self.blocks:
+            raise ProtocolError(&#x27;missing_start&#x27;)
+        return self.blocks[index]
+
+    def apply(self, event):
+        try:
+            self._apply(event)
+        except ProtocolError:
+            self.state = &#x27;failed&#x27;
+            raise
+
+    def _apply(self, event):
+        kind = field(event, &#x27;type&#x27;, str)
+        if self.state in (&#x27;failed&#x27;, &#x27;closed&#x27;):
+            raise ProtocolError(&#x27;stream_terminal&#x27;)
+        if kind == &#x27;ping&#x27;: return
+        if kind == &#x27;message_start&#x27;:
+            if self.state != &#x27;new&#x27;: raise ProtocolError(&#x27;duplicate_message_start&#x27;)
+            message = field(event, &#x27;message&#x27;, dict)
+            if field(message, &#x27;type&#x27;, str) != &#x27;message&#x27; or field(message, &#x27;role&#x27;, str) != &#x27;assistant&#x27;:
+                raise ProtocolError(&#x27;invalid_message&#x27;)
+            if not field(message, &#x27;id&#x27;, str) or field(message, &#x27;content&#x27;, list):
+                raise ProtocolError(&#x27;unsupported_initial_content&#x27;)
+            self.state = &#x27;open&#x27;
+            return
+        if self.state != &#x27;open&#x27;: raise ProtocolError(&#x27;message_start_required&#x27;)
+        if kind.startswith(&#x27;content_block_&#x27;):
+            index = field(event, &#x27;index&#x27;, int)
+            if index &lt; 0: raise ProtocolError(&#x27;invalid_index&#x27;)
+            if kind == &#x27;content_block_start&#x27;:
+                if index != len(self.blocks): raise ProtocolError(&#x27;invalid_start_index&#x27;)
+                block = field(event, &#x27;content_block&#x27;, dict)
+                if field(block, &#x27;type&#x27;, str) != &#x27;tool_use&#x27; or field(block, &#x27;input&#x27;, dict) != {}:
+                    raise ProtocolError(&#x27;unsupported_block&#x27;)
+                cid, name = field(block, &#x27;id&#x27;, str), field(block, &#x27;name&#x27;, str)
+                if not cid or not name or cid in self.ids: raise ProtocolError(&#x27;invalid_call_identity&#x27;)
+                self.ids.add(cid)
+                self.blocks[index] = dict(id=cid, name=name, chunks=[], closed=False)
+            elif kind == &#x27;content_block_delta&#x27;:
+                block = self._block(index)
+                if block[&#x27;closed&#x27;]: raise ProtocolError(&#x27;delta_after_stop&#x27;)
+                delta = field(event, &#x27;delta&#x27;, dict)
+                if field(delta, &#x27;type&#x27;, str) != &#x27;input_json_delta&#x27;: raise ProtocolError(&#x27;unsupported_delta&#x27;)
+                block[&#x27;chunks&#x27;].append(field(delta, &#x27;partial_json&#x27;, str))
+            elif kind == &#x27;content_block_stop&#x27;:
+                block = self._block(index)
+                if block[&#x27;closed&#x27;]: raise ProtocolError(&#x27;duplicate_stop&#x27;)
+                args = parse(&#x27;&#x27;.join(block[&#x27;chunks&#x27;]) or &#x27;{}&#x27;)
+                if type(args) is not dict: raise ProtocolError(&#x27;invalid_arguments&#x27;)
+                block[&#x27;closed&#x27;] = True
+                self.tools.append(dict(id=block[&#x27;id&#x27;], name=block[&#x27;name&#x27;], args=args))
+            else:
+                raise ProtocolError(&#x27;unknown_event&#x27;)
+        elif kind == &#x27;message_delta&#x27;:
+            if self.stop_reason is not None: raise ProtocolError(&#x27;duplicate_message_delta&#x27;)
+            self.stop_reason = field(field(event, &#x27;delta&#x27;, dict), &#x27;stop_reason&#x27;, str)
+        elif kind == &#x27;message_stop&#x27;:
+            if self.stop_reason != &#x27;tool_use&#x27; or not self.blocks or not all(b[&#x27;closed&#x27;] for b in self.blocks.values()):
+                raise ProtocolError(&#x27;incomplete_message&#x27;)
+            self.state = &#x27;closed&#x27;
+        else:
+            raise ProtocolError(&#x27;unknown_event&#x27;)
+
+    def finish(self):
+        if self.state != &#x27;closed&#x27;: raise ProtocolError(&#x27;incomplete_message&#x27;)
+        return deepcopy(self.tools)
+
+
+def replay(chunks):
+    reader = SSE()
+    for chunk in chunks: reader.feed(chunk)
+    model = Blocks()
+    for event in reader.finish(): model.apply(event)
+    return model.finish()
+
+
+class Clock:
+    def __init__(self): self.now = 4
+    def advance(self, value):
+        if type(value) is not int or value &lt; self.now: raise ValueError(&#x27;clock_moved_backwards&#x27;)
+        self.now = value
+
+
+class Lease:
+    &quot;&quot;&quot;Virtual-time decision model; task cancellation/drain is tested separately.&quot;&quot;&quot;
+    def __init__(self, clock, generation=&#x27;attempt-1&#x27;):
+        self.clock, self.generation, self.deadline = clock, generation, 5
+        self.status, self.value, self.records = &#x27;pending&#x27;, None, []
+
+    def _finish(self, status, value=None):
+        if self.status != &#x27;pending&#x27;: return False
+        self.status, self.value = status, deepcopy(value)
+        self.records.append(dict(status=status, value=deepcopy(value)))
+        return True
+
+    def resolve(self, generation, value):
+        if generation != self.generation: return False
+        if self.clock.now &gt;= self.deadline: return self.timeout()
+        return self._finish(&#x27;succeeded&#x27;, value)
+
+    def timeout(self):
+        if self.clock.now &lt; self.deadline: return False
+        return self._finish(&#x27;timed_out&#x27;)
+
+    def cancel(self): return self._finish(&#x27;cancelled&#x27;)
+    def fail(self): return self._finish(&#x27;failed&#x27;)
+
+
+if __name__ == &#x27;__main__&#x27;:
+    import sys
+    with open(sys.argv[1], &#x27;rb&#x27;) as source:
+        captured = source.read(65537)
+    print(json.dumps(replay([captured]), ensure_ascii=False, indent=2))
+</code></pre>
+</details>
+<p>将代码保存为 <code>runtime_fixture.py</code>，将外部数据保存为 <code>golden.sse</code>，运行 <code>python3 runtime_fixture.py golden.sse</code>，实际得到一份 <code>call_synthetic / lookup</code> 计划，参数为 <code>q=茶, n=12</code>；没有派发真实工具。附件的 <code>python3 test_runtime.py</code> 运行完整正向/负向断言。</p>
+<p>2026-09-16 实跑28 tests通过、0 failures/errors：包括覆盖949-byte golden所有950个单切点、32个固定seed的多切点、六种小型终态顺序，以及4个实际 asyncio mock task 的成功、异常、取消和超时收尾。24个协议测试目录删除、24次输入字节检查通过；4个任务都在兜底finally之前断言done、结果已消费且mock资源已释放。mock用Event等待，测试guard为1秒，只适用于协作式有限任务，不证明不合作任务的硬抢占或生产墙钟SLA。</p>
+<p>为检验断言是否有检错能力，另在专属副本中各移除一道检查，原样运行同一测试脚本：</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>植入缺陷</th>
+<th>同一套断言的实际结果</th>
+<th>定位的风险</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>允许重复 stop</td>
+<td>exit1，1个断言失败</td>
+<td>重复 end 被接受，完整计划可能包含重复调用</td>
+</tr>
+<tr>
+<td>缺 start 时补造 block</td>
+<td>exit1，4个断言失败</td>
+<td>缺帧被默认数据掩盖，错误语义或计划发生变化</td>
+</tr>
+<tr>
+<td>resolve 不检查 deadline</td>
+<td>exit1，1个断言失败</td>
+<td>timer 回调尚未运行时，已过期结果被记为成功</td>
+</tr>
+<tr>
+<td>允许覆盖已有终态</td>
+<td>exit1，7个断言失败</td>
+<td>取消/超时/结果互相覆盖，终态记录超过一次</td>
+</tr>
+</tbody>
+</table></div>
+<p>四组测试脚本 hash 相同，每组都有目标断言失败且未处理测试错误为0；变异副本、diff、退出码和完整stderr均保留。4/4仅表示这四个选择的植入缺陷被检出，不是全系统 mutation score，也不是正式证明。本次没有测量代码覆盖率，更没有用覆盖率数字证明时序正确。</p>
+<h3 id="5-失败要区分被测缺陷oracle-错误和环境问题">5. 失败要区分被测缺陷、oracle 错误和环境问题</h3>
+<p>看到红灯先保留输入、代码/fixture版本、顺序、clock/seed、预期与实际、失败堆栈和收尾状态，再定位责任。导入失败、损坏的fixture、错误的断言类型或“没读到结果就判失败”，都可能是测试问题；来自被测代码的未预期异常也可能是产品缺陷，不能仅凭 unittest 把它记为 error 就归咎 harness。</p>
+<p>本次变异汇总曾把 <code>SystemExit(True)</code> 直接序列化成JSON布尔值，而非整数退出码。保留该旧记录后，改用独立子进程的真实 <code>returncode</code> 重跑四组，均为整数1，失败数仍是1/4/1/7。这个报告字段错误与四个被测植入缺陷分开登记，没有把它算成新增运行时缺陷。</p>
+<p>回归维护也要避免“快照更新即修复”：对语义变化先核对外部契约和独立oracle，再更新预期；把缩小后的失败轨迹固定为专门测试。生成器与消费者若共享同一错误规则，成功回放可能永远测不出格式错误。性质测试也应在每个可观察步骤检查不变量，而不只看最终一句“完成”。</p>
+<p>本次只有原创合成协议数据、虚拟时钟和协作式mock，没有访问生产日志、用户会话、凭据或收费模型，没有修改真实运行时。没有启动故障HTTP服务器、真实SDK、网络乱序器或跨进程执行器；未验证生产认证、远端取消/副作用回滚、分布式exactly-once、生产性能与持久性。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>“覆盖率高就代表时序正确。”</strong> 相同代码行可以按不同顺序执行；需要显式切点、事件排列和不变量。</li>
+<li><strong>“模型写几条成功路径测试就够了。”</strong> 自产输入、自产oracle容易共享盲点；要对齐外部格式、独立预期、错误轨迹并验证检错能力。</li>
+<li><strong>“固定seed或回放成功能代替真实集成。”</strong> 它们不能证明SDK/网络/鉴权/供应商当前行为或生产性能。</li>
+<li><strong>“测试报错都算发现产品bug。”</strong> 必须定位错误来自SUT、oracle、harness还是环境，保留原记录，不能靠改预期把失败洗成通过。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>洛小山《AI 产品从入门到精通》learn-ai，固定 <code>5a933d287dd5074cc1543cb849146f3261d47521</code>：<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/dsh-26.html" target="_blank" rel="noopener noreferrer">slides/dsh-26.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/dsh-22.html" target="_blank" rel="noopener noreferrer">slides/dsh-22.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/codex-03.html" target="_blank" rel="noopener noreferrer">slides/codex-03.html</a>。仅为学习线索，不采用课程特定覆盖率门槛、默认超时、首次发现bug或私有/restored源码行为作为本文事实；不搬运AGPL正文、代码或图片。</li>
+<li>Anthropic Python SDK <strong>v1.6.0</strong>，固定commit <code>7e5ca5c94126a6d7de159a169ff43eb9b1cac57f</code>：<a href="https://github.com/anthropics/anthropic-sdk-python/blob/7e5ca5c94126a6d7de159a169ff43eb9b1cac57f/src/anthropic/types/raw_content_block_start_event.py" target="_blank" rel="noopener noreferrer">RawContentBlockStartEvent</a>、<a href="https://github.com/anthropics/anthropic-sdk-python/blob/7e5ca5c94126a6d7de159a169ff43eb9b1cac57f/src/anthropic/types/raw_content_block_delta_event.py" target="_blank" rel="noopener noreferrer">RawContentBlockDeltaEvent</a>、<a href="https://github.com/anthropics/anthropic-sdk-python/blob/7e5ca5c94126a6d7de159a169ff43eb9b1cac57f/src/anthropic/types/raw_content_block_stop_event.py" target="_blank" rel="noopener noreferrer">RawContentBlockStopEvent</a>、<a href="https://github.com/anthropics/anthropic-sdk-python/blob/7e5ca5c94126a6d7de159a169ff43eb9b1cac57f/src/anthropic/types/input_json_delta.py" target="_blank" rel="noopener noreferrer">InputJSONDelta</a>、<a href="https://github.com/anthropics/anthropic-sdk-python/blob/7e5ca5c94126a6d7de159a169ff43eb9b1cac57f/src/anthropic/types/raw_message_delta_event.py" target="_blank" rel="noopener noreferrer">RawMessageDeltaEvent</a>。用于校准wire形状；MIT源码只阅读引用，没有运行SDK，也不声称该SDK使用本例的严格状态策略。</li>
+<li>W3C <a href="https://www.w3.org/TR/2021/SPSD-eventsource-20210128/" target="_blank" rel="noopener noreferrer">EventSource，2021-01-28固定快照</a>，第6/7节UTF-8、行终止、event/data与EOF规则。该版本标为Superseded Recommendation，用于可追溯的格式依据，不冒充当前完整浏览器实现。</li>
+<li>Hypothesis Python <strong>6.112.1</strong>：<a href="https://github.com/HypothesisWorks/hypothesis/blob/hypothesis-python-6.112.1/hypothesis-python/docs/stateful.rst" target="_blank" rel="noopener noreferrer">stateful.rst</a>，动作生成、与简化模型比较、逐步invariant及可复现反例。本例采用标准库有限枚举和固定seed，没有执行Hypothesis引擎或其自动缩减流程；MPL-2.0材料只阅读引用。</li>
+<li>CPython <strong>v3.11.8</strong>：<a href="https://github.com/python/cpython/blob/v3.11.8/Doc/library/asyncio-task.rst" target="_blank" rel="noopener noreferrer">asyncio-task.rst</a>，Task取消、wait_for及gather结果收集语义。实验中的1秒guard仅验证协作式mock收尾，不证明强制中断任意代码。</li>
+</ul>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">把temperature设为0，能否省掉回放fixture？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：把temperature设为0，能否省掉回放fixture？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不能据此冻结外部服务、工具、检索数据、版本与调度。对运行时回归固定边界输入；真实模型能力另做带统计口径的评测。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">重复block-end应该幂等忽略还是报错？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：重复block-end应该幂等忽略还是报错？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>取决于交付/重连契约。若有可靠事件ID及世代，可在定义好的层去重；没有这些依据时不能把重复结算当正常。本例选严格拒绝，并测试不生成重复计划。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">性质测试全部通过，能证明没有竞态吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：性质测试全部通过，能证明没有竞态吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>只能证明所选输入域、顺序空间与oracle下没有找到反例；本例六种顺序不是全调度空间。还要检查真实实现的并发原子区、异常出口和集成行为。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-4">
+          <div class="followup-label">追问 04</div><h3 id="followup-4">工具timeout后是否可以直接丢弃Task？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：工具timeout后是否可以直接丢弃Task？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不行。终态决定与资源回收分别检查；要有owner取消/收集结果，迟到回调还需generation和终态守卫。mock收尾通过不等于远端工具已经撤销副作用。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>ENGINEERING-0035 · 单题笔记</span><a href="../questions/engineering-0035-nondeterministic-agent-testing.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "engineering-0035", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

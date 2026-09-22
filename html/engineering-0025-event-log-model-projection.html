@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。为什么模型可见上下文与持久事件日志应能对应，如何设计日志真源和 UI、索引投影？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/engineering-0025-event-log-model-projection.md">
+  <meta name="source-sha256" content="eebfc9617b8e41dea040c5c9fa4f2538aaf9915acd32143216d403a15d1aaca6">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>为什么模型可见上下文与持久事件日志应能对应，如何设计日志真源和 UI、索引投影？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">ENGINEERING-0025</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="">为什么模型可见上下文与持久事件日志应能对应，如何设计日志真源和 UI、索引投影？</h1>
+        <div class="question-meta"><span>工程化、部署、性能、成本</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>为什么模型可见上下文与持久事件日志应能对应，如何设计日志真源和 UI、索引投影？请用“上下文补充只出现在内存”的反例说明怎样发现并阻止审计漂移，并解释读模型回填与快照取舍。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-16</span></p><div class="prose"><p><strong>真正要守住的是“这次客户端送出的请求，能由已提交事实和固定组装规则解释”，不是“程序打印过日志”。</strong> 若关键上下文只存在于内存，事后即使看见完整的用户/assistant 对话，也可能不知道模型为什么作出那个决定。UI 又可能隐藏、压缩或翻译消息，不能拿它补造历史事实。</p>
+<p><a href="agent-0016-checkpoint-resume.html">agent-0016</a> 讨论保存执行进度，<a href="engineering-0006-ai-app-monitoring.html">engineering-0006</a> 讨论监控，<a href="agent-0044-agent-status-bar-design.html">agent-0044</a> 讨论只读状态栏。本题新增请求与事件的可验证关系，以及派生读模型的重建；不要求所有应用都升级为完整事件溯源系统。</p>
+<h3 id="1-事件是真源投影各自回答不同问题">1. 事件是真源，投影各自回答不同问题</h3>
+<p>在选用事件溯源的设计中，命令经校验后产生有身份、版本、顺序与来源的事件，先提交到权威存储，再供不同 projector 使用。普通 debug 文本、临时对象或消息总线本身，不自动具备完整性、顺序、并发版本校验与保留能力。</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">受控命令 → 校验 / expected revision → 持久事件流（确定前缀 k）
+                                     ├→ model projector → 最终请求校验 → 请求准备记录 → transport
+                                     ├→ UI projector    → 可丢弃的显示/列表缓存
+                                     └→ index projector → 可回填的检索读模型
+UI 编辑意图 → 新命令 / 新事件；不把 UI 缓存反向覆盖事件流
+</code></pre>
+<p>例如一次用户补充可以记为 <code>ContextAdded</code>，一次请求准备记为 <code>RequestPrepared</code>。前者能影响模型输入，后者记录发送意图但不必再进入模型上下文。一个事件也可能生成多条模型消息，或参与有版本的摘要；<strong>“可对应”不是每个事件与每条消息逐条相等，更不是 UI、模型和索引三个数组都相同。</strong></p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>投影</th>
+<th>需要保留的内容/关系</th>
+<th>不能成为的东西</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>模型请求</td>
+<td>role、顺序、工具调用关联、系统指令、上下文与实际采样/工具配置的确定组装结果</td>
+<td>不能包含来源不明的内存补丁或悄悄变化的外部内容</td>
+</tr>
+<tr>
+<td>UI / 会话列表</td>
+<td>展示顺序、状态、可见性、摘要和处理到的 watermark</td>
+<td>隐藏的上下文、partial、错误状态不能靠界面文字反向猜测或改写</td>
+</tr>
+<tr>
+<td>搜索/索引</td>
+<td>稳定 document/event ID、来源版本、权限过滤和投影进度</td>
+<td>索引缺项不等于源事件不存在；搜索结果也不能回灌为原始事实</td>
+</tr>
+</tbody>
+</table></div>
+<p>UI 可以接受编辑操作，但应将它提交给命令处理器，生成校正/新版本/分支事件；不是直接修改事实镜像。读模型损坏时从真源回填，而不是“哪个界面看起来完整就信哪个”。</p>
+<h3 id="2-把模型可见不变量放在最终请求边界">2. 把模型可见不变量放在最终请求边界</h3>
+<p>对某次请求定义：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">E[1..k] = 已提交的同一会话/分支事件前缀
+P_v     = 固定版本的模型投影、模板与序列化规则
+A       = 可按版本/hash取回的上下文、附件与工具定义等不可变材料
+B       = P_v(E[1..k], A) 产生的客户端请求字节
+要求：实际交给 transport 的字节 == B
+</code></pre>
+<p>日志除了对话还要覆盖模型 ID/配置、system prompt、工具 schema、RAG 结果及其顺序、注入来源、裁剪/摘要策略和材料版本。只保存“查过文档 X”，重放时却读取今天的 X，会产生另一份输入；只保存 hash 而没有可取回的材料，也不能从 hash 还原正文。</p>
+<p>一种做法是在提交前记录 <code>request_id、cut=k、projector/artifact version、材料引用、最终 request blob/hash</code>，并在受控 transport 边界核对。比较或保存的位置若早于 SDK 的后续转换，仍可能遗漏字段；真实系统要在最后一个会改请求的适配层捕获或验证最终表示。哈希适合识别差异与绑定材料，不是签名，也不能认证有能力同时改写日志和哈希的攻击者。</p>
+<p><code>RequestPrepared</code> 只证明准备记录已提交，不证明请求已经发送、供应商接收或模型理解。发送未知/重试需另记 attempt/outcome，必要时用 outbox、领取与对账；不能把本地准备事务和远端 API 当成同一事务。这里要求复现客户端输入，<strong>不承诺复现随机模型输出、供应商内部模板或全部内部推理条件</strong>。</p>
+<p>发现不一致应拒绝这次请求、保留可定位的 event IDs/version/hash，再重新记录缺失事实并重建。只告警后继续发送，会留下已知审计缺口；将整个进程崩掉也不是唯一策略。敏感正文可按授权存储为受保护 blob，诊断不必输出全文；删除/过期后无法重建的材料应明确标记不可用，不从 UI 猜回来。</p>
+<h3 id="3-一个只在内存注入的反例和修复">3. 一个“只在内存注入”的反例和修复</h3>
+<p>以下是原创单会话 fixture，固定 <strong>Python 3.11.8、sqlite3 模块实际链接 SQLite 3.19.3</strong>；仅使用新建临时库和基础 SQL，没有真实模型调用，也不建议照此旧 SQLite 版本部署生产。</p>
+<p>初始已提交事件：</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>seq / ID</th>
+<th>事件</th>
+<th>fixture 内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 / cfg</td>
+<td>Configured</td>
+<td>model=<code>fixture-model-v1</code>，system=<code>你是演示助手</code></td>
+</tr>
+<tr>
+<td>2 / m1</td>
+<td>MessageAdded</td>
+<td><code>安排明天活动</code></td>
+</tr>
+<tr>
+<td>3 / ctx1</td>
+<td>ContextAdded</td>
+<td><code>预算100元</code></td>
+</tr>
+</tbody>
+</table></div>
+<p><code>model-v1</code> 将 Configured 组成 system 与 model 字段，将 MessageAdded 组成 user 消息，将 ContextAdded 组成带“补充上下文：”前缀的 user 消息，并固定 <code>tools=[]、temperature=0</code>。这些规则和常量都属于该 projector 版本；正式系统应绑定不可变构建/模板，而不是只写一个可随意复用的版本名。</p>
+<p>错误路径在调用前偷偷追加 <code>补充上下文：只选室内活动</code> 到内存消息数组。日志重放仍只有 3 条模型消息（含 system），候选却有 4 条：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">head=3 → 构建候选 → 内存追加“只选室内活动”
+prepare(candidate, cut=3) → AUDIT_DRIFT
+结果：事件头仍为3，没有RequestPrepared，没有调用fake transport
+
+修复：append ContextAdded(ctx2) → head=4
+从E[1..4]重建 → prepare成功，RequestPrepared(req1)成为seq=5
+send_prepared(req1) → 只读取已记录并核对过的字节
+结果：fake transport调用1次，模型消息4条；UI公开消息1条，context_count=2
+</code></pre>
+<p>UI 的 1 条消息是 m1；本例只显示补充上下文的数量，索引也仅收公开 MessageAdded。它们不是少记了事实，前提是这些过滤是明确的投影规则。故意篡改 UI 缓存中的文本不会改变请求；完整回填能恢复显示内容。</p>
+<p>下面的核心实现可复跑。<code>BEGIN IMMEDIATE</code> 内比较 event head、重建、拒绝漂移并记录准备事件；网络发送放在事务之后。此处 JSON 编码是本 fixture 的固定 Python 规则，不宣称符合跨语言 canonical JSON 标准。</p>
+<details>
+<summary>展开临时日志、请求门禁和读模型重建实现</summary>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">&quot;&quot;&quot;Original single-session fixture. Python3.11.8; no real model/network.&quot;&quot;&quot;
+import hashlib
+import json
+import re
+import sqlite3
+from contextlib import contextmanager
+from copy import deepcopy
+
+
+def pack(value):
+    return json.dumps(value, ensure_ascii=False, sort_keys=True,
+                      separators=(&quot;,&quot;, &quot;:&quot;), allow_nan=False).encode(&quot;utf-8&quot;)
+
+
+def digest(value):
+    return hashlib.sha256(pack(value)).hexdigest()
+
+
+def integer(value):
+    if type(value) is not int or value &lt; 0:
+        raise ValueError(&quot;invalid sequence&quot;)
+
+
+def source_body(kind, body):
+    fields = {&quot;Configured&quot;: {&quot;model&quot;, &quot;system&quot;},
+              &quot;MessageAdded&quot;: {&quot;text&quot;}, &quot;ContextAdded&quot;: {&quot;text&quot;}}
+    if kind not in fields or type(body) is not dict or set(body) != fields[kind]:
+        raise ValueError(&quot;unknown event or fields&quot;)
+    if any(type(v) is not str or not v or len(v) &gt; 500 for v in body.values()):
+        raise ValueError(&quot;invalid source body&quot;)
+    return pack(body).decode(&quot;utf-8&quot;)
+
+
+def validate_prefix(rows):
+    ids = set()
+    for seq, row in enumerate(rows, 1):
+        if (type(row[&quot;seq&quot;]) is not int or row[&quot;seq&quot;] != seq
+                or type(row[&quot;version&quot;]) is not int or row[&quot;version&quot;] != 1
+                or row[&quot;id&quot;] in ids):
+            raise ValueError(&quot;gap, duplicate or unsupported schema&quot;)
+        ids.add(row[&quot;id&quot;])
+        if row[&quot;kind&quot;] != &quot;RequestPrepared&quot;:
+            source_body(row[&quot;kind&quot;], row[&quot;body&quot;])
+
+
+def model_wire(rows, version=&quot;model-v1&quot;):
+    if version != &quot;model-v1&quot;:
+        raise ValueError(&quot;unknown model projector&quot;)
+    validate_prefix(rows)
+    if not rows or rows[0][&quot;kind&quot;] != &quot;Configured&quot;:
+        raise ValueError(&quot;missing configuration&quot;)
+    config = rows[0][&quot;body&quot;]
+    messages = [{&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: config[&quot;system&quot;]}]
+    for row in rows[1:]:
+        if row[&quot;kind&quot;] == &quot;MessageAdded&quot;:
+            messages.append({&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: row[&quot;body&quot;][&quot;text&quot;]})
+        elif row[&quot;kind&quot;] == &quot;ContextAdded&quot;:
+            messages.append({&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;补充上下文：&quot; + row[&quot;body&quot;][&quot;text&quot;]})
+        elif row[&quot;kind&quot;] != &quot;RequestPrepared&quot;:
+            raise ValueError(&quot;invalid configuration position&quot;)
+    # These fixed defaults and the context prefix are part of model-v1.
+    return pack({&quot;model&quot;: config[&quot;model&quot;], &quot;messages&quot;: messages, &quot;tools&quot;: [], &quot;temperature&quot;: 0})
+
+
+def manifest(rows, wire):
+    return {&quot;cut&quot;: len(rows), &quot;projector&quot;: &quot;model-v1&quot;, &quot;prefix_sha&quot;: digest(rows),
+            &quot;wire&quot;: wire.decode(&quot;utf-8&quot;), &quot;wire_sha&quot;: hashlib.sha256(wire).hexdigest()}
+
+
+class Log:
+    def __init__(self, path):
+        self.db = sqlite3.connect(path, isolation_level=None)
+        self.db.execute(&quot;PRAGMA journal_mode=DELETE&quot;)
+        self.db.execute(&quot;PRAGMA synchronous=FULL&quot;)
+        self.db.execute(&quot;CREATE TABLE IF NOT EXISTS events (seq INTEGER PRIMARY KEY, &quot;
+                        &quot;id TEXT UNIQUE NOT NULL, kind TEXT NOT NULL, version INTEGER NOT NULL, body TEXT NOT NULL)&quot;)
+
+    def close(self):
+        self.db.close()
+
+    @contextmanager
+    def transaction(self):
+        self.db.execute(&quot;BEGIN IMMEDIATE&quot;)
+        try:
+            yield
+            self.db.execute(&quot;COMMIT&quot;)
+        except BaseException:
+            if self.db.in_transaction:
+                self.db.execute(&quot;ROLLBACK&quot;)
+            raise
+
+    def head(self):
+        return self.db.execute(&quot;SELECT COALESCE(MAX(seq),0) FROM events&quot;).fetchone()[0]
+
+    def rows(self, cut=None):
+        if cut is None:
+            cut = self.head()
+        integer(cut)
+        rows = [dict(seq=s, id=i, kind=k, version=v, body=json.loads(b))
+                for s, i, k, v, b in self.db.execute(
+                    &quot;SELECT seq,id,kind,version,body FROM events WHERE seq&lt;=? ORDER BY seq&quot;, (cut,))]
+        validate_prefix(rows)
+        if len(rows) != cut:
+            raise ValueError(&quot;missing prefix&quot;)
+        return rows
+
+    def put(self, event_id, kind, body, expected):
+        if type(event_id) is not str or re.fullmatch(r&quot;[a-z0-9_-]{1,40}&quot;, event_id) is None:
+            raise ValueError(&quot;invalid id&quot;)
+        integer(expected)
+        encoded = source_body(kind, body)  # Validate before duplicate comparison.
+        with self.transaction():
+            old = self.db.execute(&quot;SELECT seq,kind,body FROM events WHERE id=?&quot;, (event_id,)).fetchone()
+            if old:
+                if old[1:] != (kind, encoded):
+                    raise ValueError(&quot;conflicting event id&quot;)
+                return old[0]
+            head = self.head()
+            if head != expected or ((kind == &quot;Configured&quot;) != (head == 0)):
+                raise ValueError(&quot;stale head or invalid configuration position&quot;)
+            self.db.execute(&quot;INSERT INTO events VALUES(?,?,?,?,?)&quot;, (head+1, event_id, kind, 1, encoded))
+            return head+1
+
+    def prepare(self, request_id, cut, candidate):
+        if type(request_id) is not str or re.fullmatch(r&quot;[a-z0-9_-]{1,40}&quot;, request_id) is None:
+            raise ValueError(&quot;invalid request id&quot;)
+        integer(cut)
+        if type(candidate) is not bytes:
+            raise ValueError(&quot;candidate must be immutable bytes&quot;)
+        with self.transaction():
+            if self.head() != cut:
+                raise ValueError(&quot;stale preparation cut&quot;)
+            rows = self.rows(cut)
+            expected = model_wire(rows)
+            if candidate != expected:
+                raise ValueError(&quot;AUDIT_DRIFT: request differs from committed event projection&quot;)
+            body = pack(manifest(rows, expected)).decode(&quot;utf-8&quot;)
+            self.db.execute(&quot;INSERT INTO events VALUES(?,?,?,?,?)&quot;, (cut+1, request_id, &quot;RequestPrepared&quot;, 1, body))
+
+    def send_prepared(self, request_id, transport):
+        row = self.db.execute(&quot;SELECT seq,version,body FROM events WHERE id=? AND kind=&#x27;RequestPrepared&#x27;&quot;,
+                              (request_id,)).fetchone()
+        if not row or row[1] != 1:
+            raise ValueError(&quot;missing or unsupported prepared request&quot;)
+        saved = json.loads(row[2])
+        integer(saved[&quot;cut&quot;])
+        if saved[&quot;cut&quot;] != row[0]-1:
+            raise ValueError(&quot;invalid prepared cut&quot;)
+        rows = self.rows(saved[&quot;cut&quot;])
+        wire = model_wire(rows, saved[&quot;projector&quot;])
+        if saved != manifest(rows, wire):
+            raise ValueError(&quot;prepared payload or source drift&quot;)
+        return transport(wire)  # No caller-supplied mutable messages after this gate.
+
+
+def rebuild_views(rows, snapshot=None, version=&quot;views-v1&quot;):
+    if version != &quot;views-v1&quot;:
+        raise ValueError(&quot;unknown view projector&quot;)
+    validate_prefix(rows)
+    cut = 0
+    state = {&quot;messages&quot;: [], &quot;context_count&quot;: 0, &quot;index&quot;: {}}
+    if snapshot is not None:
+        cut = snapshot[&quot;cut&quot;]
+        integer(cut)
+        if (snapshot[&quot;version&quot;] != version or cut &gt; len(rows)
+                or snapshot[&quot;prefix_sha&quot;] != digest(rows[:cut])
+                or snapshot[&quot;state_sha&quot;] != digest(snapshot[&quot;state&quot;])):
+            raise ValueError(&quot;invalid snapshot&quot;)
+        state = deepcopy(snapshot[&quot;state&quot;])  # Only trusted projector snapshots are accepted.
+    for row in rows[cut:]:
+        if row[&quot;kind&quot;] == &quot;MessageAdded&quot;:
+            state[&quot;messages&quot;].append({&quot;event_id&quot;: row[&quot;id&quot;], &quot;text&quot;: row[&quot;body&quot;][&quot;text&quot;]})
+            state[&quot;index&quot;][row[&quot;id&quot;]] = row[&quot;body&quot;][&quot;text&quot;].casefold()
+        elif row[&quot;kind&quot;] == &quot;ContextAdded&quot;:
+            state[&quot;context_count&quot;] += 1
+    return {&quot;version&quot;: version, &quot;cut&quot;: len(rows), &quot;prefix_sha&quot;: digest(rows),
+            &quot;state&quot;: state, &quot;state_sha&quot;: digest(state)}
+</code></pre>
+</details>
+<p>正式验证包含：未记事件的内存上下文、模型字段和消息顺序变化均被拒；补齐事件后可发送；关闭并重开临时库后可重建同一请求；准备后的字节或前缀被改写会在发送门禁失败。fake transport 只接收 immutable bytes，不再接收可被其他回调继续修改的 messages 对象。</p>
+<p>不变量针对明确的 cut k。准备之后才到达的新事件不自动改写旧请求；由 <a href="agent-0055-turn-loop-input-semantics.html">agent-0055</a> 所述投递生命期决定它属于下一 step/turn。如果业务要求“发送前不能过期”，还需核对该轮有效 revision/fence；本例不把输入可重建与输入始终最新混为一谈。</p>
+<h3 id="4-读模型回填与快照不能产生第二份真源">4. 读模型回填与快照不能产生第二份真源</h3>
+<p>回填时为每个会话/分支及 projector 版本记录连续 watermark；以稳定事件/文档 ID 写读模型，结果与进度一并提交。重复交付不能重复计数，遇到缺口、乱序、未知 schema/version 不能直接把游标跳到最大值后宣称完成。投影升级可建 shadow read model，从固定前缀回放、追平增量，核对数量/内容摘要/权限条件后切换指针；不要边用新逻辑改旧表、边让读者读到混合版本。</p>
+<p>本例 <code>rebuild_views</code> 从有连续 seq 的事件前缀生成 UI 与小型字典索引。重复全量重建相同前缀得到相同结果；从 cut=3 的快照续放 ctx2 和 RequestPrepared 后，与全量回放到 cut=5 完全相同。它不实现真实消息总线消费或投影表的分布式提交，只演示确定性回填和边界校验。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>适用情形</th>
+<th>成本与边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>每次从事件起点重建</td>
+<td>小会话、审计校验、排查缓存错误</td>
+<td>逻辑简单，长历史重放代价随事件数增加</td>
+</tr>
+<tr>
+<td>可信快照 + 后缀事件</td>
+<td>长历史、需要缩短恢复路径且可验证版本/前缀</td>
+<td>增加写入、存储、迁移和失效处理；快照不能取代原事件及历史请求所需材料</td>
+</tr>
+<tr>
+<td>持久读模型异步增量更新</td>
+<td>UI 列表/搜索需要低读取成本，可接受有界滞后</td>
+<td>需消费幂等、进度、重建与切换机制；不能把落后投影拿来作要求最新事实的写决策</td>
+</tr>
+</tbody>
+</table></div>
+<p>快照至少绑定 <code>(stream/branch, cut, projector version, event-prefix digest, state digest)</code>。本例单库单会话，隐含 stream/branch；校验不符直接拒绝快照，再从源重建。state hash 只发现未同步改摘要的损坏，不能证明状态一定是正确 projector 生成的；只接纳可信构建的快照，并用周期性/抽样全量回放比较，不能接受客户端 UI 上传的镜像作为恢复依据。</p>
+<p>例如 10,000 个事件、快照位于 9,000，在已有可信前缀校验索引的假设下只需恢复快照并应用后面 1,000 个事件；这只是复杂度算例，不是实测加速。本 fixture 为核对正确性仍装载并校验整个前缀，没有宣称性能收益。若每次验证快照都扫描前 9,000 个事件，读取成本仍不能简单说降低了十倍。</p>
+<p>对于简单 CRUD、只需当前状态且没有历史输入审计需求的应用，完整事件溯源可能不划算；也可保留事务型权威状态和每次最终请求的不可变快照。无论选择哪种，明确哪份记录是权威、请求材料怎样取回、派生视图怎样作废，比要求“所有东西都叫事件”更重要。</p>
+<h3 id="5-一手运行时例子转换钩子不自动等于审计记录">5. 一手运行时例子：转换钩子不自动等于审计记录</h3>
+<p>固定 Pi <strong>v0.57.1 / <code>a9cedccdde77e9d765303463d8a6cd11c58f7a7f</code></strong> 的 <a href="https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/packages/agent/src/agent-loop.ts#L204-L240" target="_blank" rel="noopener noreferrer">streamAssistantResponse</a> 先应用 transformContext，再 convertToLlm，随后添加 systemPrompt/tools 并调用 streamFunction。<a href="https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/packages/agent/src/types.ts#L24-L64" target="_blank" rel="noopener noreferrer">类型说明</a> 允许转换时过滤 UI-only 消息，也允许在 transformContext 中注入外部上下文。</p>
+<p>这能证明“模型消息有独立的组装阶段”，不能仅凭这段函数证明最终转换结果已经持久化；同样不能据此断言整个 Pi 产品有审计缺陷。宿主需要核对所有注入、配置和最终传输边界，再决定事件/请求快照如何覆盖。本文只读固定源码，没有运行 Pi、修改它的日志或调用模型。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li>“有日志就能复现模型输入”：普通 tracing 可能缺 system、注入、工具 schema、材料版本或最终序列化。</li>
+<li>“UI 镜像最完整，可以反向当真源”：显示过滤、压缩和用户编辑会把派生状态变成另一套历史。</li>
+<li>“快照正确，因为它有 hash”：hash 不证明来源可信或投影逻辑正确，快照仍应可丢弃重建。</li>
+<li>“请求准备成功等于模型已经收到”：本地提交、网络发送、远端响应是不同事件，重试也不天然 exactly-once。</li>
+<li>“重放就是把工具再执行一遍”：重建已记录的状态/输入不应再次触发外部副作用。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>洛小山，《AI 产品从入门到精通》learn-ai，固定 <code>5a933d287dd5074cc1543cb849146f3261d47521</code>：<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/dsh-2.html" target="_blank" rel="noopener noreferrer">slides/dsh-2.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/codex-06.html" target="_blank" rel="noopener noreferrer">slides/codex-06.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/codex-09.html" target="_blank" rel="noopener noreferrer">slides/codex-09.html</a>。只保留学习来源，不搬运 AGPL 课件，不把二手课程里的退出/flush/恢复行为当通用保证。</li>
+<li>Microsoft Azure Architecture Center，固定文档 commit <strong><code>d73cd1632ffa489eff78a16bba4d101c510a1810</code></strong>：<a href="https://github.com/MicrosoftDocs/architecture-center/blob/d73cd1632ffa489eff78a16bba4d101c510a1810/docs/patterns/event-sourcing.md" target="_blank" rel="noopener noreferrer">Event Sourcing pattern</a>（权威事件流、乐观并发、幂等、快照与取舍）、<a href="https://github.com/MicrosoftDocs/architecture-center/blob/d73cd1632ffa489eff78a16bba4d101c510a1810/docs/patterns/cqrs.md" target="_blank" rel="noopener noreferrer">CQRS pattern</a>（读写模型、投影重建与同步边界）。引用机制，不直接采用其性能结论作为本例测量。</li>
+<li>CPython <strong>v3.11.8</strong>，<a href="https://github.com/python/cpython/blob/v3.11.8/Doc/library/sqlite3.rst#L2390-L2429" target="_blank" rel="noopener noreferrer">sqlite3 事务控制</a>：本例使用 isolation_level=None 与显式 BEGIN/COMMIT/ROLLBACK，仅在专属临时库验证，不修改真实运行时存储。</li>
+<li>Pi <strong>v0.57.1</strong>，<a href="https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/packages/agent/package.json" target="_blank" rel="noopener noreferrer">package.json</a>、<a href="https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/LICENSE" target="_blank" rel="noopener noreferrer">MIT LICENSE</a>，具体投影调用点见正文。</li>
+<li>来源核对和本地 fixture 验证日期为 <strong>2026-09-16</strong>。没有真实模型/索引服务、业务数据、生产持久性或性能实验；SQLite API、事件 ID 和版本只是本例范围，不是完整生产事件存储协议。</li>
+</ul>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">为什么记录了检索 query 和文档 URL 还不能复现输入？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么记录了检索 query 和文档 URL 还不能复现输入？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>重放时语料、权限、排序、截断甚至 URL 内容可能变化。应保存实际选中的材料快照或不可变版本/hash引用，以及组装规则；重放输入不是重新做一次今天的检索。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">摘要或上下文裁剪后，模型没有看到所有事件，违反不变量吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：摘要或上下文裁剪后，模型没有看到所有事件，违反不变量吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不必然。只要记录所用 cut、摘要/裁剪版本、输入来源及确定的结果材料，能重建模型实际看到的表示即可。不能重新调用一个随机摘要模型后声称得到了原始输入。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">发现 UI 比日志多一句重要补充，能直接把 UI 补回日志吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：发现 UI 比日志多一句重要补充，能直接把 UI 补回日志吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不能当作历史修复。先隔离差异、查原请求/输入来源及授权；若用户确认要补充，作为新命令和新事件记录，保留补录时间与来源，不伪造它过去已存在。历史材料缺失时如实标记不可重建。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>ENGINEERING-0025 · 单题笔记</span><a href="../questions/engineering-0025-event-log-model-projection.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "engineering-0025", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

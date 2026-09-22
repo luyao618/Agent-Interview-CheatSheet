@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。Code Mode 用模型生成的程序编排工具时，何时能减少往返，如何控制执行预算和权限？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/agent-0057-code-mode-tool-orchestration.md">
+  <meta name="source-sha256" content="3e654811e364a364ea516c91c64a8ff60069400466fb850ae24b7d25f8b4f747">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>Code Mode 用模型生成的程序编排工具时，何时能减少往返，如何控制执行预算和权限？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">AGENT-0057</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title"><em>Code</em> Mode 用模型生成的程序编排工具时，何时能减少往返，如何控制执行预算和权限？</h1>
+        <div class="question-meta"><span>Agent 架构与编排</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>Code Mode 用模型生成的程序编排工具时，何时能减少往返，如何控制执行预算和权限？同步死循环和永不 resolve 的 Promise 分别消耗什么资源，执行失败后应返回什么？</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-16</span></p><div class="prose"><p>Code Mode 把一段可确定的工具编排交给程序：中间值在执行器内传递、过滤和聚合，模型只接收必要的最终结果或失败状态。它适合“下一步如何计算已经明确，只缺工具返回的数据”的任务；遇到需要模型重新理解语义、用户确认或开放式决策的分支，仍要停下来交回控制权。程序不是额外权限来源，CPU、墙钟、内存和工具预算都必须由可信宿主约束。</p>
+<p>生成代码的通用安全边界见 <a href="engineering-0012-artifact-generated-code-safety.html">engineering-0012</a>，并行依赖与结果收口见 <a href="agent-0032-parallel-tool-calling.html">agent-0032</a>，程序值与模型文本的可读范围见 <a href="agent-0056-tool-result-value-projections.html">agent-0056</a>。本题聚焦程序化编排与执行预算，不把“换成代码”当成“工具更少、天然安全或一定便宜”。</p>
+<h3 id="1-省的是哪些往返不省哪些账">1. 省的是哪些往返，不省哪些账</h3>
+<p>假设初始不知道三个 ID，先用 list_ids 获取，再分别 lookup，最后求和。工具绑定返回带 status/value 的结构化结果。编排示意如下，<strong>没有运行真实模型生成的程序</strong>：</p>
+<pre tabindex="0" aria-label="javascript代码或示意图"><code class="language-javascript">async function plan(tools) {
+  const ids = await tools.list_ids({});
+  if (ids.status !== &#x27;ok&#x27;) return ids;
+  const rows = await Promise.all(ids.value.map(id =&gt; tools.lookup({id})));
+  if (rows.some(r =&gt; r.status !== &#x27;ok&#x27;)) return {status: &#x27;incomplete&#x27;, results: rows};
+  return {status: &#x27;ok&#x27;, total: rows.reduce((sum, r) =&gt; sum + r.value, 0)};
+}
+</code></pre>
+<p>按这个特定数据依赖，原生调用需要两轮模型工具决策：先请求 ID，再请求可并行的三个 lookup；Code Mode 可以一轮提交程序，内部仍然调用 <strong>4 次工具</strong>。两边都可能还需要一次最终回答生成，本例没有把它假装省掉。若 ID 原本已知，或存在合适的批处理工具，原生调用也可能一轮完成。</p>
+<p>总费用至少包括模型输入/输出 Token、执行器 CPU/内存/存活时间、工具调用、存储与重试。程序局部值不逐步回灌可以减少上下文搬运，但代码生成、编译、长时间等待、失败重试和工具返回的日志仍可能增加成本。并行缩短关键路径，不等于减少所有工具消耗的总资源；不能把一轮模型调用当作一笔总账。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>适合</th>
+<th>代价与不适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原生逐步工具调用</td>
+<td>每步都需要模型理解新事实、重新规划或请求确认</td>
+<td>决策可见，但有更多模型往返和中间上下文；纯粹的数据循环不必逐条交给模型</td>
+</tr>
+<tr>
+<td>Code Mode</td>
+<td>固定的查询、映射、过滤、聚合；依赖明确，中间值有稳定 Schema</td>
+<td>可减少模型介入，但需要代码执行、资源限制和失败恢复；不适合靠程序猜测缺失审批或把无限任务塞进一次执行</td>
+</tr>
+<tr>
+<td>固定 workflow / 类型化批处理 API</td>
+<td>常用且稳定、可预先审查的数据流</td>
+<td>更易约束与观测，但灵活性较低；不应为了省一次往返暴露一个无限权的“任意执行”接口</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="2-三类资源预算和工具网关">2. 三类资源预算和工具网关</h3>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>预算</th>
+<th>同步 <code>while (true)</code></th>
+<th><code>await new Promise(() =&gt; {})</code></th>
+<th>应由谁执行限制</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CPU 时间</td>
+<td>持续占用计算；同时挂一个未完成工具也不能让这部分 CPU 免计量</td>
+<td>等待本身通常很少用 CPU，若夹带热循环仍要计入</td>
+<td>可信运行时计量/中断，或进程 CPU 配额；不是 guest 自报的耗时</td>
+</tr>
+<tr>
+<td>墙钟时间</td>
+<td>也在增长，作为外部兜底</td>
+<td>没有进展但持续占用会话和资源，必须有等待截止</td>
+<td>宿主的独立计时与终止/回收路径，覆盖工具和 IPC 等等待</td>
+</tr>
+<tr>
+<td>堆及其他内存</td>
+<td>循环若分配对象可能耗尽堆；不分配则不一定</td>
+<td>悬挂 Promise 及闭包也能保留大量对象</td>
+<td>运行时堆上限，加进程/容器层的总体内存限制与异常退出处理</td>
+</tr>
+</tbody>
+</table></div>
+<p>在被同一同步循环阻塞的事件循环里，<code>setTimeout</code> 回调没有机会运行；包一层 <code>Promise.race</code> 不会自动抢占同步代码。需要可信执行器的中断机制或外层进程监督。事件循环利用率、墙钟和 OS CPU 也不是同一个指标：本例用 OS 对整个子进程累计 CPU 的计量，不把某个框架的 busy-time 指标冒称为 OS CPU。</p>
+<p>预算要绑定整次 run，重试、嵌套执行和并行子调用不能各自重新领一份无限额度。生产墙钟截止通常应包含排队、启动、编译、工具等待与收尾；本例会单独写明测量起点。若执行器有 yield/wait 协议，yield 间隔只是交还控制权，不能替代最大存活时间；必须保留持有者、累计预算与明确终止操作。本例没有实现可续跑 cell。</p>
+<p>程序只拿受限工具能力，调用仍经宿主网关：验证当前主体/租户/run、工具白名单、参数 Schema、预算，再处理需要的审批。审批应绑定具体工具、参数、权限版本和有效期；“这段代码已获准运行”不自动批准它随后尝试的每个动作。凭据、审批控制接口和预算账本留在宿主，不能把整个宿主对象交给生成代码。</p>
+<p>下面的原创 mock 网关把同一 run 的尝试次数限制为 8、实际派发限制为 4；每次派发记一个<strong>合成 credit</strong>，不是货币价格。approve_from_host 是测试中的可信控制面，不导出给程序。四线程同时提交 12 次请求的验证中只有 4 次派发成功；mock 写入确认丢失时，调用者得到 result_unknown，宿主仍保留已发生的 mock 效果，审批也已消费，不会自动重放。</p>
+<details>
+<summary>mock_gateway.py：宿主网关的原创教学模型</summary>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python"># file: mock_gateway.py
+import json
+from threading import Lock
+
+
+class MockGateway:
+    &quot;&quot;&quot;Host-side teaching fixture. No business API, credentials or real approvals.&quot;&quot;&quot;
+    def __init__(self, clock):
+        self.clock = clock
+        self.context = (&#x27;tenant-fixture&#x27;, &#x27;subject-fixture&#x27;, &#x27;run-1&#x27;, 1)
+        self.allowed = {&#x27;list_ids&#x27;, &#x27;lookup&#x27;, &#x27;mock_write&#x27;}
+        self.approvals, self.ledger, self.effects = {}, [], []
+        self.attempts, self.spent = 0, 0
+        self.lock = Lock()
+        self.lose_write_ack = False
+
+    def key(self, tool, args):
+        return (self.context, tool, json.dumps(args, sort_keys=True))
+
+    def approve_from_host(self, tool, args):
+        # This method is NOT exported to generated code; tests act as the trusted host.
+        with self.lock:
+            self.approvals[self.key(tool, args)] = self.clock() + 5
+
+    def call(self, context, tool, args):
+        with self.lock:
+            if context != self.context:
+                return {&#x27;status&#x27;: &#x27;denied&#x27;}
+            self.attempts += 1
+            if self.attempts &gt; 8:
+                return {&#x27;status&#x27;: &#x27;attempt_budget&#x27;}
+            if type(tool) is not str or tool not in self.allowed:
+                return {&#x27;status&#x27;: &#x27;denied&#x27;}
+            valid = type(args) is dict and (args == {} if tool == &#x27;list_ids&#x27; else
+                     set(args) == {&#x27;id&#x27;} and type(args[&#x27;id&#x27;]) is int and 1 &lt;= args[&#x27;id&#x27;] &lt;= 3)
+            if not valid:
+                return {&#x27;status&#x27;: &#x27;schema_error&#x27;}
+            key = self.key(tool, args)
+            if tool == &#x27;mock_write&#x27; and self.approvals.get(key, -1) &lt;= self.clock():
+                return {&#x27;status&#x27;: &#x27;approval_required&#x27;}
+            if self.spent &gt;= 4:
+                return {&#x27;status&#x27;: &#x27;tool_budget&#x27;}
+            if tool == &#x27;mock_write&#x27;:
+                del self.approvals[key]  # Bound to run/policy/tool/arguments; one use.
+            self.spent += 1  # One synthetic credit per dispatch, not a monetary price.
+            op = f&#x27;op-{self.spent}&#x27;
+            row = {&#x27;op_id&#x27;: op, &#x27;tool&#x27;: tool, &#x27;status&#x27;: &#x27;started&#x27;}
+            self.ledger.append(row)
+            if tool == &#x27;list_ids&#x27;:
+                value = [1, 2, 3]
+            elif tool == &#x27;lookup&#x27;:
+                value = args[&#x27;id&#x27;] * 10
+            else:
+                self.effects.append(args[&#x27;id&#x27;])  # In-memory mock effect only.
+                if self.lose_write_ack:
+                    row[&#x27;status&#x27;] = &#x27;mock_effect_recorded_ack_lost&#x27;
+                    return {&#x27;status&#x27;: &#x27;result_unknown&#x27;, &#x27;op_id&#x27;: op}
+                value = {&#x27;mock_written&#x27;: args[&#x27;id&#x27;]}
+            row[&#x27;status&#x27;] = &#x27;completed&#x27;
+            return {&#x27;status&#x27;: &#x27;ok&#x27;, &#x27;op_id&#x27;: op, &#x27;value&#x27;: value}
+
+
+def orchestrate(gateway):
+    context = gateway.context
+    first = gateway.call(context, &#x27;list_ids&#x27;, {})
+    if first[&#x27;status&#x27;] != &#x27;ok&#x27;:
+        return first
+    results = [gateway.call(context, &#x27;lookup&#x27;, {&#x27;id&#x27;: i}) for i in first[&#x27;value&#x27;]]
+    if any(r[&#x27;status&#x27;] != &#x27;ok&#x27; for r in results):
+        return {&#x27;status&#x27;: &#x27;incomplete&#x27;, &#x27;results&#x27;: results}
+    return {&#x27;status&#x27;: &#x27;ok&#x27;, &#x27;total&#x27;: sum(r[&#x27;value&#x27;] for r in results),
+            &#x27;tool_calls&#x27;: len(gateway.ledger), &#x27;synthetic_credits&#x27;: gateway.spent}
+</code></pre>
+</details>
+<p>锁内只有即时 mock 运算，这个测试证明共享额度和条件判断，不证明真实网关吞吐。生产应在可信层原子预留额度、限制 in-flight 数量并为后端设置截止；不应持有一把全局锁等待远端 I/O。Node 预算实验与这个 Python mock 分别验证各自边界，没有伪称已经构成一套跨进程 Code Mode RPC 系统。</p>
+<h3 id="3-自建受限子进程的实际预算对照">3. 自建受限子进程的实际预算对照</h3>
+<p>实验固定 Node <strong>v22.18.0</strong>、Python <strong>3.11.8</strong>，运行于 macOS arm64（2026-09-16）。每个样例都新建独占子进程：先设置 CPU soft/hard 为 <strong>1/2 秒</strong>、core dump 为 0、日志文件上限 64 KiB，再 exec Node。Node 使用 <code>--max-old-space-size=32 --max-semi-space-size=1</code>；<code>v8.getHeapStatistics().heap_size_limit</code> 实际报告 <strong>36,700,160 bytes = 35 MiB</strong>。这是 V8 堆范围，<strong>不是整个进程 RSS 或外部 ArrayBuffer/原生内存上限</strong>；本轮没有触发 OOM 压测。</p>
+<p>宿主在放行前检查 PID、直接父进程、专属脚本路径和随机 nonce，并比较 daemon PID；需要发信号时重新核对，且只终止这个精确 PID。CPU 额度由 OS 限制这个已核对的子进程；墙钟到期由外部 Python 监督者核对身份后发 SIGKILL，使用 wait4 回收并取得资源使用量。子进程只运行本文自制片段，不运行任意不可信代码，也不接触业务工具或凭据。</p>
+<p>两段关键工作负载分别在<strong>受限子进程</strong>内执行：同步循环，以及永不 resolve 的 Promise。两者都预先挂一个 100 ms 的提示定时器。pending 样例保留开放的 stdin 控制通道模拟长驻宿主；裸的未完成 Promise 本身未必能让 Node 进程一直存活。它的事件循环仍能打印 timer_fired，但 Promise 本身不完成。</p>
+<p>该次实际结果如下；CPU 是 wait4 返回的整个子进程 user+system 时间，含启动器/Node 初始化；墙钟从宿主放行到回收，二者起点不同。数字仅是本次验证，不是生产性能承诺：</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>工作负载</th>
+<th>子进程 CPU 秒</th>
+<th>放行至回收秒</th>
+<th>观测终态</th>
+<th>guest 的 100 ms 定时器</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>正常返回 6</td>
+<td>0.0391</td>
+<td>0.0163</td>
+<td>COMPLETED，exit 0</td>
+<td>完成前主动清除</td>
+</tr>
+<tr>
+<td>同步死循环</td>
+<td>1.0137</td>
+<td>1.0055</td>
+<td>CPU_LIMIT，SIGXCPU / -24</td>
+<td>未执行，事件循环被阻塞</td>
+</tr>
+<tr>
+<td>未完成 Promise</td>
+<td>0.0335</td>
+<td>0.4343</td>
+<td>WALL_LIMIT，宿主 SIGKILL / -9</td>
+<td>已执行，但 Promise 仍未完成</td>
+</tr>
+<tr>
+<td>自制语法错误</td>
+<td>0.0335</td>
+<td>0.0165</td>
+<td>SCRIPT_ERROR，exit 2</td>
+<td>捕获错误后清除</td>
+</tr>
+</tbody>
+</table></div>
+<p>pending 的墙钟配置为 0.4 秒，本次在约 0.4048 秒观察到到期，身份核对、发信号和回收后约 0.4343 秒结束。其他样例有 3 秒外部运行兜底。监督者还给启动、CLI/ps 核对和回收分别设置有限等待；不能把 guest 的 0.4 秒配置称为端到端 400 ms 硬 SLA。</p>
+<p>初次环境检查发现 Python/macOS 启动加入 locale/platform 环境键，断言失败时所有样例已回收。后续在 exec 前重建白名单，并在可信 Node 前导代码移除启动期附加键；最终进入工作负载时仅有 LANG/TMPDIR。原失败记录保留，最终结果通过。最小环境不等于安全沙箱：Node 官方 <code>node:vm</code> 文档也明确它不是运行不可信代码的安全机制；本实验的子进程和堆标志没有替代 OS/容器隔离与工具授权。</p>
+<details>
+<summary>预算实验的三个文件：仅经外部 supervisor 启动，不要直接在主进程/REPL 运行死循环</summary>
+<pre tabindex="0" aria-label="javascript代码或示意图"><code class="language-javascript">// file: budget_child.cjs
+&#x27;use strict&#x27;;
+const fs = require(&#x27;node:fs&#x27;);
+const v8 = require(&#x27;node:v8&#x27;);
+const mode = process.argv[2], nonce = process.argv[3];
+const emit = value =&gt; fs.writeSync(1, JSON.stringify(value) + &#x27;\n&#x27;);
+const beforeEnvironment = Object.keys(process.env).sort();
+// Trusted prelude removes any locale/platform keys inserted during process startup.
+for (const key of beforeEnvironment) {
+  if (![&#x27;LANG&#x27;, &#x27;TMPDIR&#x27;].includes(key)) delete process.env[key];
+}
+let input = &#x27;&#x27;, admitted = false;
+process.stdin.setEncoding(&#x27;utf8&#x27;);
+// An open control channel keeps the pending-Promise fixture alive; EOF is a cleanup fallback.
+process.stdin.on(&#x27;end&#x27;, () =&gt; process.exit(70));
+process.stdin.on(&#x27;data&#x27;, async text =&gt; {
+  input += text;
+  if (admitted || !input.includes(&#x27;\n&#x27;)) return;
+  if (input.trim() !== nonce) process.exit(71);
+  admitted = true;
+  emit({event: &#x27;entered&#x27;, mode});
+  const timer = setTimeout(() =&gt; emit({event: &#x27;timer_fired&#x27;}), 100);
+  if (mode === &#x27;spin&#x27;) {
+    while (true) {} // Runs ONLY in this owned, OS-limited child after the host opens the gate.
+  } else if (mode === &#x27;pending&#x27;) {
+    await new Promise(() =&gt; {});
+  } else if (mode === &#x27;syntax&#x27;) {
+    try { new Function(&#x27;return )&#x27;); }
+    catch (error) { clearTimeout(timer); emit({event: &#x27;script_error&#x27;, name: error.name}); process.exit(2); }
+  } else if (mode === &#x27;ok&#x27;) {
+    clearTimeout(timer); emit({event: &#x27;completed&#x27;, value: 6}); process.exit(0);
+  } else {
+    process.exit(72);
+  }
+});
+emit({event: &#x27;ready&#x27;, node: process.version, pid: process.pid,
+      heap_limit_bytes: v8.getHeapStatistics().heap_size_limit,
+      environment_keys_before_prelude: beforeEnvironment,
+      environment_keys: Object.keys(process.env).sort()});
+</code></pre>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python"># file: limit_exec.py
+&quot;&quot;&quot;Apply limits in the newly-created child, then exec Node with the same PID.&quot;&quot;&quot;
+import json,os,resource,sys
+resource.setrlimit(resource.RLIMIT_CPU,(1,2))
+resource.setrlimit(resource.RLIMIT_CORE,(0,0))
+resource.setrlimit(resource.RLIMIT_FSIZE,(65536,65536))
+os.write(1,(json.dumps({&#x27;event&#x27;:&#x27;limits&#x27;,&#x27;pid&#x27;:os.getpid(),&#x27;cpu_seconds&#x27;:list(resource.getrlimit(resource.RLIMIT_CPU)),
+                     &#x27;core_bytes&#x27;:0,&#x27;file_bytes&#x27;:65536})+&#x27;\n&#x27;).encode())
+node,child,mode,nonce=sys.argv[1:]
+os.execve(node,[node,&#x27;--max-old-space-size=32&#x27;,&#x27;--max-semi-space-size=1&#x27;,child,mode,nonce],
+          {&#x27;LANG&#x27;:&#x27;C.UTF-8&#x27;,&#x27;TMPDIR&#x27;:os.environ[&#x27;TMPDIR&#x27;]})
+</code></pre>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python"># file: supervise_budgets.py
+&quot;&quot;&quot;Only original fixtures in owned children. Unix / Python3.11.8 / Node22.18.0.
+No untrusted code, business tools or inherited credentials. Never signal by executable name.
+&quot;&quot;&quot;
+import hashlib,json,os,platform,shutil,signal,subprocess,sys,tempfile,time,uuid
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parent
+NODE=shutil.which(&#x27;node&#x27;)
+
+def daemon_pid():
+    data=json.loads(subprocess.run([&#x27;multica&#x27;,&#x27;daemon&#x27;,&#x27;status&#x27;,&#x27;--output&#x27;,&#x27;json&#x27;],
+        check=True,capture_output=True,text=True,timeout=3).stdout)
+    if data.get(&#x27;status&#x27;)!=&#x27;running&#x27; or type(data.get(&#x27;pid&#x27;)) is not int:
+        raise RuntimeError(&#x27;cannot verify daemon PID&#x27;)
+    return data[&#x27;pid&#x27;]
+
+def events(path):
+    return [json.loads(line) for line in path.read_text().splitlines(keepends=True) if line.endswith(&#x27;\n&#x27;)]
+
+def trial(mode):
+    if mode not in (&#x27;ok&#x27;,&#x27;spin&#x27;,&#x27;pending&#x27;,&#x27;syntax&#x27;):
+        raise ValueError(&#x27;fixture not allowed&#x27;)
+    forbidden=daemon_pid()  # Refuse to launch without a known daemon PID.
+    with tempfile.TemporaryDirectory(prefix=&#x27;yao383-owned-&#x27;,dir=ROOT) as folder:
+        folder=Path(folder);nonce=uuid.uuid4().hex
+        child=folder/&#x27;budget_child.cjs&#x27;;launcher=folder/&#x27;limit_exec.py&#x27;
+        shutil.copyfile(ROOT/&#x27;budget_child.cjs&#x27;,child);shutil.copyfile(ROOT/&#x27;limit_exec.py&#x27;,launcher)
+        output,error=folder/&#x27;stdout.jsonl&#x27;,folder/&#x27;stderr.txt&#x27;
+        p=None;usage=None;checks=[];kills=[];released=None;expired_at=None
+        def reap():
+            nonlocal usage
+            if p.returncode is not None:return True
+            pid,status,usage_read=os.wait4(p.pid,os.WNOHANG)
+            if pid:
+                p.returncode=os.waitstatus_to_exitcode(status);usage=usage_read;return True
+            return False
+        def verify_owner(stage):
+            # Compare fresh daemon state, direct parent identity, unique nonce and owned path.
+            current_daemon=daemon_pid()
+            if reap():return False
+            row=subprocess.run([&#x27;ps&#x27;,&#x27;-p&#x27;,str(p.pid),&#x27;-o&#x27;,&#x27;ppid=,command=&#x27;],
+                               capture_output=True,text=True,check=False,timeout=1).stdout.strip()
+            if reap():return False
+            fields=row.split(None,1)
+            ok=(len(fields)==2 and fields[0]==str(os.getpid()) and nonce in fields[1]
+                and str(child) in fields[1] and p.pid not in (forbidden,current_daemon,os.getpid()))
+            checks.append({&#x27;stage&#x27;:stage,&#x27;owned&#x27;:ok,&#x27;not_daemon&#x27;:p.pid!=current_daemon,
+                &#x27;child_pid&#x27;:p.pid,&#x27;expected_parent_pid&#x27;:os.getpid(),&#x27;daemon_pid&#x27;:current_daemon,
+                &#x27;observed_parent_pid&#x27;:int(fields[0]) if len(fields)==2 else None,
+                &#x27;nonce_matches&#x27;:len(fields)==2 and nonce in fields[1],
+                &#x27;script_path_matches&#x27;:len(fields)==2 and str(child) in fields[1]})
+            if not ok:raise RuntimeError(&#x27;child identity check failed; no signal sent&#x27;)
+            return True
+        def stop(stage):
+            if not reap() and verify_owner(stage):
+                # This single-threaded owner alone reaps this child. Its PID cannot be reused before wait4.
+                try:os.kill(p.pid,signal.SIGKILL);kills.append(stage)
+                except ProcessLookupError:pass
+        def collect_until(deadline):
+            while not reap() and time.monotonic()&lt;deadline:time.sleep(0.01)
+            return reap()
+        try:
+            with output.open(&#x27;wb&#x27;) as out,error.open(&#x27;wb&#x27;) as err:
+                p=subprocess.Popen([sys.executable,str(launcher),NODE,str(child),mode,nonce],
+                    stdin=subprocess.PIPE,stdout=out,stderr=err,cwd=folder,
+                    env={&#x27;LANG&#x27;:&#x27;C&#x27;,&#x27;TMPDIR&#x27;:str(folder)},start_new_session=True)
+                assert p.pid not in (forbidden,os.getpid())
+                startup=time.monotonic()+2
+                while not any(e[&#x27;event&#x27;]==&#x27;ready&#x27; for e in events(output)):
+                    if reap():raise RuntimeError(&#x27;child exited before ready&#x27;)
+                    if time.monotonic()&gt;=startup:raise TimeoutError(&#x27;startup deadline&#x27;)
+                    time.sleep(0.01)
+                if not verify_owner(&#x27;before_release&#x27;):raise RuntimeError(&#x27;child exited before release&#x27;)
+                released=time.monotonic();p.stdin.write((nonce+&#x27;\n&#x27;).encode());p.stdin.flush()
+                wall=0.4 if mode==&#x27;pending&#x27; else 3.0
+                if not collect_until(released+wall):
+                    expired_at=time.monotonic()-released
+                    stop(&#x27;wall_deadline&#x27;)
+                    if not collect_until(time.monotonic()+2):raise RuntimeError(&#x27;child not reaped after kill&#x27;)
+            observed=events(output);ready=next(e for e in observed if e[&#x27;event&#x27;]==&#x27;ready&#x27;)
+            rc=p.returncode
+            reason=(&#x27;WALL_LIMIT&#x27; if &#x27;wall_deadline&#x27; in kills else &#x27;CPU_LIMIT&#x27; if rc==-signal.SIGXCPU
+                    else &#x27;COMPLETED&#x27; if rc==0 else &#x27;SCRIPT_ERROR&#x27; if rc==2 else &#x27;PROCESS_FAILURE&#x27;)
+            result={&#x27;mode&#x27;:mode,&#x27;status&#x27;:reason,&#x27;returncode&#x27;:rc,&#x27;wall_budget_s&#x27;:wall,
+                    &#x27;deadline_observed_s&#x27;:expired_at,&#x27;elapsed_since_release_s&#x27;:time.monotonic()-released,
+                    &#x27;cpu_user_s&#x27;:usage.ru_utime,&#x27;cpu_system_s&#x27;:usage.ru_stime,
+                    &#x27;heap_limit_bytes&#x27;:ready[&#x27;heap_limit_bytes&#x27;],&#x27;environment_keys&#x27;:ready[&#x27;environment_keys&#x27;],
+                    &#x27;events&#x27;:observed,&#x27;ownership_checks&#x27;:checks,&#x27;signals_sent&#x27;:kills,
+                    &#x27;reaped&#x27;:p.returncode is not None,&#x27;stderr&#x27;:error.read_text()}
+        finally:
+            if p is not None:
+                try:
+                    if not reap():stop(&#x27;exception_cleanup&#x27;)
+                finally:
+                    # EOF exits the cooperative pending fixture even if a verification command failed;
+                    # the spin fixture also has an OS hard CPU limit. No unchecked signal fallback.
+                    if p.stdin and not p.stdin.closed:
+                        try:p.stdin.close()
+                        except BrokenPipeError:pass
+                    if not collect_until(time.monotonic()+3):
+                        raise RuntimeError(&#x27;owned child cleanup failed&#x27;)
+        result[&#x27;control_pipe_closed&#x27;]=p.stdin.closed
+    result[&#x27;temporary_directory_removed&#x27;]=not folder.exists()
+    return result
+
+def main():
+    assert platform.python_version()==&#x27;3.11.8&#x27; and sys.platform==&#x27;darwin&#x27;
+    assert NODE and subprocess.run([NODE,&#x27;--version&#x27;],capture_output=True,text=True,check=True,timeout=2).stdout.strip()==&#x27;v22.18.0&#x27;
+    report={&#x27;python&#x27;:platform.python_version(),&#x27;platform&#x27;:platform.platform(),&#x27;node&#x27;:&#x27;v22.18.0&#x27;,
+            &#x27;script_sha256&#x27;:{name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest()
+                for name in (&#x27;supervise_budgets.py&#x27;,&#x27;limit_exec.py&#x27;,&#x27;budget_child.cjs&#x27;)},
+            &#x27;trials&#x27;:[trial(mode) for mode in (&#x27;ok&#x27;,&#x27;spin&#x27;,&#x27;pending&#x27;,&#x27;syntax&#x27;)]}
+    (ROOT/&#x27;budget-results.json&#x27;).write_text(json.dumps(report,indent=2)+&#x27;\n&#x27;)
+    expected={&#x27;ok&#x27;:&#x27;COMPLETED&#x27;,&#x27;spin&#x27;:&#x27;CPU_LIMIT&#x27;,&#x27;pending&#x27;:&#x27;WALL_LIMIT&#x27;,&#x27;syntax&#x27;:&#x27;SCRIPT_ERROR&#x27;}
+    for row in report[&#x27;trials&#x27;]:
+        assert row[&#x27;status&#x27;]==expected[row[&#x27;mode&#x27;]],row
+        assert row[&#x27;reaped&#x27;] and row[&#x27;control_pipe_closed&#x27;] and row[&#x27;temporary_directory_removed&#x27;]
+        assert all(x[&#x27;owned&#x27;] and x[&#x27;not_daemon&#x27;] for x in row[&#x27;ownership_checks&#x27;])
+        assert set(row[&#x27;environment_keys&#x27;])=={&#x27;LANG&#x27;,&#x27;TMPDIR&#x27;}
+        assert row[&#x27;heap_limit_bytes&#x27;]==35*1024*1024
+    spin,pending=report[&#x27;trials&#x27;][1:3]
+    assert not any(e[&#x27;event&#x27;]==&#x27;timer_fired&#x27; for e in spin[&#x27;events&#x27;])
+    assert any(e[&#x27;event&#x27;]==&#x27;timer_fired&#x27; for e in pending[&#x27;events&#x27;])
+    print(json.dumps(report,indent=2))
+
+if __name__==&#x27;__main__&#x27;:main()
+</code></pre>
+</details>
+<p>将三个文件放在专属可写目录，确认固定版本和 Multica CLI 可读 daemon 状态后，以 Python 3.11.8 执行 <code>python supervise_budgets.py</code>。它只接受四个自制样例，主进程没有无限循环；每个运行都关闭控制管道、回收子进程、删除专属临时目录。另有两个故障回归模拟 daemon 查询失败和身份校验拒绝：零未经核对的信号，pending 样例通过控制通道 EOF 退出并被回收。该退路依赖本例已知的合作式控制通道；不构成任意恶意程序的通用回收证明。</p>
+<h3 id="4-失败结果也是契约的一部分">4. 失败结果也是契约的一部分</h3>
+<p>至少区分编译/运行错误、权限拒绝、审批等待、CPU/墙钟到期、内存或其他进程失败；只有明确的运行时诊断才能把异常退出归因为堆不足，不能见到 SIGKILL 就写 OOM。超时终止与“仍在运行、可继续 wait”也应是不同状态。</p>
+<p>失败响应应携带 run/调用 ID、已知用量、终止原因、可用的部分结果及每个工具的真实执行状态。上述 CPU/wall 样例没有派发工具，因此没有业务副作用；实际 Code Mode 可能已经发出工具请求，杀掉执行器不能撤销宿主或远端已执行的动作。需要先依据独立账本核实，再决定是否允许重试；日志丢失或确认缺失时保留 unknown，不伪造成功、失败或回滚。</p>
+<p>mock 的 total=60 与 4 credits 只验证确定性数据流和配额，没有测模型往返的真实延迟、Token 或账单。实际收益要固定任务与数据，比较质量、模型调用、工具调用、重试、资源使用与总费用，不能只报“并行更快”或“一次模型调用”。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>“进了沙箱，就不需要逐个工具审批。”</strong> 隔离执行资源与批准业务动作是不同边界；宿主仍需检查每次调用的当前权限及审批范围。</li>
+<li><strong>“并行更快、模型往返更少，所以总费用更低。”</strong> 工具次数可能不变，CPU、存活时间、输出和重试还可能增加；要算全链路成本。</li>
+<li><strong>“Promise.race 或同线程 setTimeout 能终止所有脚本。”</strong> 同步循环会阻塞该事件循环；可信外层的计量/中断和回收责任不能交给 guest。</li>
+<li><strong>“CPU 低就可以一直等，堆受限就不会拖垮宿主。”</strong> 等待要有墙钟限制，堆之外还有进程和工具资源，预算也不能在重试时重置。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>洛小山，《AI 产品从入门到精通》learn-ai，固定版本 <code>5a933d287dd5074cc1543cb849146f3261d47521</code>：<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/dsh-5.html" target="_blank" rel="noopener noreferrer">slides/dsh-5.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/codex-22.html" target="_blank" rel="noopener noreferrer">slides/codex-22.html</a>。仅为学习线索；课程对其他运行时的 busy-time、默认额度、yield、审批路径与费用收益未作为本文实测事实。不复制其 AGPL 正文、实现或图片。</li>
+<li>Node.js <strong>v22.18.0</strong>：<a href="https://github.com/nodejs/node/blob/v22.18.0/doc/api/cli.md#--max-old-space-sizesize-in-mib" target="_blank" rel="noopener noreferrer">CLI 堆配置</a>、<a href="https://github.com/nodejs/node/blob/v22.18.0/doc/api/v8.md#v8getheapstatistics" target="_blank" rel="noopener noreferrer">V8 heap_size_limit</a>、<a href="https://github.com/nodejs/node/blob/v22.18.0/doc/api/vm.md" target="_blank" rel="noopener noreferrer">node:vm 的安全边界说明</a>、<a href="https://github.com/nodejs/node/blob/v22.18.0/doc/api/process.md#event-beforeexit" target="_blank" rel="noopener noreferrer">process 与事件循环退出</a>、<a href="https://github.com/nodejs/node/blob/v22.18.0/LICENSE" target="_blank" rel="noopener noreferrer">许可证</a>。固定文档与本机版本对应；未把 Node 子进程当成生产 Code Mode 实现。</li>
+<li>Python Software Foundation，CPython <strong>v3.11.8</strong>：<a href="https://github.com/python/cpython/blob/v3.11.8/Doc/library/resource.rst" target="_blank" rel="noopener noreferrer">resource 的 RLIMIT_CPU/CORE/FSIZE</a>、<a href="https://github.com/python/cpython/blob/v3.11.8/Doc/library/subprocess.rst" target="_blank" rel="noopener noreferrer">subprocess 生命周期</a>、<a href="https://github.com/python/cpython/blob/v3.11.8/Doc/library/os.rst" target="_blank" rel="noopener noreferrer">os.wait4</a>、<a href="https://github.com/python/cpython/blob/v3.11.8/LICENSE" target="_blank" rel="noopener noreferrer">许可证</a>。</li>
+</ul>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">脚本先发慢工具，再一边等它一边热循环，CPU 该不该算？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：脚本先发慢工具，再一边等它一边热循环，CPU 该不该算？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>应照算正在消耗的计算；“有 pending I/O”不是免单信号。工具等待计入墙钟及后端自身预算，guest 的实际计算另计 CPU，不能把整段等待简单归为零 CPU。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">预算到期，但 mock/真实写工具已经执行，能否从头重跑程序？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：预算到期，但 mock/真实写工具已经执行，能否从头重跑程序？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>先查看宿主独立记录的动作状态和幂等键。确认缺失不等于没执行；可能需要查询、补偿或重新审批，不能把 worker 被杀当作事务回滚。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">哪些任务不值得引入 Code Mode？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：哪些任务不值得引入 Code Mode？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>本来就是一次工具调用，或每一步都要新的语义判断/人工确认；固定批处理 API 已足够时也可能更简单。新增执行器的安全、观测和资源治理成本应进入取舍。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>AGENT-0057 · 单题笔记</span><a href="../questions/agent-0057-code-mode-tool-orchestration.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "agent-0057", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

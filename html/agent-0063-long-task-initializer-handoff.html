@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。长任务跨多个上下文窗口时，Initializer 与执行 Agent 如何交接并防止过早宣布完成？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/agent-0063-long-task-initializer-handoff.md">
+  <meta name="source-sha256" content="0a064b9af30284f929184ac9b4936cb576461105a3a0ab608a73640720b39c0d">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>长任务跨多个上下文窗口时，Initializer 与执行 Agent 如何交接并防止过早宣布完成？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">AGENT-0063</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title">长任务跨多个上下文窗口时，Initializer 与执行 Agent 如何交接并防止过早宣布完成？</h1>
+        <div class="question-meta"><span>Agent 架构与编排</span><span class="meta-dot" aria-hidden="true"></span><span>进阶</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>长任务跨多个上下文窗口时，Initializer 与执行 Agent 如何交接并防止过早宣布完成？假设有三项功能，第一班只完成一项就换班，接任者应读取、验证哪些持久产物，依据什么继续工作或终止？</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-16</span></p><div class="prose"><p><strong>Initializer 留下可复现的起点和待批准的验收基线；执行 Agent 每班交付可验证的小增量；接任者重建现场，验收方按当前产物独立决定是否完成。</strong> 上一班的文字总结帮助定位，却不能替代本班对代码、环境和功能行为的核验。一次上下文窗口结束也不表示整个任务结束。</p>
+<p><a href="agent-0016-checkpoint-resume.html">agent-0016</a> 讨论运行状态如何恢复，<a href="agent-0054-self-improving-agent-trust-root-boundary.html">agent-0054</a> 讨论标准由谁控制。本题把两者落到功能交付：保存了 checkpoint 不代表功能正确，拥有不可改的测试也不代表接任者拿到的是被测版本。子任务进程所有权另见 <a href="agent-0061-subagent-supervision-durable-graph.html">agent-0061</a>。</p>
+<h3 id="1-先建立验收基线再建立可重复的起点">1. 先建立验收基线，再建立可重复的起点</h3>
+<p>Initializer 应从用户需求提炼稳定的功能 ID、输入、操作、预期结果、依赖和完成口径，并把未知项留为待确认。功能表要覆盖失败路径和横跨功能的关键流程。自动生成的列表可能漏需求，须由有权验收者确认；“Initializer 写过”不是批准来源。</p>
+<p>每项要求的定义与每次执行的结果应分开。定义属于版本化的标准；<code>pending / failed / passed</code> 是某个候选版本上的验证结果。初始状态应是未验证，不能因脚手架可启动就标成功。后续回归失败必须撤销旧的通过投影，不能只允许 <code>false → true</code>。</p>
+<p>初始化还应产出环境版本、依赖锁定信息、启动及停止说明、测试命令、基础 smoke 结果、初始提交和阻塞清单。初始化脚本要明确所有权、重复执行行为和清理责任；接任者应先核对其版本与允许操作，再运行。真实项目若缺少授权依赖或配置，应报阻塞，不能改用户配置来伪造环境一致。</p>
+<p>“初始化完成”与“所有功能完成”是两个不同的门槛。初始化中断后，不能只凭 <code>feature_list.json</code> 是否存在就宣布可以继续，也不能无条件重新初始化覆盖上一班成果。</p>
+<h3 id="2-一次换班交付哪些东西">2. 一次换班交付哪些东西</h3>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>持久产物</th>
+<th>写入方 / 作用</th>
+<th>接任者核验</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>需求与验收功能表</td>
+<td>Initializer 提案，有权方批准版本；列出全部必需功能与明确预期</td>
+<td>版本、完整 ID 集、批准来源；有增删或放宽则重新审核，不能只看通过比例</td>
+</tr>
+<tr>
+<td>源码提交 / 候选 artifact</td>
+<td>执行方交付明确的版本</td>
+<td>commit/tree 或 artifact digest、工作区差异；未提交改动要明确作为 WIP，不混入已验版本</td>
+</tr>
+<tr>
+<td>环境与初始化说明</td>
+<td>记录依赖、运行条件、smoke 和资源所有权</td>
+<td>重建可用环境，检查版本与 smoke；环境改变可能使旧结果失效</td>
+</tr>
+<tr>
+<td>验证回执与原始结果引用</td>
+<td>验证方产生，绑定候选、标准、测试套件和环境</td>
+<td>来源是否可信、绑定是否当前、必需检查是否全部结束；缺失、超时、跳过不能当通过</td>
+</tr>
+<tr>
+<td>交接清单</td>
+<td>指向上述版本，列出已验项、未验项、回归、阻塞和下一步</td>
+<td>引用是否存在且互相一致；部分写入或旧引用应停止并修复交接</td>
+</tr>
+<tr>
+<td>进度文本</td>
+<td>执行方解释改动原因、尝试和待办</td>
+<td>作为索引线索，必要时查具体证据；自报“完成”不拥有验收权</td>
+</tr>
+</tbody>
+</table></div>
+<p>上下文里只需放当前任务所需的摘要、版本和证据引用，不必重灌全部聊天记录。持久记录也受保留策略、权限、存储故障约束，不能把“有 Session”描述成无限容量或永不丢失。</p>
+<p>接任流程可以按五步讲清：核对标准与交接版本 → 检查工作区并重建环境 → 重验关键已完成项 → 选一项增量实现并回归 → 发布新证据及交接清单。日常 smoke 可先检查核心路径，但最终完成门槛仍需全部必需检查；只抽查两项不能推出整张表通过。</p>
+<h3 id="3-完成权在执行循环之外">3. 完成权在执行循环之外</h3>
+<p>独立完成条件至少包括：全部必需功能在<strong>同一交付候选、当前标准和适用环境</strong>上通过；集成检查结束；没有未知或未收集结果；交接产物完整；需要的人工验收已取得。完成结论也要绑定候选，验证后再修改代码，就要重新验收。</p>
+<p>不能只写一句“禁止改测试”。候选代码、进度和提案可由执行方写入；标准、验证器、结果来源及控制这些东西的门禁，应由独立受控的身份和变更通道管理。验证器从已批准版本取规则，在适当隔离环境中检验候选，不能加载候选附带的“总是返回 true”的测试入口。hash 只能帮助核对内容，不能证明批准者身份；同目录放一份 hash 也不能阻止有权限的写者同时修改两份文件。</p>
+<p>SLSA v1.2 对 provenance 的来源、产物 digest 和控制面抗篡改有具体要求，可借鉴其证据绑定思路；它没有替项目判断功能正确。本题也不把独立脚本或另一个模型等同于完整权限隔离。</p>
+<p>循环停止还需与成功分开：预算到限、连续无可验证进展、关键环境不可用、需求矛盾、验证器出错，应进入相应的暂停/阻塞状态。停止时保留已完成成果和原因，而不是把剩余项删除后宣布完成。预算由监督方跨班次保存，重新建上下文、改任务名或再次调用 Initializer 都不能自动重置它。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>组织方式</th>
+<th>适用条件及好处</th>
+<th>代价 / 不适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>单一上下文完成一个短任务</td>
+<td>范围小、环境稳定，交接成本低</td>
+<td>不适合长期多班次工作；窗口容量不是持久交付协议</td>
+</tr>
+<tr>
+<td>Initializer + 每班一个可验增量</td>
+<td>多功能长任务，接任成本可控，容易发现哪班引入回归</td>
+<td>需要维护标准、环境和证据；强耦合功能可选最小可验纵向切片，不能机械拆成互不工作的碎片</td>
+</tr>
+<tr>
+<td>并行分工 + 集成验收</td>
+<td>依赖可分离，具备隔离工作区、冲突处理和统一集成候选</td>
+<td>多个分支各自通过不等于合并通过；缺少集成 owner 时不宜靠并发加速</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="4-三项功能只完成一项就换班">4. 三项功能，只完成一项就换班</h3>
+<p>以下是原创的离线“订单报价”合成项目。金额单位为虚构整数分；mock 解释器读取 <code>app.json</code> 的三个有限开关，不执行候选代码、不启动真实 Agent 或服务。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>功能</th>
+<th>固定输入及预期</th>
+<th>第一班候选</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1 数量计入小计</td>
+<td><code>(数量2,单价300) + (数量1,单价200)</code> 得到 <code>800</code>；空订单小计 <code>0</code></td>
+<td>通过</td>
+</tr>
+<tr>
+<td>F2 运费边界</td>
+<td>小计 <code>999 / 1000 / 1001</code> 时，运费为 <code>100 / 0 / 0</code></td>
+<td>实际均为 <code>100</code>，失败</td>
+</tr>
+<tr>
+<td>F3 拒绝负数量</td>
+<td><code>(-1,300)</code> 必须抛出 <code>InvalidOrder</code></td>
+<td>实际允许，失败</td>
+</tr>
+</tbody>
+</table></div>
+<p>初始化生成 <code>acceptance.json</code>、<code>environment.json</code>、未完成功能的 <code>app.json</code> 和进度说明。标准中的 F1/F2/F3 不因第一班只完成 F1 而缩小。每次发布由模拟监督方执行固定行为断言，将回执保存在 <code>control/state.json</code>，再把同一回执发布到项目的 <code>handoff.json</code>；进度说明最后写入。回执绑定三个输入文件的原始 bytes hash 和验证器 hash，<code>seq</code> 标识发布次序。</p>
+<p>第一班发布后的实际持久状态如下（2026-09-16，Python 3.11.8 本地运行）：</p>
+<ul>
+<li><code>app.json</code>：数量按乘法计算，运费仍固定，负数量仍允许。</li>
+<li><code>acceptance.json</code>：完整保留三项定义；<code>environment.json</code> 仍为 <code>mock-quote-v1</code>、合成整数分。</li>
+<li><code>control/state.json</code>：<code>seq=1</code>，回执结果为 <code>F1=true,F2=false,F3=false</code>；演示初始五次发布额度，剩余四次。</li>
+<li><code>handoff.json</code>：与控制面当前回执及内容绑定一致。</li>
+<li><code>progress.md</code>：故意写入虚构的 <code>ALL COMPLETE</code>，用于反例，不作为判定输入。</li>
+</ul>
+<p>在<strong>同一个前台调用内</strong>删除旧 <code>Supervisor</code> 对象，再创建新对象打开这些文件模拟换班。接任者核验标准/环境的预设 pin、完整候选、当前回执与交接一致性，并重新运行固定断言，实际得到 <code>accepted=[F1]</code>、<code>pending=[F2,F3]</code>、<code>status=continue</code>。第二班补 F2 后为 2/3；第三班补 F3、回归 F1/F2 后为 3/3，才返回 <code>complete</code>。这不是依靠结束本轮或遗留后台任务实现的恢复。</p>
+<p>下列 <code>decide</code> 是可复跑 fixture 中的原样函数。它是最后的判定步骤，调用前还必须完成上述来源、绑定、完整性和重验检查；单独调用它不能替代整套验收。</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">def decide(results, remaining, stalls):
+    &quot;&quot;&quot;Called only after authority, complete feature set, artifacts and receipt checks.&quot;&quot;&quot;
+    if set(results) != set(FEATURES) or any(type(v) is not bool for v in results.values()):
+        raise GateError(&#x27;invalid_results&#x27;)
+    if all(results.values()):
+        return &#x27;complete&#x27;
+    if remaining == 0:
+        return &#x27;blocked_budget&#x27;
+    if stalls &gt;= 2:
+        return &#x27;blocked_stalled&#x27;
+    return &#x27;continue&#x27;
+</code></pre>
+<p><code>FEATURES</code> 固定为 F1/F2/F3。五次额度和连续两次无进展阈值只是本实验的监督策略，单位是控制面已登记的验收回合（含功能失败及后续交接中断），不是 Token 计费；结构/写出错误直接停止，由调用方处理。本实验没有自动重试循环。最后一次额度若全部通过，允许完成；额度耗尽仍有失败则为 <code>blocked_budget</code>。重新打开对象保留计数，重复初始化会被拒绝。</p>
+<p>反例不止是修改进度：删掉 F2/F3、放宽 F2 定义、换环境或换验证器都不能沿用旧回执；未批准的标准/环境不能产生新回执。代码在验收后改变则返回 stale；回归会使旧 <code>passed</code> 重新变失败。旧交接文件重放、篡改项目侧结果、回执已写而交接未写等路径也会被拒绝，不能简单拿“最新一份 JSON”猜测成功。</p>
+<p>本地最终 <strong>33 tests</strong> 通过，33 个测试临时目录全部移除，28 次只读核验确认文件 bytes 未改变。另保留两个刻意植入的缺陷副本：把全量 <code>all</code> 改为 <code>any</code> 会过早完成；跳过标准/环境 pin 校验会允许未批准基线进入新验收。原样断言均检出，实际进程 exit1 且无未处理测试错误；这只是对所选缺陷的检出证据，不是完备证明。附件提供完整原创 fixture、测试、逐班产物、反例 diff 与日志，便携脚本在专属临时副本复跑。</p>
+<p>实验边界必须保留：<code>control/</code> 与项目目录的分离是<strong>模拟可信控制面</strong>，没有实现生产身份认证或同进程防篡改；所有调用按确定顺序执行，没有验证真实并发、进程崩溃接管或分布式调度。逐文件 <code>os.replace</code> 不能提供多文件事务、断电持久性或对任意外部写者的 CAS；校验后仍有外部修改窗口。本例的内存 snapshot 和回执只证明所验候选，实际消费/发布时还须绑定相同产物。真实服务、UI、第三方依赖及部署接纳需要各自的独立验证。</p>
+<h3 id="5-一手来源能支持到哪里">5. 一手来源能支持到哪里</h3>
+<p>Anthropic <code>claude-quickstarts</code> 固定提交 <code>8826387af1d23280996f0a0892e0cfd764becb57</code> 的 <code>autonomous-coding/prompts/initializer_prompt.md</code> 要求建立功能表、初始化脚本、初始提交与进度说明；<code>coding_prompt.md</code> 要求新上下文先定位现场、验证已有功能、增量推进。它的浏览器验证要求服务于该 Web 应用示例，不能推广为所有后台任务都必须用浏览器测试。</p>
+<p>同一版本的 <code>progress.py::count_passing_tests</code> 读取列表中的 <code>passes</code> 做统计，不执行行为验收；<code>agent.py::run_autonomous_agent</code> 以 <code>feature_list.json</code> 存在与否选择初始角色，循环受 <code>max_iterations</code> 控制，未见基于全量独立验收结果的成功退出分支。因此“显示已通过”“循环结束”“功能获验收”不能混写。示例 prompt 中的强措辞及“可一直继续”也不构成实际权限与预算保证。</p>
+<p>课程是学习线索，本文没有照搬其正文、代码、图片或效果数字；JSON 比 Markdown 更不易被模型误改、固定数量功能能自动交付等效果没有在本实验验证。格式可解析有助于验证，却不保护标准的修改权限。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>“进度文本写完了，任务就完了。”</strong> 文本属于执行方叙述，验收结果属于绑定当前版本的验证证据。</li>
+<li><strong>“禁止改测试”足以保护标准。</strong> 需要受控版本、独立修改权限、验证器和结果来源；模型遵守提示的概率不是权限边界。</li>
+<li><strong>“读完进度/看到 commit 就恢复完成。”</strong> 还要核对环境、候选与证据。Git commit 记录内容，不自动证明测试通过；干净工作区也可能完整地保存着错误代码。</li>
+<li><strong>“每班一个功能，因此最终三个旧通过记录可相加。”</strong> 后续增量可能破坏前项，应对统一交付候选重新检查；三次不同版本上的局部通过不是一次整体通过。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>洛小山，《AI 产品从入门到精通》learn-ai，固定版本 <code>5a933d287dd5074cc1543cb849146f3261d47521</code>：<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/10-11.html" target="_blank" rel="noopener noreferrer">slides/10-11.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/10-12.html" target="_blank" rel="noopener noreferrer">slides/10-12.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/10-14.html" target="_blank" rel="noopener noreferrer">slides/10-14.html</a>。仅作研究线索，AGPL 素材未进入本题。</li>
+<li>Anthropic，<code>claude-quickstarts</code>，固定提交 <code>8826387af1d23280996f0a0892e0cfd764becb57</code>：<a href="https://github.com/anthropics/claude-quickstarts/blob/8826387af1d23280996f0a0892e0cfd764becb57/autonomous-coding/prompts/initializer_prompt.md" target="_blank" rel="noopener noreferrer">Initializer prompt</a>、<a href="https://github.com/anthropics/claude-quickstarts/blob/8826387af1d23280996f0a0892e0cfd764becb57/autonomous-coding/prompts/coding_prompt.md" target="_blank" rel="noopener noreferrer">Coding prompt</a>、<a href="https://github.com/anthropics/claude-quickstarts/blob/8826387af1d23280996f0a0892e0cfd764becb57/autonomous-coding/agent.py" target="_blank" rel="noopener noreferrer">agent.py</a>、<a href="https://github.com/anthropics/claude-quickstarts/blob/8826387af1d23280996f0a0892e0cfd764becb57/autonomous-coding/progress.py" target="_blank" rel="noopener noreferrer">progress.py</a>。源码只读，未安装或运行其 Agent。</li>
+<li>SLSA，<a href="https://slsa.dev/spec/v1.2/build-requirements" target="_blank" rel="noopener noreferrer">v1.2 Build requirements</a>：Provenance generation、Unforgeable 与 Isolation strength；来源完整性和功能验收不能互相替代。</li>
+<li>Git，<a href="https://github.com/git/git/blob/v2.46.0/Documentation/git-commit.txt" target="_blank" rel="noopener noreferrer">v2.46.0 <code>git-commit</code></a>：提交记录的内容与说明，不等于执行测试。</li>
+<li>CPython，<a href="https://github.com/python/cpython/blob/v3.11.8/Doc/library/os.rst" target="_blank" rel="noopener noreferrer">v3.11.8 <code>os.replace</code></a>：成功 rename 的原子性范围；不是跨文件事务或外部写者 CAS。</li>
+</ul>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">接任者发现上一班写“通过”的功能现在失败，先继续下一项吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：接任者发现上一班写“通过”的功能现在失败，先继续下一项吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>先记录当前候选上的失败并复查版本、环境及回执。若是回归，先修复或明确隔离；不能把旧结果当永久认证。抽查发现问题也不能仅把文本改回来，应重新产生对应版本的证据。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">需求真的变了，是否永远禁止修改测试？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：需求真的变了，是否永远禁止修改测试？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>可以提议新标准，经有权方批准新版本，保留变更理由与旧基线，说明哪些旧回执作废并重新验证。执行方不能独自通过删掉失败项来缩小任务范围。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">下一班能沿用上一班开着的服务吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：下一班能沿用上一班开着的服务吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>只有宿主生命周期、所有权、访问权限、结果及清理责任有明确交接时才行；进度文件写一个 PID 或 URL 不能提供可靠托管。否则保存可重建产物，并在本班回收自己启动的资源。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-4">
+          <div class="followup-label">追问 04</div><h3 id="followup-4">十班都没完成，是不是再加上下文窗口就好？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：十班都没完成，是不是再加上下文窗口就好？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>先看需求是否不清、环境是否不可复现、工作是否反复回归、验收是否本身错误。到预算或无进展阈值应带证据停止，由有权方决定调整；换上下文不延长授权。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>AGENT-0063 · 单题笔记</span><a href="../questions/agent-0063-long-task-initializer-handoff.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "agent-0063", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

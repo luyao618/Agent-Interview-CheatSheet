@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。AI 产品承诺删除用户数据时，怎样覆盖原文、日志、缓存、向量、备份及训练用途？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/engineering-0043-ai-data-deletion-lineage.md">
+  <meta name="source-sha256" content="fedbf9f6dd09523d9ab741112da5da8eca10c98e147a53d9d74f122667a6237d">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>AI 产品承诺删除用户数据时，怎样覆盖原文、日志、缓存、向量、备份及训练用途？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">ENGINEERING-0043</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class=""><em>AI</em> 产品承诺删除用户数据时，怎样覆盖原文、日志、缓存、向量、备份及训练用途？</h1>
+        <div class="question-meta"><span>工程化、部署、性能、成本</span><span class="meta-dot" aria-hidden="true"></span><span>进阶</span><span class="meta-dot" aria-hidden="true"></span><span>工程师 / 产品经理</span></div>
+<div class="question-context prose"><p>AI 产品承诺删除用户数据时，怎样覆盖原文、日志、缓存、向量、备份及训练用途？请以用户撤回一份已经进入RAG、并产生缓存回答的文档为例，设计逐层处理、失败重试、恢复防复活与可验证的状态。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-17</span></p><div class="prose"><p><strong>先停止访问与新增派生，再按数据血缘清理各层，把未确认和保留中的范围如实展示。</strong> 删除上传列表的一行，只改变一个入口；旧分块、向量、回答缓存、日志、备份和第三方副本可能仍然存在。“已删除”必须指向明确的对象、版本、存储层、时间和证据，不能由一个成功的API响应代表全部范围。</p>
+<p><a href="rag-0013-incremental-indexing.html">rag-0013</a> 讲增量索引，<a href="rag-0044-milvus-data-lifecycle.html">rag-0044</a> 讲向量库生命周期，<a href="agent-0028-long-term-memory-writeback-decay-conflict.html">agent-0028</a> 讲记忆写回。本题关注跨存储的生命周期承诺，不把某一层delete成功等同于所有副本消失。</p>
+<h3 id="1-先把删除承诺拆成状态和范围">1. 先把删除承诺拆成状态和范围</h3>
+<ul>
+<li><strong>访问撤销</strong>：通过授权、查询过滤和返回前复查，阻止继续读出受影响内容，也阻断新的派生写入；不代表底层字节已经消失。</li>
+<li><strong>逻辑删除</strong>：记录tombstone或不可用标记，使正常服务不再返回对象；仍要处理历史版本、后台索引、旧缓存和绕过入口。</li>
+<li><strong>物理清理</strong>：执行各存储支持的删除/回收并核对对象不可再访问的范围。普通文件unlink、数据库空间回收甚至对象版本删除，都不能仅凭本应用证明所有介质残留、复制品或备份已被安全擦除。</li>
+<li><strong>保留期与例外</strong>：某些备份、不可变审计或法定保留可能暂不允许清理，应限制用途和访问，注明依据、期限、责任方及下一次核验，而不是假称完成。</li>
+<li><strong>外部确认与未知</strong>：区分已发送请求、已受理、供应商声称完成、已验证受控范围、无法证明的范围；超时和无回执不算成功。</li>
+</ul>
+<p>真实服务通常需要异步协调这些状态。可以显示“在线访问已撤销；已知缓存/索引清理完成；备份按所列计划保留；供应商待确认”，而不是先显示无条件“彻底删除”再后台补工作。用户请求权限、租户、文档身份和版本范围应先核实；文档名相同不代表同一份数据，不能用宽泛前缀批量删其他对象。</p>
+<h3 id="2-血缘必须能追到传递依赖和混合产物">2. 血缘必须能追到传递依赖和混合产物</h3>
+<p>至少保存稳定的文档身份、版本/内容指纹、派生对象ID、父依赖、所在存储与负责人。典型路径是原文版本 → 解析文本 → chunk → embedding/检索索引 → 回答缓存 → 摘要；训练/评估样本、日志与供应商对象形成其他分支。哈希用于对照版本，不是授权证明，也不能把短文本hash当然当匿名数据。</p>
+<p>如果回答同时引用A和B，撤回A时应使整条旧回答及其下游摘要失效；仅删引用链接或从文本里替换几个词，不能证明A的信息已消失。可以在重新授权和生成后提供仅依赖B的新回答，但不能沿用原混合缓存。血缘未知的旧对象需要隔离、补调查或扩大经授权的排查范围，不能把缺失依赖当成“与A无关”。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>层</th>
+<th>逐层处理</th>
+<th>能核验的证据及边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>原文及版本</td>
+<td>枚举对象版本、历史上传、解析/OCR副本、临时文件；按稳定身份定位范围</td>
+<td>版本/对象清单与删除结果；当前路径404不证明旧版本或其他存储副本已删除</td>
+</tr>
+<tr>
+<td>日志与追踪</td>
+<td>排查请求/响应正文、异常栈、工具轨迹和调试导出；按政策删内容或最小化</td>
+<td>保留必要请求ID、范围、状态等审计元数据并控制其访问/期限；删除审计本身也可能含个人信息，不能再留完整原文</td>
+</tr>
+<tr>
+<td>缓存、摘要与受控会话产物</td>
+<td>失效所有传递依赖，包括混合回答、边缘缓存、摘要和重放副本</td>
+<td>查ID/版本、测命中路径和返回前授权；不保证已下载或转发至非受控终端的副本消失</td>
+</tr>
+<tr>
+<td>向量及其他索引</td>
+<td>移除向量、metadata、关键词索引和旧chunk映射；跟踪后台清理</td>
+<td>查询不可见与物理回收分别验证；embedding是派生产物，不能因不是原文就自动排除</td>
+</tr>
+<tr>
+<td>备份、快照与副本</td>
+<td>记录保留周期、版本清单和清理计划；恢复时先隔离并重放最新删除账本</td>
+<td>恢复测试、到期删除与受控副本清单；不能用过期备份里的旧账本覆盖撤销记录</td>
+</tr>
+<tr>
+<td>训练/评估用途</td>
+<td>排除未来使用，清理受控数据集版本、候选样本及导出，核查是否已参与训练</td>
+<td>数据集清理不等于参数遗忘；已训练、未训练或用途未知要分别记录，必要时另评估重训/遗忘/停用方案及其效果</td>
+</tr>
+<tr>
+<td>供应商与再处理方</td>
+<td>对照接口、区域、合同、下游副本和请求ID，提交范围明确的删除请求并追踪</td>
+<td>回执要关联对象、版本、范围、时间和仍保留的例外；mock回执或本地成功不能冒充外部执行证明</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="3-一手文档怎样约束承诺">3. 一手文档怎样约束承诺</h3>
+<p>2026-09-17回读的OpenAI API数据控制文档说明，API数据默认不用于训练或改进模型，除非明确选择共享；同时区分abuse monitoring logs与application state。默认滥用监测日志可能含部分客户内容，通常保留最多30天，但有法律或保护服务/第三方所需的更长保留例外。ZDR等控制需要资格/审批，并有endpoint和能力范围限制，有些功能仍保存应用状态。<strong>不用于训练与不留存是两回事</strong>；这些是所引API文档范围，不是ChatGPT各产品或用户当前账号配置的核验。本题没有查询或修改任何供应商设置。</p>
+<p>AWS S3官方文档说明，启用版本控制的对象在不指定versionId的普通DELETE后，通常增加delete marker，旧版本仍在；永久删除特定版本需要明确版本ID。PostgreSQL 17文档则说明，MVCC删除后的旧行版本需由VACUUM等回收，普通VACUUM主要将空间标记为可重用，不一定归还操作系统。两者都说明“读不到”“已发删除命令”“已回收空间”是不同断言；本题未实际操作S3、PostgreSQL或向量数据库。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>实施方案</th>
+<th>适用与优势</th>
+<th>代价及不适用情形</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>可变存储中尽快逐对象清理</td>
+<td>副本范围清晰、保留要求允许时，能缩短可用副本存续时间</td>
+<td>大量派生与共享备份使协调成本高；不能为“立即”绕过保留锁、误删B或掩盖供应商边界</td>
+</tr>
+<tr>
+<td>立即撤销/逻辑删除，后台清理和备份到期处理</td>
+<td>适合跨存储、异步索引与有保留周期的系统，可先停止服务使用</td>
+<td>必须有持久删除账本、重试和恢复防复活机制；如果仍会返回旧缓存，或界面宣称所有副本瞬间消失，这种方案就不合格</td>
+</tr>
+</tbody>
+</table></div>
+<p>不论选哪种，都应从冻结的对象/依赖清单分配幂等工作。单层失败保留待办和错误归属，指数退避/限次重试及人工处理策略另按实际系统设计；不要删除了原文后就丢失派生物的定位信息。撤销时更新读写栅栏，在途生产任务发布前再次校验文档身份、版本和撤销代次。已发送到供应商的请求不能仅凭本地cancel保证供应商停止处理或清掉日志。</p>
+<h3 id="4-原创撤回案例与实际删除范围">4. 原创撤回案例与实际删除范围</h3>
+<p>案例只有原创合成数据：文档A的两个版本描述纸飞机活动，文档B描述桌游活动。A派生解析、chunk、玩具向量、单源/混合回答、混合摘要、含摘录日志和训练候选；另有B的独立缓存，以及一份血缘未知的旧缓存。供应商和模型用途只有合成标记，没有云对象或真实权重。</p>
+<p>本地共13个合成文件：A的两个版本加8个已知派生物共10个；B原文和独立缓存2个；未知缓存1个。原始fixture和证据保存在演练存储外，故意保留以复核。<strong>删除只发生在本轮工厂函数新建的专属临时目录中</strong>：作业按注册ID定位文件，不接受任意路径。每次purge/restore先冻结本次删除/覆盖的目标集合，首次破坏性操作前预检全部选中目标的目录所有权、路径、文件类型和链接安全性；之后每次实际操作仍复查。操作前就已存在的不安全后项目标应在任何较早文件改变前被拒绝，不能边删边发现。预检不构成锁、原子CAS或事务回滚，也不保证对抗同权限进程在预检后的并发改写。</p>
+<p>先保存旧快照和一个在途回答任务，再撤销doc-a，将所有版本及传递依赖置为不可读。控制账本单独保存在临时目录的控制区，不随数据快照恢复；旧生产任务的保存请求和代次被绑定，撤销后不能回写。遇到物理清理失败继续保持访问阻断，按原冻结清单重试；对象已不存在时幂等确认范围内的缺失，不多报一次删除。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>实跑阶段</th>
+<th>已知A派生本地文件</th>
+<th>访问/恢复与剩余范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>撤销访问</td>
+<td>10个仍在</td>
+<td>A的10个读取全部拒绝，B仍可读</td>
+</tr>
+<tr>
+<td>首次清理</td>
+<td>删除9个，vector-a失败1个</td>
+<td>失败为演练注入；A仍不可读</td>
+</tr>
+<tr>
+<td>重试与重复执行</td>
+<td>10个均不存在，重复执行不多记删除</td>
+<td>B两份文件及未知缓存原bytes保持</td>
+</tr>
+<tr>
+<td>从旧快照恢复</td>
+<td>恢复B两份，跳过A十份及未知一份</td>
+<td>当前删除账本不被旧快照覆盖</td>
+</tr>
+<tr>
+<td>模拟第30日</td>
+<td>另删除1个临时备份文件</td>
+<td>不是真实保留期经过或介质擦除</td>
+</tr>
+<tr>
+<td>模拟供应商确认</td>
+<td>本地范围不变</td>
+<td>supplier为simulated_ack，模型遗忘未运行、未知血缘仍未确认</td>
+</tr>
+</tbody>
+</table></div>
+<p>恢复前必须取得可信且足够新的删除账本，并在隔离环境中应用撤销，再开放允许的数据。恢复写集先排除撤回/未知对象，再冻结允许恢复的目的地与内容并全量预检，不能覆盖完answer-b才发现后项b-v1不安全。演练对操作前已存在的目标不安全、账本缺失/回退、快照篡改和错误回执拒绝处理，数据文件保持不变；读取也不会因账本丢失而降级为允许。该不变保证不覆盖执行中才出现的变化或适配器故障：它们可能留下已完成部分，需保留状态、访问阻断和重试信息，不能从一个拒绝码推导整批已回滚。若真实系统连最新撤销记录是否完整都无法确认，就应维持恢复隔离状态，不能先上线再补过滤。</p>
+<p>本例恢复验证在同一进程的合成存储中执行，不能证明跨进程重启、断电持久性、分布式一致性或原子CAS；实际系统应单独验证删除日志的持久性、复制与恢复顺序。模拟第30日是演练选择的逻辑阈值，与上文供应商日志策略没有等价关系，没有等待真实30天。</p>
+<p>最终报告只确认10个已知A本地文件和1个临时备份文件已unlink；B两份和未知缓存在作业结束前bytes未变，未知缓存仍被隔离。随后销毁整个临时环境属于资源收尾，会移除其中其余合成副本；原始fixture/证据仍保留。不能据此声称连这些合成文本的一切副本都被抹去，更不能外推成真实用户数据删除或介质擦除。</p>
+<p>供应商状态仅从pending_not_sent变成simulated_ack_not_real_receipt，不是实发请求或真实回执；训练候选文件清理不证明模型遗忘。报告始终保持<code>real_supplier_confirmation=false</code>、<code>global_deletion_confirmed=false</code>、<code>model_unlearning=not_run</code>、<code>production_approved=false</code>，未知血缘和外部范围没有被“本地完成”吞掉。</p>
+<h3 id="5-本题验证及生产验收还差什么">5. 本题验证及生产验收还差什么</h3>
+<p>离线43项测试通过，覆盖全部版本/传递与混合依赖、未知血缘、循环/缺失依赖、撤销后缓存读取、在途回写、失败重试、重复执行、重新出现的已知文件再清理、B不误删、恢复账本、备份到期、回执绑定与文件/目录范围保护。原始fixture bytes不变；清理前后的对象hash和实际unlink日志分别保存，日志不附带完整正文。</p>
+<p>独立review发现原43项虽全绿，却漏测“后项不安全、较早文件是否已变”：旧purge在拒绝最后的vector-a前已删9个目标，旧restore在拒绝后项b-v1前已覆盖answer-b，两处属于同一前置校验P2。初版restore探针把不安全目标放在首项，所以该控制通过；它不能替代后项覆盖，初版记录保留且不与最终失败数相加。修复后reviewer三项回归原样运行，旧版真实exit1/3tests/2failures/0errors，新版exit0/3pass；新增13项相邻测试覆盖各位置、文件/链接类型、选择集冻结及执行期复查。适配器OSError的9删/1失败对照仍成立，不伪造事务原子性。</p>
+<p>三份故意破坏的教学副本分别绕过缓存读栅栏、恢复时不跳过撤回对象、把本地结果误报为全局确认；同一组三项断言各得到真实exit1/1failure/0errors，正常副本exit0/3pass。便携复跑收集3个直接/4个嵌套子进程并清理临时目录，结果和输入/源码bytes可复核。这些是教学注入，不是生产删除事故。</p>
+<p>真实验收应同时核查控制路径和存储事实：按版本查删、从缓存/检索/历史上下文入口回放、检查异步队列与失败账本、执行隔离恢复测试、核实供应商回执与保留例外。一次查不到或几个探针为阴性只能证明相应检查范围和时点，不能证明不存在未知副本。留存最小化与血缘登记应在新功能上线前落实，否则新增缓存会绕过旧删除流程。</p>
+<p>本题真实业务服务、供应商请求、数据库、训练/遗忘、浏览器及图像布局均not_run；没有读取或删除用户真实文档、日志、备份、记忆、业务库或云数据，也没有改供应商配置。上述测试验证的是合成演练契约，不是供应商认证或完整合规认证。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li>删上传文件就等于删所有派生物；旧版本、混合回答与传递摘要尤其容易漏掉。</li>
+<li>关闭训练开关就等于零留存，或删除训练样本就等于模型遗忘。</li>
+<li>查询返回404、向量逻辑不可见或本地unlink，就证明所有介质和备份安全擦除。</li>
+<li>只恢复数据而不用最新删除账本，或允许旧生产任务在撤销后重新写回缓存。</li>
+<li>把没有血缘、没有回执当作没有副本，用模糊“已删除”掩盖保留和未确认范围。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>洛小山，《AI 产品从入门到精通》learn-ai，固定版本<code>5a933d287dd5074cc1543cb849146f3261d47521</code>：<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/zero-q-privacy.html" target="_blank" rel="noopener noreferrer">slides/zero-q-privacy.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/psy-interview.html" target="_blank" rel="noopener noreferrer">slides/psy-interview.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/ai-safety-governance.html" target="_blank" rel="noopener noreferrer">slides/ai-safety-governance.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/dsh-24.html" target="_blank" rel="noopener noreferrer">slides/dsh-24.html</a>。只作题意/工程边界线索，不移植课件代码、素材或“立即删除”等通用承诺。</li>
+<li>OpenAI，<a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener noreferrer">Data controls in the OpenAI platform</a>，2026-09-17经官方<a href="https://developers.openai.com/api/docs/guides/your-data.md" target="_blank" rel="noopener noreferrer">Markdown正文</a>核对训练使用、abuse monitoring、application state与ZDR资格/限制；不代表当前账户控制已启用。</li>
+<li>Amazon Web Services，<a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/DeletingObjectVersions.html" target="_blank" rel="noopener noreferrer">Deleting object versions from a versioning-enabled bucket</a>，2026-09-17回读，核对delete marker、普通DELETE和明确versionId的区别；未执行页面云操作示例。</li>
+<li>PostgreSQL Global Development Group，<a href="https://www.postgresql.org/docs/17/routine-vacuuming.html" target="_blank" rel="noopener noreferrer">PostgreSQL 17: Routine Vacuuming</a>，2026-09-17回读，重点24.1.2 Recovering Disk Space；支持MVCC旧版本和空间回收的区别，不作为介质擦除证明。</li>
+</ul>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">删掉A后，A+B的旧回答还能保留B那一半吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：删掉A后，A+B的旧回答还能保留B那一半吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不能仅靠删引用或字符串替换证明A的贡献已消失；应失效整条混合产物及其下游，再从允许的B重新生成，并建立新的血缘。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">备份必须保留一段时间，用户看到什么状态？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：备份必须保留一段时间，用户看到什么状态？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>如实给出在线访问撤销、已清理层、保留依据/期限和外部待确认项；限制备份用途并验证恢复时先应用最新撤销，不能把延后清理说成已经彻底删除。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">训练开关关了，是否不用再管日志和模型？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：训练开关关了，是否不用再管日志和模型？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不行。开关通常处理特定训练用途，日志/应用状态/历史数据另有策略；已训练模型的影响需另行评估，删除样本不等于成功遗忘。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-4">
+          <div class="followup-label">追问 04</div><h3 id="followup-4">供应商超时，是否可按本地已删结单？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：供应商超时，是否可按本地已删结单？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>只能确认本地证据范围；外部请求保持待确认或失败，依据合同与责任方重试/升级，不能伪造回执或把超时视为删除成功。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>ENGINEERING-0043 · 单题笔记</span><a href="../questions/engineering-0043-ai-data-deletion-lineage.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "engineering-0043", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
