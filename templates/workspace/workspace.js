@@ -263,7 +263,7 @@
     if (currentRoute.view === 'answers') renderAnswers();
     if (currentRoute.view === 'reader') renderReader();
     renderRail();
-    document.title = `${currentRoute.view === 'reader' ? questionMap.get(currentRoute.id)?.title || '题目不存在' : labels[currentRoute.view]} · AI 面试手记`;
+    document.title = `${currentRoute.view === 'reader' ? questionMap.get(currentRoute.id)?.title || '题目不存在' : labels[currentRoute.view]} · AI 题典`;
     if (!keepSearchFocus) {
       window.scrollTo({ top: 0, behavior: 'instant' });
       const heading = currentRoute.view === 'home' ? $('#home-title') : currentRoute.view === 'questions' ? $('#catalog-title') : currentRoute.view === 'answers' ? $('#answers-title') : null;

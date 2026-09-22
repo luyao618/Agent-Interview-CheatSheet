@@ -1,4 +1,4 @@
-# 📚 AI 面试题库 · 目录
+# 📚 AI 题典 · 目录
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
@@ -78,7 +78,7 @@
 | 19 | [文生图与参考图生图怎样选择，如何保持角色一致性并决定是否增加 Prompt 改写层？](questions/llm-0019-image-generation-identity-control.md) | 🟡 进阶 |
 | 20 | [用强弱模型筛选合成训练题时，如何控制难度并证明数据有效而非筛选器偏好？](questions/llm-0020-synthetic-data-difficulty-verification.md) | 🔴 困难 |
 
-<div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
+<div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 
 ## 🤖 Agent 架构与编排
 
@@ -153,7 +153,7 @@
 | 65 | [如何把 Agent 工作流设计变成搜索问题，ADAS 与 AFlow 的探索、评估和停止条件如何不同？](questions/agent-0065-workflow-search-aflow-adas.md) | 🔴 困难 |
 | 66 | [递归改进与进化搜索怎样优化 Harness，为什么保留多样候选可能优于只保留当前最高分？](questions/agent-0066-recursive-harness-evolution.md) | 🔴 困难 |
 
-<div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
+<div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 
 ## 🔍 检索增强生成
 
@@ -206,7 +206,7 @@
 | 43 | [向量检索的距离度量和 FLAT、IVF、HNSW 索引怎样选择，如何验证 Recall 与延迟取舍？](questions/rag-0043-ann-index-metric-selection.md) | 🟡 进阶 |
 | 44 | [如何让 Milvus 知识库从建表到更新删除都保持可查询、可追溯与幂等？](questions/rag-0044-milvus-data-lifecycle.md) | 🟡 进阶 |
 
-<div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
+<div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 
 ## ⚙️ 工程化、部署、性能、成本
 
@@ -259,7 +259,7 @@
 | 43 | [AI 产品承诺删除用户数据时，怎样覆盖原文、日志、缓存、向量、备份及训练用途？](questions/engineering-0043-ai-data-deletion-lineage.md) | 🟡 进阶 |
 | 44 | [AI 文本检测器的分数能否证明作者身份，如何评估误报并设计合理使用边界？](questions/engineering-0044-ai-text-detector-reliability.md) | 🟡 进阶 |
 
-<div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
+<div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 
 ## 📦 AI 产品与落地
 
@@ -283,7 +283,7 @@
 | 14 | [AI 学习产品什么时候应直接给答案，什么时候应先追问或提示，如何验证用户真的学会了？](questions/product-0014-ai-learning-cognitive-offloading.md) | 🟡 进阶 |
 | 15 | [GEO 与 SEO 的目标有什么不同，怎样评估内容被 AI 引用而不把抓取量当成业务收益？](questions/product-0015-geo-citation-measurement.md) | 🟡 进阶 |
 
-<div align="right"><a href="#-ai-面试题库--目录">↑ 返回顶部</a></div>
+<div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 
 ---
 

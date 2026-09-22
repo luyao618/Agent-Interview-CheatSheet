@@ -31,7 +31,7 @@ EMOJI = {
     "engineering": "⚙️",
     "product": "📦",
 }
-TOP_TITLE = "📚 AI 面试题库 · 目录"
+TOP_TITLE = "📚 AI 题典 · 目录"
 CAPABILITY_PATHS = [
     ("L0", "AI-native 基础判断", "判断 AI 适用边界、任务价值与人与系统的责任边界。"),
     ("L1", "模型与知识基础", "理解模型能力、Prompt/Context、模型选择、推理与成本边界。"),
