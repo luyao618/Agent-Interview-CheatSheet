@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。如何让 Milvus 知识库从建表到更新删除都保持可查询、可追溯与幂等？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/rag-0044-milvus-data-lifecycle.md">
+  <meta name="source-sha256" content="fa09abbaab8877cf4ef736eb02caf3f7cdfda720a659b7b7cb4964e4f06849ca">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>如何让 Milvus 知识库从建表到更新删除都保持可查询、可追溯与幂等？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">RAG-0044</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="">如何让 Milvus 知识库从建表到更新删除都保持可查询、可追溯与幂等？</h1>
+        <div class="question-meta"><span>检索增强生成</span><span class="meta-dot" aria-hidden="true"></span><span>进阶</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>如何让 Milvus 知识库从建表到更新删除都保持可查询、可追溯与幂等？请用两条文本说明 Schema、Index/Load、过滤 Search/Query、稳定主键、upsert 和删除后的验证。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-15</span></p><div class="prose"><p><strong>把向量库当成有版本、可验证的检索副本：先定义数据契约和身份，再管理索引与加载，最后用读回结果确认每次变更。</strong> “写接口返回成功”“查询能看到新版本”“旧数据的存储空间已回收”是三个不同事实，不能用一个计数代替全部验收。</p>
+<p>通用处理流程见 <a href="rag-0023-rag-pipeline-full-flow.html">rag-0023</a>，如何找出需要重新向量化的 chunk 见 <a href="rag-0013-incremental-indexing.html">rag-0013</a>，距离和 ANN 选择见 <a href="rag-0043-ann-index-metric-selection.html">rag-0043</a>。本题聚焦 Milvus 生命周期，不重写切块或索引调参。</p>
+<h3 id="1-schema-定义契约entity-保存可追溯的检索单位">1. Schema 定义契约，Entity 保存可追溯的检索单位</h3>
+<p>Collection 的 Schema 明确主键类型/是否 AutoID、向量维度、标量字段类型及约束；一条 Entity 对应一个可检索 chunk，除向量外保存原文或原文指针、doc_id、tenant、业务版本、Embedding 版本及必要的权限/状态字段。业务关键字段宜显式定义，不能只依赖无约束的动态字段。</p>
+<p>输入要匹配 Schema：向量维度、数值有效性和 metric/归一化契约一致；文本更新后应重新生成相应向量，不能只改正文留下旧向量。换 Embedding 模型时，维度相同也不代表空间兼容，应按版本迁移、重建和切换。<code>doc_id</code>、<code>revision</code> 是业务字段，本身不会获得关系数据库外键、跨行事务或自动版本比较能力。</p>
+<p>需要可重试摄取时，通常使用 <code>auto_id=False</code> 和稳定主键：同一个逻辑 chunk 的同一次写入重试沿用同一 ID。生产 ID 要包含或映射租户、文档及 chunk 身份，避免跨租户碰撞；不能每重试一次生成一个新 ID，也不能未经冲突处理就把截短 hash 当全局唯一键。内容 hash 适合判断内容是否变化，与逻辑身份是不同用途。</p>
+<h3 id="2-createindexload-与-searchquery-是不同步骤">2. Create、Index、Load 与 Search/Query 是不同步骤</h3>
+<p>典型自定义流程是 <code>Schema → create_collection → create_index → load_collection → 写入及读回</code>；批量导入也可先写入再建索引/加载。加载后的后续写入按服务端的数据流水线参与检索，不应每插一批就重建整个索引。</p>
+<p><strong>建 collection 不等于一定已 load。</strong> PyMilvus 3.0.1 的自定义 Schema 路径在传入 index_params 时会建索引并加载；未传则需要后续步骤。快速创建也可能自动完成这些工作。因此要确认实际调用路径和 load 状态，不能仅凭 create 成功或索引创建请求已返回就认为数据已可搜。服务端的加载需要资源和时间，按选定 SDK/服务版本等待就绪并处理失败。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>输入与结果</th>
+<th>常见误解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Search</td>
+<td>查询向量、metric、Top-k 和可选标量 filter；返回按相似度排序的候选</td>
+<td>limit 是上限，不保证一定返回 k 条；分数不是业务答案正确率</td>
+</tr>
+<tr>
+<td>Query / Get</td>
+<td>标量表达式或主键，不需要查询向量；返回字段值</td>
+<td>不能默认一次 Query 就扫描了全部数据，生产需明确 limit、分页/迭代和完整性口径</td>
+</tr>
+<tr>
+<td>Index / Load</td>
+<td>索引决定检索方法，Load 准备查询所需数据/索引</td>
+<td>它们不替你做 Embedding，也不等于建立业务版本事务</td>
+</tr>
+<tr>
+<td>Release / Close</td>
+<td>服务端 Release 卸载查询资源；Close 关闭客户端连接</td>
+<td>不等于删除持久数据，关闭普通客户端也不等于停止共享服务</td>
+</tr>
+</tbody>
+</table></div>
+<p>租户/权限条件由认证后的应用上下文产生，再进入 Search/Query；有一个 tenant 字段并不等于完成了授权。按主键删除前也要验证该主键的所属范围，不能允许客户端任意指定别人的 ID。</p>
+<h3 id="3-upsert-的幂等范围要说清楚">3. upsert 的幂等范围要说清楚</h3>
+<p><strong>insert 不等于自动去重。</strong> 不要把关系数据库的主键唯一约束直觉套到所有 Milvus 写入路径；重复 insert 可能形成重复主键实体，Search/Query 的选择行为不应成为摄取去重机制。</p>
+<p>在本题 <code>auto_id=False</code>、完整行写入的模式下，upsert 按给定主键插入或替换。对于<strong>同一主键、同一完整 payload、串行执行且无其他并发写入</strong>的重试，可以检查最终可见状态保持一致；这不意味着服务端只写了一次、没有物理历史、所有回包完全相同或实现了分布式 exactly-once。不要把完整行 upsert 当任意版本都支持的局部 patch；要按所用 SDK/服务能力发送所需字段。</p>
+<p>更关键的是顺序：<code>revision=2</code> 并不会阻止后来的 <code>revision=1</code> 覆盖它。删除之后，迟到的旧 upsert 也可能把记录重新插回。应由源数据/摄取控制面维护事件 ID、单调版本和删除 tombstone，按文档串行化或用可靠的版本栅栏拒绝旧事件；“先 Query 比较版本，再 upsert”不是原子的 CAS，两个写者仍可能竞争。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>更新方案</th>
+<th>适用情况</th>
+<th>代价与边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>稳定主键 + 完整行 upsert，删除已消失的 chunk ID</td>
+<td>日常增量修改、存储成本敏感，能控制每篇文档的写入顺序</td>
+<td>简单；多 chunk 更新可能被读到混合版本，需要额外发布/读取策略，不自动成为文档事务</td>
+</tr>
+<tr>
+<td>新 generation/新 collection 构建后发布，再回收旧版本</td>
+<td>大规模重切块、换模型，需要校验和回滚</td>
+<td>占额外空间；发布指针/过滤版本及旧版本引用回收需要控制面一致性。支持别名的部署可评估别名切换，但别名切换不自动协调源数据、应用缓存及在途请求</td>
+</tr>
+</tbody>
+</table></div>
+<p>异常或超时后，按稳定 ID 和预期版本核实状态再恢复；不要看到客户端异常就重新 insert。保留源版本、摄取事件、目标 collection/主键、操作结果与校验结果，才能解释哪条内容何时进入检索副本。</p>
+<h3 id="4-删除可见性flush-与空间回收分开验证">4. 删除可见性、flush 与空间回收分开验证</h3>
+<p>Milvus 2.5.x 服务端文档定义 Strong、Session、Bounded、Eventually，一般默认 Bounded。Strong 会等待相应的最新可见性水位，Session 侧重本客户端写入的可见性，较弱级别允许陈旧窗口；它们是读取语义，不赋予多文档写入原子性。具体请求要与摄取水位、超时及版本要求协调，不能固定 sleep 一段时间就宣称一致。</p>
+<p>更新/删除完成后，使用约定的一致性级别按主键读回，再用与线上相同 filter 的 Search/Query 检查新版本或缺失状态，并确认不相关记录仍存在。只看 mutation_count、collection 统计值或 ANN 没返回某条都不足以证明删除完整；ANN 本来就可能漏召回。</p>
+<p><strong>delete 通常先让实体逻辑不可见，不是立即物理擦除。</strong> 服务端随后通过 compaction 整理段并剔除符合回收条件的删除数据，旧段还需 GC 清理；保留期、后台任务和部署方式影响实际空间释放，不能承诺固定秒数。日志、备份、原文存储和答案缓存的清理另有生命周期，向量库删除不自动覆盖它们。</p>
+<p>flush 与上述概念也不同。Milvus 的读可见性不直接由 flush 决定，应通过一致性约定控制；不要把每次强制 flush 当成“立即可查/已彻底删除”的通用补丁。本题不运行服务端 compaction，也不以 Lite 文件大小推断其回收行为。</p>
+<h3 id="5-两条文本的本地实跑">5. 两条文本的本地实跑</h3>
+<p>固定 <strong>PyMilvus 3.0.1 + Milvus Lite 3.2.1</strong>，Python 3.11.8，macOS arm64；另固定 grpcio 1.83.1、FAISS CPU 1.12.0、NumPy 2.2.6、PyArrow 19.0.1，完整依赖见验证附件。这里实际运行的是 Lite 的本地 Python 引擎和进程内 gRPC adapter，不是 Standalone/Distributed Milvus；版本以安装包元数据及固定源码标识。两条中文文本是自编的可读示例，不来自业务库：</p>
+<ul>
+<li>1001 / refund-policy：“付款后七日内且商品未拆封，可申请退货。”</li>
+<li>2001 / account-help：“忘记账户密码时，可通过邮箱重置。”</li>
+</ul>
+<p>三维向量和 query 均手工指定，只验证数据库操作。<code>manual-v1</code> 不是实际 Embedding 模型，不从 COSINE 分数推断文本语义质量。更新时主键 1001 保持不变，revision 改为 2，正文改成“三日内”，向量由 <code>[1,0,0]</code> 改为 <code>[0.8,0.6,0]</code>；它们与 query <code>[1,0,0]</code> 的 cosine 分别为 1 和 0.8。</p>
+<p>代码每次只新建脚本目录下的随机临时数据目录，collection 从空库创建，服务仅监听 loopback 随机端口。查询显式 limit=10，足以覆盖本例两条记录，不能拿这个上限扫描任意业务库。每次更新和删除后均各执行一次 Query 与 Search，核对 ID、revision、正文、分数及无关记录；只按预定次数演示重复操作，任何断言失败立即停止本轮。不添加 sleep、补读直到成功或 mutation 重试来掩盖不一致。</p>
+<p>旧 <strong>PyMilvus 2.5.6 + Lite 2.5.1</strong> 已在显式 limit=10 下捕获异常：两次 upsert 后 Query 只剩 2001，而紧接的 Search 仍返回 1001/revision=2；另在删除后旧 upsert 的主键 Query 得到空列表。本地原样复跑 reviewer 的六轮观察器，也有一轮更新后失败。<strong>根因未确认，不能说 limit 修复了问题。</strong> 本例改用重写引擎隔离旧实现，并保留全部失败返回和 traceback；Lite 3.2.1 与旧 <code>.db</code> 存储格式不兼容，需要重新导入，不能直接替换依赖后打开旧业务库。</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import json
+from contextlib import contextmanager
+from copy import deepcopy
+from importlib.metadata import version
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+from pymilvus import DataType, MilvusClient
+from milvus_lite.adapter.grpc.server import start_server_in_thread
+
+COLLECTION = &quot;lesson_chunks&quot;
+ROWS = [
+    {&quot;id&quot;: 1001, &quot;doc_id&quot;: &quot;refund-policy&quot;, &quot;tenant&quot;: &quot;demo&quot;, &quot;topic&quot;: &quot;refund&quot;,
+     &quot;revision&quot;: 1, &quot;embedding_version&quot;: &quot;manual-v1&quot;,
+     &quot;text&quot;: &quot;付款后七日内且商品未拆封，可申请退货。&quot;, &quot;vector&quot;: [1.0, 0.0, 0.0]},
+    {&quot;id&quot;: 2001, &quot;doc_id&quot;: &quot;account-help&quot;, &quot;tenant&quot;: &quot;demo&quot;, &quot;topic&quot;: &quot;account&quot;,
+     &quot;revision&quot;: 1, &quot;embedding_version&quot;: &quot;manual-v1&quot;,
+     &quot;text&quot;: &quot;忘记账户密码时，可通过邮箱重置。&quot;, &quot;vector&quot;: [0.0, 1.0, 0.0]},
+]
+
+@contextmanager
+def local_client(directory):
+    # 固定 Lite 3.2.1 的测试 helper；只启动本进程拥有的 loopback 服务。
+    server, db, port = start_server_in_thread(str(directory), host=&quot;127.0.0.1&quot;, port=0)
+    client = None
+    try:
+        client = MilvusClient(uri=f&quot;http://127.0.0.1:{port}&quot;, timeout=10)
+        yield client
+    finally:
+        try:
+            if client is not None:
+                client.close()
+        finally:
+            try:
+                stopped = server.stop(grace=0).wait(timeout=10)
+                if not stopped:
+                    raise RuntimeError(&quot;local gRPC stop timed out&quot;)
+            finally:
+                # grpcio 1.83.1 的私有线程池，仅用于本例可审计的清理。
+                server._state.thread_pool.shutdown(wait=True)
+                db.close()  # 关闭 collection 的后台任务并释放数据目录锁。
+                assert db.closed
+
+def create(client):
+    schema = MilvusClient.create_schema(auto_id=False, enable_dynamic_field=False)
+    schema.add_field(&quot;id&quot;, DataType.INT64, is_primary=True)
+    for name, size in ((&quot;doc_id&quot;, 64), (&quot;tenant&quot;, 32), (&quot;topic&quot;, 16),
+                       (&quot;embedding_version&quot;, 32), (&quot;text&quot;, 512)):
+        schema.add_field(name, DataType.VARCHAR, max_length=size)
+    schema.add_field(&quot;revision&quot;, DataType.INT64)
+    schema.add_field(&quot;vector&quot;, DataType.FLOAT_VECTOR, dim=3)
+    client.create_collection(COLLECTION, schema=schema, consistency_level=&quot;Strong&quot;, timeout=10)
+    indexes = client.prepare_index_params()
+    indexes.add_index(field_name=&quot;vector&quot;, index_type=&quot;FLAT&quot;, metric_type=&quot;COSINE&quot;)
+    client.create_index(COLLECTION, indexes, timeout=10)
+    client.load_collection(COLLECTION, timeout=10)
+
+def read(client, expression):
+    rows = client.query(COLLECTION, filter=expression,
+        output_fields=[&quot;id&quot;, &quot;revision&quot;, &quot;text&quot;], limit=10,
+        consistency_level=&quot;Strong&quot;, timeout=10)
+    return sorted([dict(row) for row in rows], key=lambda row: row[&quot;id&quot;])
+
+def search(client):
+    hits = client.search(COLLECTION, data=[[1.0, 0.0, 0.0]], anns_field=&quot;vector&quot;,
+        filter=&#x27;tenant == &quot;demo&quot; and topic == &quot;refund&quot;&#x27;, limit=2,
+        search_params={&quot;metric_type&quot;: &quot;COSINE&quot;, &quot;params&quot;: {}},
+        output_fields=[&quot;revision&quot;, &quot;text&quot;], consistency_level=&quot;Strong&quot;, timeout=10)[0]
+    return [{&quot;id&quot;: hit[&quot;id&quot;], &quot;score&quot;: round(hit[&quot;distance&quot;], 6),
+             &quot;revision&quot;: hit[&quot;entity&quot;][&quot;revision&quot;], &quot;text&quot;: hit[&quot;entity&quot;][&quot;text&quot;]}
+            for hit in hits]
+
+def snapshot(client, expected_refund, score):
+    # 每个变更之后各读一次；先收集两种完整返回，再断言，不补读掩盖漏行。
+    result = {&quot;query&quot;: read(client, &#x27;tenant == &quot;demo&quot;&#x27;), &quot;search&quot;: search(client)}
+    expected = ([expected_refund] if expected_refund is not None else []) + [ROWS[1]]
+    fields = (&quot;id&quot;, &quot;revision&quot;, &quot;text&quot;)
+    assert result[&quot;query&quot;] == [{k: row[k] for k in fields} for row in expected], result
+    hits = [] if expected_refund is None else [
+        {**{k: expected_refund[k] for k in fields}, &quot;score&quot;: score}]
+    assert result[&quot;search&quot;] == hits, result
+    return result
+
+def mutation_ack(response, count_field):
+    summary = {count_field: int(response[count_field])}
+    if &quot;ids&quot; in response:
+        summary[&quot;ids&quot;] = list(response[&quot;ids&quot;])
+    return summary
+
+def demo():
+    assert version(&quot;pymilvus&quot;) == &quot;3.0.1&quot; and version(&quot;milvus-lite&quot;) == &quot;3.2.1&quot;
+    assert version(&quot;grpcio&quot;) == &quot;1.83.1&quot;
+    with TemporaryDirectory(prefix=&quot;yao370-&quot;, dir=Path(__file__).resolve().parent) as directory:
+        data_dir = Path(directory) / &quot;fresh.db&quot;  # 新版使用目录；不接受业务 URI。
+        assert not data_dir.exists()
+        with local_client(data_dir) as client:
+            assert client.list_collections() == []
+            create(client)
+            result = {&quot;sdk&quot;: version(&quot;pymilvus&quot;), &quot;lite&quot;: version(&quot;milvus-lite&quot;)}
+            result[&quot;load_state&quot;] = str(client.get_load_state(COLLECTION, timeout=10)[&quot;state&quot;])
+            result[&quot;insert_ack&quot;] = mutation_ack(client.insert(COLLECTION, deepcopy(ROWS), timeout=10), &quot;insert_count&quot;)
+            result[&quot;initial&quot;] = snapshot(client, ROWS[0], 1.0)
+            updated = deepcopy(ROWS[0])
+            updated.update(revision=2, text=&quot;付款后三日内且商品未拆封，可申请退货。&quot;,
+                           vector=[0.8, 0.6, 0.0])
+            result[&quot;updates&quot;] = []
+            for _ in range(2):  # 固定两次，用来检验相同 payload 的幂等范围。
+                ack = mutation_ack(client.upsert(COLLECTION, [updated], timeout=10), &quot;upsert_count&quot;)
+                result[&quot;updates&quot;].append({&quot;ack&quot;: ack, **snapshot(client, updated, 0.8)})
+            result[&quot;deletes&quot;] = []
+            for _ in range(2):  # 固定两次删除；任何断言失败立即停止本轮。
+                ack = client.delete(COLLECTION, ids=[1001], timeout=10)
+                state = snapshot(client, None, None)
+                state[&quot;pk_query&quot;] = read(client, &#x27;id == 1001&#x27;)
+                assert state[&quot;pk_query&quot;] == [], state
+                result[&quot;deletes&quot;].append({&quot;ack&quot;: ack, **state})
+            client.drop_collection(COLLECTION, timeout=10)
+            result[&quot;collection_removed&quot;] = not client.has_collection(COLLECTION)
+            assert result[&quot;collection_removed&quot;]
+    result[&quot;temporary_db_removed&quot;] = not Path(directory).exists()
+    assert result[&quot;temporary_db_removed&quot;]
+    return result
+
+if __name__ == &quot;__main__&quot;:
+    print(json.dumps(demo(), ensure_ascii=False, indent=2))
+</code></pre>
+<p><strong>2026-09-15 实际运行结果</strong>（完整 JSON 随验证记录提供）：</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>实际回读 / 返回</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>显式 Index/Load 后</td>
+<td>get_load_state 返回 Loaded</td>
+</tr>
+<tr>
+<td>insert 两条文本</td>
+<td>insert_count=2，ID 为 1001、2001；Query 得到两条 revision=1 的原文</td>
+</tr>
+<tr>
+<td>filter 为 demo 租户 + refund 的 Search，limit=2</td>
+<td>仅 1001，score=1.0、revision=1；不会为了凑两条而返回 account 文本</td>
+</tr>
+<tr>
+<td>相同完整新行 upsert 两次</td>
+<td>每次 upsert_count=1、ids=[1001]；每次 Query 均为 1001/revision=2 与 2001/revision=1，没有新增逻辑 ID</td>
+</tr>
+<tr>
+<td>每次更新后的同条件 Search</td>
+<td>1001，score=0.8、revision=2，正文为“三日内”</td>
+</tr>
+<tr>
+<td>delete 1001 后</td>
+<td>此 SDK/Lite 组合的回包为 <code>[1001]</code>；主键 Query 和 refund Search 均为空</td>
+</tr>
+<tr>
+<td>重复 delete 1001 后</td>
+<td>Query 只剩 2001，原文及 revision=1 不变；主键 Query 和 refund Search 仍为空</td>
+</tr>
+<tr>
+<td>清理</td>
+<td>本例 collection 已 drop，专属 gRPC 服务/线程池和引擎关闭后临时目录删除</td>
+</tr>
+</tbody>
+</table></div>
+<p>该固定组合的 delete 回包仍是主键列表，不能从回包形状或重复删除回包推断实体还存在；以读回为准。验证分为预定的 <strong>30 轮正文新库流程</strong>与 <strong>10 轮新库边界流程</strong>，每轮保留完整返回、异常和清理结果。边界流程验证了两个反例：revision=2 后写旧 revision=1，Query/Search 均回到旧正文、score=1；删除后写同一旧 payload，两种读取均显示它复活，2001 不变。这说明业务 revision 不构成版本栅栏，并不是推荐重放旧事件。</p>
+<p>上述轮次只验证锁定环境、两条记录、串行写入的有界场景；不是生产可靠性或失败率估计，不能声称已经解释或修复了旧引擎根因。任一轮读回不符应保留证据并判失败，不能用后续成功覆盖。测试脚本还检查 Schema、跨租户过滤、Release/显式 Reload、关闭后重开持久化及定向过滤删除。</p>
+<p>Lite 3.2.1 与服务端的边界必须保留：它是单进程本地引擎，同一 collection 的写入必须串行；没有服务端分布式水位协调，传入 Strong 也不是四种服务端一致性的实验。固定源码中的 Search/Query 要求 loaded，Release 后必须重新 Load；原 2.5.1 的自动加载观察不能沿用。新版支持本地 partitions/alias，但仍无认证、users/roles/RBAC/TLS，tenant filter 不等于 RBAC，不能暴露到不受信任网络。</p>
+<p>清理代码使用固定 Lite 测试 helper 和 grpcio 私有线程池，负责本例新启动的进程内服务，不能直接作为通用生产 SDK 封装。它等待本次 RPC 服务停止、回收线程池并关闭引擎，验证另检查端口不再监听、后台线程退出及临时目录消失；没有终止任何既有服务。连接共享服务端时只关闭自己的 client。服务端多客户端顺序、复制可见性、故障恢复、资源加载和 compaction/GC 仍须在目标服务版本独立验证。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>“insert 有主键，所以自动去重。”</strong> 不依赖隐含去重；定义稳定身份、选择合适 upsert 模式并读回验证。</li>
+<li><strong>“建 collection 成功就等于已 load。”</strong> 检查快速/自定义创建路径、索引与加载就绪，不能只看创建回包。</li>
+<li><strong>“delete 返回了就立即释放磁盘。”</strong> 逻辑删除、compaction、GC 及其他副本清理不是同一步。</li>
+<li><strong>“revision 字段让 upsert 自动成为乐观锁。”</strong> 它不是条件写入或事务，需要外部控制顺序和删除栅栏。</li>
+<li><strong>“Lite 实测立即可读，因此服务端默认也如此。”</strong> Lite 的加载、一致性和并发范围不同，目标部署必须独立验证。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>课程线索：洛小山《AI 产品从入门到精通》learn-ai，固定 commit <code>5a933d287dd5074cc1543cb849146f3261d47521</code>：<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/vector-db-2.html" target="_blank" rel="noopener noreferrer">slides/vector-db-2.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/vector-db-3.html" target="_blank" rel="noopener noreferrer">slides/vector-db-3.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/vector-db-4.html" target="_blank" rel="noopener noreferrer">slides/vector-db-4.html</a>。只作选题线索，正文、文本和代码独立编写，未搬运 AGPL 素材。</li>
+<li>Milvus 官方 2.5.x 文档仓库固定快照 <code>d9722c11eca0de0b551749dbb6c6a226533d4a20</code>：<a href="https://github.com/milvus-io/milvus-docs/blob/d9722c11eca0de0b551749dbb6c6a226533d4a20/site/en/userGuide/collections/load-and-release.md" target="_blank" rel="noopener noreferrer">Load &amp; Release</a>、<a href="https://github.com/milvus-io/milvus-docs/blob/d9722c11eca0de0b551749dbb6c6a226533d4a20/site/en/userGuide/insert-and-delete/upsert-entities.md" target="_blank" rel="noopener noreferrer">Upsert Entities</a>、<a href="https://github.com/milvus-io/milvus-docs/blob/d9722c11eca0de0b551749dbb6c6a226533d4a20/site/en/userGuide/search-query-get/consistency.md" target="_blank" rel="noopener noreferrer">Consistency</a>。本文使用 AutoID 关闭的完整行模式，不假定所有版本的部分更新能力相同。</li>
+<li>同一文档快照的 <a href="https://github.com/milvus-io/milvus-docs/blob/d9722c11eca0de0b551749dbb6c6a226533d4a20/site/en/faq/product_faq.md" target="_blank" rel="noopener noreferrer">Product FAQ</a>：删除/compaction/GC、flush 与读可见性；<a href="https://github.com/milvus-io/milvus-docs/blob/d9722c11eca0de0b551749dbb6c6a226533d4a20/site/en/faq/operational_faq.md" target="_blank" rel="noopener noreferrer">Operational FAQ</a>：重复主键不能代替摄取去重。</li>
+<li>PyMilvus v3.0.1，commit <code>abf720abc64f57cea4cbc05292a802f9fd73c4c8</code>：<a href="https://github.com/milvus-io/pymilvus/blob/abf720abc64f57cea4cbc05292a802f9fd73c4c8/pymilvus/milvus_client/milvus_client.py" target="_blank" rel="noopener noreferrer">milvus_client.py</a>：自定义 Schema 创建路径、upsert/delete 回包兼容、Close 的连接语义。</li>
+<li>Milvus Lite v3.2.1，commit <code>43d1257774e629bc9f66873977ab7c320d5bf5a7</code>：<a href="https://github.com/milvus-io/milvus-lite/blob/43d1257774e629bc9f66873977ab7c320d5bf5a7/README.md" target="_blank" rel="noopener noreferrer">README</a> 的存储格式/并发/能力限制；<a href="https://github.com/milvus-io/milvus-lite/blob/43d1257774e629bc9f66873977ab7c320d5bf5a7/milvus_lite/engine/collection.py" target="_blank" rel="noopener noreferrer">collection.py</a> 的 upsert/delete、Query/Search、loaded 检查及后台任务关闭；<a href="https://github.com/milvus-io/milvus-lite/blob/43d1257774e629bc9f66873977ab7c320d5bf5a7/milvus_lite/adapter/grpc/servicer.py" target="_blank" rel="noopener noreferrer">servicer.py</a> 的本地 RPC 适配；<a href="https://github.com/milvus-io/milvus-lite/blob/43d1257774e629bc9f66873977ab7c320d5bf5a7/milvus_lite/adapter/grpc/server.py" target="_blank" rel="noopener noreferrer">server.py</a> 的专属 loopback 测试服务。</li>
+<li>grpcio v1.83.1，commit <code>aae267021b1ac256f8b9038d0ef528c3798cc137</code>：<a href="https://github.com/grpc/grpc/blob/aae267021b1ac256f8b9038d0ef528c3798cc137/src/python/grpcio/grpc/_server.py" target="_blank" rel="noopener noreferrer">服务与线程池实现</a>，仅用于本例专属服务清理，私有字段不保证跨版本兼容。</li>
+<li>旧失败环境留档：PyMilvus v2.5.6 commit <code>e941adbd11efb242d4ee4566d7da617a754fbc6c</code>、<a href="https://github.com/milvus-io/milvus-lite/blob/c24c18853883cd9870cc14757498adb89fc0379a/README.md" target="_blank" rel="noopener noreferrer">Lite v2.5.1 README</a>，Lite commit <code>c24c18853883cd9870cc14757498adb89fc0379a</code>。保留作异常复现依据，不将旧实现行为或旧文档能力表套到新版。</li>
+</ul>
+<p>来源核实与本地实验日期为 <strong>2026-09-15</strong>。未运行 Standalone/Distributed Milvus，未操作任何既有业务数据，也未测量生产一致性、可用性或物理擦除时延。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">upsert 返回成功且带 revision，为什么还会被旧内容覆盖？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：upsert 返回成功且带 revision，为什么还会被旧内容覆盖？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>revision 只是业务数据，接口不自动比较大小；迟到事件可以再次写入旧 payload。需要摄取控制面的版本检查与写入顺序保证，不能把非原子的 Query-then-upsert 当 CAS。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">delete 后 Search 没结果，是否就能承诺数据已经物理擦除？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：delete 后 Search 没结果，是否就能承诺数据已经物理擦除？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不能。先用主键及相同过滤的读取确认逻辑可见性；物理空间、日志、备份和派生缓存分别核实。服务端 compaction 与 GC 也有独立进度。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">文档重新切成更多 chunk，稳定主键还够吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：文档重新切成更多 chunk，稳定主键还够吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>还要识别哪些旧 chunk 已消失并删除，或按 generation 发布完整新集合。主键保证重试定位同一身份，不自动维护一篇文档的成员集合或跨行事务。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>RAG-0044 · 单题笔记</span><a href="../questions/rag-0044-milvus-data-lifecycle.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "rag-0044", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

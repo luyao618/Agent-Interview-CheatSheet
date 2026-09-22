@@ -1,0 +1,31 @@
+<section class="answer-section question-supplement"><h3>交互补充：逐步观察一次 ReAct 循环</h3>
+        <div class="lab">
+          <div class="lab-task"><div class="task-text"><span class="task-label">用户任务</span><span>ReAct 论文何时首次发布，后来发表于哪个会议？</span></div><span class="demo-tag">示例数据 · 非实时调用</span></div>
+          <div class="lab-main">
+            <div class="loop-pane" id="loop-pane">
+              <div class="loop-eyebrow"><span class="dot"></span>REASON → ACT → OBSERVE</div>
+              <div class="nodes" role="group" aria-label="选择 ReAct 环节">
+                <button class="node" data-stage="thought" aria-pressed="true" type="button"><span class="node-icon"><svg class="icon"><use href="#i-brain"/></svg></span><span class="node-name">Thought</span><span class="node-cn">推理</span></button>
+                <span class="node-connector" aria-hidden="true">→</span>
+                <button class="node" data-stage="action" aria-pressed="false" type="button"><span class="node-icon"><svg class="icon"><use href="#i-tool"/></svg></span><span class="node-name">Action</span><span class="node-cn">行动</span></button>
+                <span class="node-connector" aria-hidden="true">→</span>
+                <button class="node" data-stage="observation" aria-pressed="false" type="button"><span class="node-icon"><svg class="icon"><use href="#i-observe"/></svg></span><span class="node-name">Observation</span><span class="node-cn">观测</span></button>
+              </div>
+              <div class="loop-back" aria-hidden="true"><svg viewBox="0 0 300 44" preserveAspectRatio="none"><path d="M297 2v19a8 8 0 0 1-8 8H11a8 8 0 0 1-8-8V3" fill="none" stroke="currentColor" stroke-width="1.3" stroke-dasharray="4 3"/><path d="m0 7 3-5 3 5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg><span>带着新证据，回到下一轮推理</span></div>
+              <div class="loop-exit"><span>信息足够，结束循环</span><span>→</span><span class="final-pill">Final Answer</span></div>
+            </div>
+            <div class="trace-pane" id="trace-inspector" aria-live="polite" aria-atomic="true">
+              <div class="trace-top"><span class="trace-kind" id="trace-kind">THOUGHT</span><span class="round-label" id="round-label">第 1 轮</span></div>
+              <h4 id="trace-title">先确认，我还缺什么信息？</h4>
+              <p class="trace-content" id="trace-content">需要分别核对预印本时间和会议发表信息。先搜索论文，找到可验证的来源。</p>
+              <pre class="trace-code" id="trace-code" hidden></pre>
+              <div class="trace-note"><svg class="icon"><use href="#i-info"/></svg><span id="trace-note">模型决定下一步；这里展示的是教学用决策摘要。</span></div>
+            </div>
+          </div>
+          <div class="lab-controls">
+            <div class="scenario-switch" role="group" aria-label="演示场景"><button type="button" data-scenario="normal" aria-pressed="true">正常返回</button><button type="button" data-scenario="error" aria-pressed="false">工具超时</button></div>
+            <div class="trace-controls"><span class="step-count" id="step-count">01 / 07</span><button type="button" class="icon-button" id="reset-loop" aria-label="重新演示" title="重新演示"><svg class="icon"><use href="#i-reset"/></svg></button><button type="button" class="icon-button" id="prev-step" aria-label="上一步" title="上一步" disabled><svg class="icon" style="transform:rotate(180deg)"><use href="#i-arrow"/></svg></button><button type="button" class="button primary" id="next-step"><span id="next-label">下一步</span><svg class="icon"><use href="#i-arrow"/></svg></button></div>
+          </div>
+        </div>
+        <p class="lab-caption"><b>关键区别：</b>模型提出 Action，运行时执行工具；Observation 来自实际工具返回。这里的轨迹为教学示例，不会发送请求。</p>
+</section>

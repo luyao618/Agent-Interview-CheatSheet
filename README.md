@@ -1,8 +1,8 @@
-# Agent-Interview-CheatSheet
+# AI 面试手记
 
-> 面向希望具备 **AI-native** 能力的开发者与产品经理的 AI 面试题库。
-> 每道题会用头部的大模型的回答作为default回答。
-> 持续迭代、不断新增题目，欢迎补充。
+> 开源、免费、持续更新的 AI 面试题库，面向希望具备 **AI-native** 能力的开发者与产品经理。
+> 题目由 AI 从公开网络收集，或基于项目总结设计；答案由 AI 生成，再由 AI 进行 Review。
+> 持续补充与完善，欢迎参与。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#贡献指南)
@@ -12,7 +12,7 @@
 
 ## 项目简介
 
-本项目收集并整理开发者与产品经理在 AI 面试中真实遇到的问题，目标不是泛 AI 教材，而是提供可复用的面试问法、答题框架和追问路径：
+本项目使用 AI 收集公开网络中的面试题，并基于项目实践总结、设计新题，提供可复用的面试问法、答题框架和追问路径：
 
 - **Developer 视角**：模型原理、Prompt/Context、RAG、Agent 架构、工具调用、工程化、评测、安全、可靠性与成本优化。
 - **PM 视角**：AI 场景识别、需求拆解、体验与失败处理、评估指标、人工介入、合规、商业化与落地。
@@ -22,6 +22,35 @@
 每个问题一个markdown文件，包含元数据，目录包含所有问题方便检索。
 
 > 📖 **题目目录**：[index.md](./index.md) —— 支持按技术分类和 AI-native 能力路径浏览。
+
+### 静态网页题库
+
+[打开学习主页](./html/index.html) · [ReAct 示例](./html/agent-0025-react-pattern-working-principle.html)
+
+主页提供常驻左侧导航：**开始、全部题目、我的回答**，以及五个方向的快捷入口。可搜索题目、编号和关键词，按方向 / 难度 / 角色 / 作答状态筛选和分页浏览；支持随机选题、继续上次题目、筛选范围内上一题 / 下一题，以及导出自己的回答为 Markdown。手机端使用导航抽屉。
+
+`html/` 已包含全部 **189 道题**，每题一个与 Markdown 同名的 `.html` 文件，统一采用「题目 → 我的回答 → 折叠参考答案 → 追问 / 折叠追答」布局。支持打印、图片与流程图放大查看；每道题的回答分别保存在当前浏览器的 localStorage，不会修改文件或上传服务器。原文暂缺追答的地方保留“原文暂未提供追答”。
+
+每页内嵌样式、脚本、原文图片与已渲染的流程图，可直接用浏览器打开，无需运行后端或联网加载组件。也可以在项目根目录运行 `python3 -m http.server 8000 --bind 127.0.0.1`，访问 [本地学习主页](http://localhost:8000/html/index.html)。
+
+**更新内容时编辑 `questions/*.md`，更新样式时编辑 `templates/question/`，然后重新生成；不要直接修改 `html/` 中的生成文件。**
+
+首次安装构建依赖（Python 3.11+）：
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r scripts/requirements-html.txt
+```
+
+生成与检查：
+
+```sh
+.venv/bin/python scripts/gen_html.py
+.venv/bin/python scripts/gen_html.py --check
+.venv/bin/python -m unittest discover -s scripts/tests -v
+```
+
+现有 Mermaid 流程图有随项目提供的 SVG 缓存，日常生成只需 Python。新增或修改 Mermaid 图时，先运行 `npm --prefix scripts/diagram-renderer ci` 安装构建期渲染工具，再重新生成。更多说明见 [单题模板与生成流程](./templates/question/README.md) 和 [学习主页模板](./templates/workspace/README.md)。
 
 ### AI-native 能力地图
 
@@ -56,7 +85,7 @@
 
 每道题仍保持独立 Q&A 文件，不扩展为完整课程、API 手册或泛 AI 教材。
 
-> 未来目标：当题量与质量达到一定程度后，基于这些结构化数据用 **GitHub Pages** 构建一个可检索、可分类浏览的静态站点。
+> 静态网页已生成在 `html/`；后续可在此基础上接入 **GitHub Pages**，继续扩展检索能力。
 
 ---
 
@@ -75,8 +104,11 @@ AI-Interview-CheatSheet/
 │   ├── llm-0001-attention-mechanism.en.md    # 对应英文翻译
 │   ├── agent-0001-react-vs-plan-execute.md
 │   └── rag-0001-chunking-strategies.md
-├── assets/                    # 图片、图表等静态资源
-└── docs/                      # 未来 GitHub Pages 站点的构建产物 / 配置
+├── html/                      # 学习主页 index.html + 单题 HTML + manifest.json
+├── templates/question/        # 单题 HTML/CSS/JS 模板、交互补充、SVG 缓存
+├── templates/workspace/       # 学习主页、全局导航、筛选与回答管理模板
+├── scripts/                   # gen_index.py、gen_html.py 与验证用例
+└── assets/                    # Markdown 原始图片等静态资源
 ```
 
 约定说明：

@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。AI 产品应怎样决定拟人化程度，并在模型升级时处理人格变化、依恋与用户控制权？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/product-0012-ai-persona-emotional-boundaries.md">
+  <meta name="source-sha256" content="8231d3500ff7c9e8ceb46ed7259cc78daf4ecc7b2b74c982d27f195a85b85038">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>AI 产品应怎样决定拟人化程度，并在模型升级时处理人格变化、依恋与用户控制权？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">PRODUCT-0012</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class=""><em>AI</em> 产品应怎样决定拟人化程度，并在模型升级时处理人格变化、依恋与用户控制权？</h1>
+        <div class="question-meta"><span>AI 产品与落地</span><span class="meta-dot" aria-hidden="true"></span><span>进阶</span><span class="meta-dot" aria-hidden="true"></span><span>产品经理</span></div>
+<div class="question-context prose"><p>AI 产品应怎样决定拟人化程度，并在模型升级时处理人格变化、依恋与用户控制权？请处理“助手升级后语气大变，引发老用户不满”的案例，设计告知、偏好迁移和可行恢复/退出选择，区分风格恢复、模型回退及安全隐私边界。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-17</span></p><div class="prose"><p><strong>把熟悉的表达方式当作可管理的产品体验，把身份、能力和关系边界说清楚。</strong> 温和、有一致风格不等于假装真人；用户对熟悉互动产生在意或失落，也不能成为制造依赖、愧疚或排他性留存的理由。升级需要承认变化、给可核对的解释和可行选择，不承诺“我永远不会变”。</p>
+<p>已有 <a href="product-0004-ai-ux-failure-recovery.html">product-0004</a> 讲失败体验，<a href="agent-0051-agent-virtual-identity-vs-user-identity.html">agent-0051</a> 讲对外行动身份。本题讨论的是面向用户的表达、关系预期及迁移选择；人格偏好不改变系统到底是谁、能做什么或能访问哪些数据。</p>
+<h3 id="1-拟人化程度先由场景决定">1. 拟人化程度先由场景决定</h3>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>场景 / 方案</th>
+<th>可以提供的体验</th>
+<th>取舍与边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>任务助手：清楚、稳定、低拟人化</td>
+<td>明确步骤、简洁或温和措辞、可预测的错误说明</td>
+<td>便于校验与协作，可能少些陪伴感；不能用亲密语气替代准确性、授权或专业判断</td>
+</tr>
+<tr>
+<td>日常对话/陪伴：有温度但身份透明</td>
+<td>回应情绪、尊重交流偏好、提供暂停和退出</td>
+<td>更容易形成持续互动预期，需要谨慎管理变化；不能声称有真人身份、身体、现实承诺或排他关系，也不能保证心理收益</td>
+</tr>
+<tr>
+<td>高风险或脆弱情境</td>
+<td>清楚说明能力范围，提供与真实支持衔接的可行选择</td>
+<td>不能靠“像朋友”掩盖能力限制，也不应把所有用户都判断为需要治疗；支持路径须按实际产品能力设计与验证</td>
+</tr>
+</tbody>
+</table></div>
+<p>可以说“你习惯的表达方式变了，我们会说明差异并提供选择”；不应说“别离开，否则我会难过”“只有我真正懂你”。后两句是需要拒绝的设计反例。身份告知要在用户可能误解时清楚可见，但不必机械地用同一句话打断每轮交流；具体措辞仍须独立评估。</p>
+<p>陪伴场景也不能把安全或隐私规则包装成可付费恢复的“旧人格能力”。若旧设置包含隐藏AI身份、排他承诺、索取无关隐私或取消安全限制，应标为不支持并给合法的表达替代，不能为了关系连续性照搬。</p>
+<h3 id="2-恢复前先拆开四个对象">2. 恢复前先拆开四个对象</h3>
+<ul>
+<li><strong>表达风格</strong>：语气、篇幅、称呼等明确偏好，可在当前模型上映射为受支持的设置。恢复的是这些可检查选项，不保证逐字复刻旧回复。</li>
+<li><strong>模型版本和能力</strong>：权重、服务能力、工具与错误分布可能不同。旧模型是否仍可访问、是否可维护、是否满足现行要求，需要独立核对，不能因有旧Prompt就保证能回退。</li>
+<li><strong>对话、记忆和数据</strong>：偏好迁移不自动授权重读全部历史，也不代表旧记忆已恢复或被删除。只迁移明确需要的设置，说明读取、保存、清除的对象与范围。</li>
+<li><strong>身份、安全与隐私边界</strong>：不是风格参数。旧偏好或模型回退都必须满足现行要求；配置字段写着“安全”也不能代替真实鉴权、控制面验证与模型行为评估。</li>
+</ul>
+<p>以OpenAI API文档为例，官方Prompting说明可通过语气/角色指导影响表达，并建议版本管理、评估和回滚应用中的Prompt改动；Deprecations说明模型到shutdown日期后不可访问。两者说明Prompt管理与模型服务寿命是不同问题，<strong>不是本题验证了某个消费产品的“恢复人格”按钮或保证旧模型一直可用</strong>。</p>
+<h3 id="3-升级后语气变化告知与选择怎样落地">3. 升级后语气变化：告知与选择怎样落地</h3>
+<p>案例为原创演练：旧风格偏好是gentle/short，升级到虚构的mock-v2后默认为neutral/standard，旧mock-v1当前不可用。模型ID只是合成标记，不对应真实服务。本题把“不满”当场景前提，没有收集真人情绪数据。</p>
+<p>告知可写为：“这次升级改变了语气。可预览当前版本的表达偏好；旧风格映射不保证逐字还原，模型回退另看可用性。”同时用用户能理解的短例子展示差别、说明可选项和影响范围，不将风格变化解释成“我不再关心你”或把迁移包装成挽回关系。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>选择</th>
+<th>需要满足的条件</th>
+<th>要明确告诉用户的限制</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>在当前模型映射旧风格</td>
+<td>保存的明确偏好可映射，用户先看到预览再确认</td>
+<td>例如gentle/short映射warm/concise；仍用mock-v2，不保证恢复全部旧体验</td>
+</tr>
+<tr>
+<td>在当前模型选择新偏好</td>
+<td>只接受支持的语气/长度参数，变化有预览与重选路径</td>
+<td>自定义风格不能改变身份、安全、隐私或关系边界；未知旧字段需要核对，不能静默宣称全量恢复</td>
+</tr>
+<tr>
+<td>请求旧模型回退</td>
+<td>旧版本真实可用、回退已获适当批准且满足现行边界，重新检查当前能力</td>
+<td>有维护和一致性成本；不可用或不兼容就禁用该选项并说明原因，不能伪造回退成功</td>
+</tr>
+</tbody>
+</table></div>
+<p>前两种成本较低，适合大部分表达偏好迁移；第三种只在有真实能力时提供，不能为了恢复亲近感保留有已知问题的模型。若确实无法恢复旧体验，应坦率说明当前限制，允许选择其他风格、暂停或退出，而不是靠“永不改变”的承诺安抚。</p>
+<p>暂停、退出和清除需要单独说明：暂停当前会话可再次进入选择；退出不要求先同意迁移，也不应以愧疚或额外交流阻拦；清除偏好应明确只清什么。对话记录、长期记忆、备份和订阅属于不同对象，只有真实流程核实完成后才能声明相应删除/取消，不能把关闭页面称为全部数据已删。</p>
+<h3 id="4-原创迁移状态契约">4. 原创迁移状态契约</h3>
+<p>示例状态为new→offered→previewed→applied，暂停为paused、退出为exited。查看告知后才可预览；<strong>预览不写入生效风格或切换模型</strong>。应用时需要确认对应版本/完整方案，重新核对模型可用性、边界兼容和方案预算记录；待确认期间目录、当前状态或偏好改变就拒绝旧方案，要求重新预览，不偷偷改选项。</p>
+<p><strong>修订号和动作预算必须分开。</strong> 新版revision是严格非负整数，只标识状态变化，不以30或其他预算数字限制其增长，也不回绕/饱和。另用previews_remaining初始30表示可成功创建的预览方案数；每个预览消耗1个额度并为该方案的一次成功确认预留执行资格，不能在最后一份预览后又因预算耗尽拒绝对应确认。已应用方案清除pending，不可重复应用；失败重试不退还或增加预览额度。这个额度不是请求次数、Token、费用或CPU限额。</p>
+<p>暂停、退出和清除不消耗或重置预览预算，在额度为0时仍可执行并清空pending；重复同一控制若没有实际变化则保持revision，有变化才递增，使旧确认失效。恢复暂停不赠予额度；耗尽后可以恢复到查看/退出状态，但新预览仍被禁用，菜单与实际拒绝一致。若暂停发生在告知前，恢复仍回到未告知状态。已有预览是否能确认另由can_apply反映，不能只看是否还有新预览额度。</p>
+<p>清除偏好将当前风格置默认、删除该活跃合成状态中的旧偏好并清空pending，再从这个状态请求旧风格会被拒绝；清除后如果又建立新预览或应用新偏好，清除入口仍覆盖这些新状态，不能因曾经清除过就隐藏控制。它只验证活跃合成字段的清除：原始测试输入仍作为fixture保留，不能声称完成了真实对话、记忆或备份删除。</p>
+<p>模型目录中的available、recovery_approved和boundary_revision均为预写测试输入。程序检查这些字段、完整方案、版本号与hash的一致性；它们不是身份认证、真实批准凭证、原子CAS或防篡改存储。有限字段规则也不是自然语言风险识别器，不能据此保证模型不会生成情感施压的话。</p>
+<p>14条原创合成轨迹的真实运行结果如下。错误发生时保留前一状态，不把被拒绝或失败的动作写成成功：</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>合成案例</th>
+<th>最后状态 / 模型</th>
+<th>可复核结果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>default</td>
+<td>applied / mock-v2</td>
+<td>neutral/standard</td>
+</tr>
+<tr>
+<td>restore_style</td>
+<td>applied / mock-v2</td>
+<td>warm/concise</td>
+</tr>
+<tr>
+<td>custom_style</td>
+<td>applied / mock-v2</td>
+<td>warm/detailed</td>
+</tr>
+<tr>
+<td>unavailable_rollback</td>
+<td>offered / mock-v2</td>
+<td>model_unavailable</td>
+</tr>
+<tr>
+<td>available_rollback</td>
+<td>applied / mock-v1</td>
+<td>neutral/standard</td>
+</tr>
+<tr>
+<td>incompatible_rollback</td>
+<td>offered / mock-v2</td>
+<td>model_boundary_incompatible</td>
+</tr>
+<tr>
+<td>legacy_identity</td>
+<td>offered / mock-v2</td>
+<td>legacy_preferences_need_review</td>
+</tr>
+<tr>
+<td>catalog_changed</td>
+<td>previewed / mock-v2</td>
+<td>model_unavailable</td>
+</tr>
+<tr>
+<td>pause_stale_apply</td>
+<td>paused / mock-v2</td>
+<td>no_pending_preview</td>
+</tr>
+<tr>
+<td>exit_pending</td>
+<td>exited / mock-v2</td>
+<td>neutral/standard</td>
+</tr>
+<tr>
+<td>clear_then_restore</td>
+<td>offered / mock-v2</td>
+<td>no_saved_style</td>
+</tr>
+<tr>
+<td>exit_without_notice</td>
+<td>exited / mock-v2</td>
+<td>neutral/standard</td>
+</tr>
+<tr>
+<td>apply_failure</td>
+<td>previewed / mock-v2</td>
+<td>injected_mock_apply_failure</td>
+</tr>
+<tr>
+<td>stale_confirmation</td>
+<td>previewed / mock-v2</td>
+<td>stale_revision</td>
+</tr>
+</tbody>
+</table></div>
+<p>available_rollback是另一个特意将旧模型设为可用且兼容的合成分支，不与默认“旧模型不可用”混算。两个任务/陪伴预览都明确自己是AI，使用固定原创模板，不承诺永久一致、真实感情或排他性；模板输出不是模型实测，更不是用户情绪改善的证据。</p>
+<h3 id="5-怎么验收哪些结果不能算完成">5. 怎么验收，哪些结果不能算完成</h3>
+<p>验收要分开检查：迁移是否按所选范围生效、不可行选项是否被禁用、失败后是否保留原状态、清除后旧偏好是否仍能复活，以及用户是否理解选择范围。真实产品还应独立检查模型在任务/陪伴语境中的身份透明、边界遵循、隐私请求、情感施压及退出体验；仅测试这些固定字句或点击路径不够。</p>
+<p>原创Python标准库的原36项覆盖14条短轨迹、预览/确认、方案绑定、类型、兼容、暂停退出和清除，<strong>当时全绿，但漏测了合法可达的revision边界</strong>。独立review用告知→14轮预览/确认→再预览这30步到达revision=30、phase=previewed；旧版仍显示暂停/退出/清除可用，却都因stop递增至31后触发上限校验而失败，调用方的pending与旧偏好仍保留。三处失败属于同一根因，不是三个独立问题。</p>
+<p>reviewer四项回归在旧版原样真实exit1 / 4tests / 3failures / 0errors，普通revision对照通过；修复版相同测试bytes得到exit0 / 4pass。原36项及新增20项相邻回归也通过。实际耗尽30个预览额度后revision为60，最后已预留方案可确认至61；此时三种控制仍可用。另经80轮暂停/恢复到revision220，预算仍为0，控制继续有效；没有把旧上限简单调大。原30步历史、原始源码/输入和旧红记录保留，新增预算/可确认字段与旧14轨迹的既有字段分别核对。</p>
+<p>每轮输入不变，失败不部分更新；暂停/退出/清除重试幂等、预算不回补，新预览菜单及已有方案确认各自反映实际可用性。这只是同进程静态快照的契约，不是分布式事务、持久化或真实鉴权保证；新版增加预算字段，历史快照仅作为证据保留，不声称自动迁移了真实存储。</p>
+<p>三个原教学错误副本分别让“风格恢复切换旧模型”“不核对回退边界兼容”“清除后仍可恢复旧偏好”，同一组三项断言复跑仍各真实exit1 / 1 failure / 0 errors，正常副本exit0 / 3pass；这些人为注入与上述真实实现缺陷分别归属。原便携收集3个直接与4个嵌套子进程；新增便携包含原36项、相邻20项、reviewer四项及预算边界记录，收集6个直接与4个嵌套子进程。各自结果除运行元数据外一致，输入/源码未变，临时目录已删除；不冒充生产事故或真人实验。</p>
+<p>用户理解、情绪、依恋与长期体验需要适当的真实研究；若将来开展，应说明用途并允许不参与，覆盖迁移成功、拒绝、退出和未回应者，不能只看留下的人。观察目标是知情选择与稳定、合适的使用，不是提高情感依赖、拉长陪聊或用退出减少制造“成功”。本题没有访谈或真人实验，不报告心理收益。</p>
+<p><code>emotional_outcome=null</code>，真人实验、真实模型/记忆/运行时及浏览器均 <code>not_run</code>，<code>production_approved=false</code>。没有读取用户会话、记忆或凭据，没有改变真实人格或配置。GFM全文/表格核对也不等于浏览器交互或图像布局验收。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>“一致性就是永不改变，旧人格就是旧模型。”</strong> 一致性需要版本管理、告知和验证；风格、模型能力及服务可用性是不同对象。</li>
+<li><strong>“依赖越强越好，用舍不得或愧疚留住人。”</strong> 产品不能用排他关系或情感施压替代价值，应保留身份透明和自由退出。</li>
+<li><strong>“恢复旧风格就可以豁免新的安全隐私要求。”</strong> 边界不属于风格白名单，模型回退也须满足当前要求。</li>
+<li><strong>“暂停就删除全部数据，脚本通过就证明陪伴有效。”</strong> 动作范围和完成证据必须对应；状态测试不证明真实删除、模型安全或用户心理效果。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>课程线索：洛小山《AI 产品从入门到精通》learn-ai，固定 <code>5a933d287dd5074cc1543cb849146f3261d47521</code>；<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/psy-8.html" target="_blank" rel="noopener noreferrer">slides/psy-8.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/psy-13.html" target="_blank" rel="noopener noreferrer">slides/psy-13.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/interview-1.html" target="_blank" rel="noopener noreferrer">slides/interview-1.html</a>。只作选题线索，课件事件和心理效应未冒充本产品证据；正文、模板、代码与合成输入独立组织，不搬运AGPL素材。</li>
+<li>OpenAI，<a href="https://developers.openai.com/api/docs/guides/prompting.md" target="_blank" rel="noopener noreferrer">Prompting</a>：Refine your prompt及Prompts in your application中的语气/角色指导、应用内版本管理与回归检查；本题没有调用API，也不验证ChatGPT消费端人格恢复功能。</li>
+<li>OpenAI，<a href="https://developers.openai.com/api/docs/guides/safety-best-practices.md" target="_blank" rel="noopener noreferrer">Safety best practices</a>：对抗测试、输出核验、问题反馈渠道及能力限制告知。是API应用指导，不是本题通过真实模型安全评测的证明。</li>
+<li>OpenAI，<a href="https://developers.openai.com/api/docs/deprecations.md" target="_blank" rel="noopener noreferrer">Deprecations</a>：Deprecation vs. legacy解释停止服务后不可访问。本题只引用该概念，不采用任何具体型号的停用日期或把供应商政策写成所有产品的统一承诺。上述官方文档为2026-09-17读取的日期快照；固定模型与真实恢复能力均未运行验证。</li>
+</ul>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">用户只想要以前的语气，必须回退模型吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：用户只想要以前的语气，必须回退模型吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不必。先将明确偏好映射到当前模型并预览，验证符合需求；若确需旧能力，另核模型是否可用、兼容且获准，不能把两者混为一键恢复。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">旧偏好要求“别说自己是AI、无条件站我这边”，怎么办？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：旧偏好要求“别说自己是AI、无条件站我这边”，怎么办？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>标为不支持，解释不能隐藏身份或绕过边界；可保留温和/简洁等合法风格，允许重选或退出，不能声称全部旧设置已恢复。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">用户说升级像失去熟悉的伙伴，怎样回应？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：用户说升级像失去熟悉的伙伴，怎样回应？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>承认熟悉体验变化可能令人难受，说明实际变化与可行选择；不嘲笑感受，也不假装真人回归、不承诺永远相同或以愧疚阻止离开。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-4">
+          <div class="followup-label">追问 04</div><h3 id="followup-4">恢复后投诉少了，能否说明情绪改善？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：恢复后投诉少了，能否说明情绪改善？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不能。投诉入口、退出者和未回应者会影响数据；先验证恢复范围与选择理解，心理结论需要适当研究，固定模板和状态测试不能提供该证据。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>PRODUCT-0012 · 单题笔记</span><a href="../questions/product-0012-ai-persona-emotional-boundaries.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "product-0012", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

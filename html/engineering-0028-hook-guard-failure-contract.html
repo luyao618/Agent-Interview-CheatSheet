@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。Agent Hook 与 Guard 的拒绝、异常、超时语义怎样定义，怎样防止后续插件撤销拒绝？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/engineering-0028-hook-guard-failure-contract.md">
+  <meta name="source-sha256" content="9b02592415783e69bf2c6cca55a58e67ea9cd86baeb7c91316db32eb978be9b0">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>Agent Hook 与 Guard 的拒绝、异常、超时语义怎样定义，怎样防止后续插件撤销拒绝？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">ENGINEERING-0028</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title"><em>Agent</em> Hook 与 Guard 的拒绝、异常、超时语义怎样定义，怎样防止后续插件撤销拒绝？</h1>
+        <div class="question-meta"><span>工程化、部署、性能、成本</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>Agent Hook 与 Guard 的拒绝、异常、超时语义怎样定义，怎样防止后续插件撤销拒绝？请列出允许、拒绝、异常、超时、无效 JSON 的决策表，解释弃权、审计故障和不可绕过的权限边界。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-16</span></p><div class="prose"><p>先定义扩展点的职责，再定义故障策略。<strong>观察用 Hook 提供通知；授权用 Guard 提供约束；最终工具网关负责执行门禁。</strong> 这些名称没有跨运行时统一语义，不能看到一个 <code>before_tool</code> 回调就认定它可以可靠拦截工具。</p>
+<p>一种可解释的契约是：基础授权决定请求是否具备资格，Guard 只能进一步收紧；显式 <code>deny</code> 一旦出现就在本次请求内保持，后续 <code>allow</code> 或 <code>abstain</code> 不能撤销。异常、超时和协议错误分别记录为故障，再按受信策略映射为拒绝或弃权，不能伪装成插件主动允许。权限的一般设计见 <a href="agent-0005-tool-calling-security.html">agent-0005</a>，扩展不可修改的信任根见 <a href="agent-0054-self-improving-agent-trust-root-boundary.html">agent-0054</a>；本题聚焦回调之间的故障契约。</p>
+<h3 id="1-把决策聚合与执行放在明确的边界">1. 把决策、聚合与执行放在明确的边界</h3>
+<p>对一次工具请求，流程是：<strong>固定请求与策略版本 → 基础授权 → 调用选定插件 → 验证响应并分类故障 → 聚合拒绝 → 复核有效权限 → 记录执行前决策 → 执行 → 记录结果</strong>。插件只能收到允许它查看的请求快照，不应拿到可随意改写的聚合状态、执行参数或网关权限。</p>
+<p>本题采用三态投票：<code>allow</code> 表示该 Guard 的检查通过，<code>deny</code> 表示否决，<code>abstain</code> 表示不作判断。它们都不是可授予任意权限的令牌。设基础授权为 B、聚合拒绝为 D，初始化 <code>D = not B</code>，每个插件响应后执行 <code>D = D or (vote == deny)</code>。D 只有 false→true 的变化，拒绝是吸收态。所有 Guard 都弃权时，只有基础授权本来允许、其余强制门槛也满足才可执行。</p>
+<p>禁止用“最后一个响应覆盖总响应”，也不能把共享的 <code>denied</code> 字段交给插件修改。对于并行 Guard，应在网关持有的状态上归并拒绝，且等所有必需检查得到结论后才能准入；先返回的 allow 不是执行信号。发现 deny 后可以短路，也可以继续收集诊断，但都不能提前执行工具。</p>
+<p>每条结论应绑定请求身份、工具、规范化参数以及所用策略/插件版本。参数改写后须重新检查，权限撤销应在实际执行入口生效。示例只用不可变合成请求、串行回调、单事件循环内的权限复核和同步 mock 执行；它不实现真实身份认证、策略世代或跨进程的检查/使用原子性。请求 hash 只用于关联内容，不能认证调用者或策略来源。</p>
+<h3 id="2-决策表fail-open-不会消除显式拒绝">2. 决策表：fail-open 不会消除显式拒绝</h3>
+<p>下面是<strong>本文原创 Guard 协议</strong>，不是 Pi、MCP 或其他 SDK 的通用响应格式。假设基础权限已允许，没有其他 Guard 拒绝，执行前必需审计成功；JSON 必须恰好包含一个 <code>decision</code> 字段，值为 <code>allow</code>、<code>deny</code> 或 <code>abstain</code>。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>输入/事件</th>
+<th>记录的原始结论</th>
+<th>Guard fail-closed</th>
+<th>Guard fail-open</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{&quot;decision&quot;:&quot;allow&quot;}</code></td>
+<td>allow</td>
+<td>投 allow，可继续</td>
+<td>投 allow，可继续</td>
+</tr>
+<tr>
+<td><code>{&quot;decision&quot;:&quot;deny&quot;}</code></td>
+<td>deny</td>
+<td>投 deny，禁止执行</td>
+<td>投 deny，禁止执行</td>
+</tr>
+<tr>
+<td><code>{&quot;decision&quot;:&quot;abstain&quot;}</code></td>
+<td>abstain</td>
+<td>不增添否决；仍需基础授权</td>
+<td>不增添否决；仍需基础授权</td>
+</tr>
+<tr>
+<td>handler 抛普通异常</td>
+<td>exception 及错误类型</td>
+<td>合成 deny，禁止执行</td>
+<td>合成 abstain，标记故障后继续</td>
+</tr>
+<tr>
+<td>到达约定 deadline</td>
+<td>timeout</td>
+<td>合成 deny，回收回调后拒绝</td>
+<td>合成 abstain，回收回调后继续</td>
+</tr>
+<tr>
+<td>无效 JSON / schema</td>
+<td>invalid_json</td>
+<td>合成 deny，禁止执行</td>
+<td>合成 abstain，标记故障后继续</td>
+</tr>
+</tbody>
+</table></div>
+<p>空输出、<code>null</code>、未知决策、额外字段、重复 key、非有限数字和超长响应都不等于显式弃权。本例限制响应为4096 UTF-8 bytes；这是教学限制，实际大小/嵌套/解析预算由接口约定。<strong>fail-open 只描述故障如何参与决策，不会把 deny 改为 allow，也不会授予基础权限。</strong> 必需 Guard 缺失或未注册也应由可信配置校验拦截，不能通过删除插件把“全部弃权”变成隐式批准；fixture 不实现注册发现。</p>
+<p>观察 Hook 的返回值不进入上述投票协议，即使返回一段含 deny 的文本也不否决；其异常和超时仍应可见。需要让某个检查失败就阻止执行时，应明确把它登记为必需 Guard 或强制门槛。反过来，调用方取消本次请求不应被 fail-open 捕获成弃权；本例回收子任务后继续传播 <code>CancelledError</code>。插件自行取消则是插件故障，两者不能混淆。</p>
+<h3 id="3-策略取舍与固定运行时的差异">3. 策略取舍与固定运行时的差异</h3>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>适用条件与收益</th>
+<th>代价及不适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>必需 Guard fail-closed，网关统一持有拒绝状态</td>
+<td>检查决定高风险工具是否可执行，缺结论就不能建立执行前提；审计归因清楚</td>
+<td>Guard 服务故障会阻断正常工作，需要限时、健康检查及人工恢复。纯可选埋点不宜因此把整个业务关停</td>
+</tr>
+<tr>
+<td>基础授权独立强制，可选检查故障时 fail-open</td>
+<td>辅助评分、提示或非必需观察失败时仍维持可用性；显式 deny 仍有效</td>
+<td>故障期间失去该检查的保护，必须暴露降级状态。不能用于唯一的权限、审批或强制审计条件</td>
+</tr>
+</tbody>
+</table></div>
+<p>失败策略应由受信配置预先决定，记录其来源；出错后临时把 closed 改为 open 属于改变策略，需要相应授权。这里的 Hook/Guard 协议单调性只保证“通过返回值不能撤销 deny”。若插件与宿主共享任意执行能力，仍可能直接调用底层工具、改内存或写文件，必须另外控制能力和执行入口；提示词、事件通知和可观测日志都不是不可绕过的权限边界。</p>
+<p>以下为2026-09-16对固定源码的阅读结论，未运行这些产品。检查的是指定函数及类型，不据此推断整个产品的安全属性。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>固定来源与入口</th>
+<th>读到的具体语义</th>
+<th>不能推出的结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pi v0.57.1，<code>runner.ts:549–578</code> 的通用 <code>emit</code></td>
+<td>捕获 handler 异常并调用 <code>emitError</code>；特定 session-before 事件可因 <code>cancel</code> 提前返回</td>
+<td>不能把所有扩展入口都称为吞异常，也不能把错误通知等同权限隔离</td>
+</tr>
+<tr>
+<td>同一 Pi 版本，<code>runner.ts:631–652</code> 的 <code>emitToolCall</code>；<code>types.ts:851–854</code></td>
+<td>顺序等待 <code>tool_call</code> handler；遇到 truthy <code>block</code> 立即返回，后续插件不再运行。该方法对 handler await 没有局部 catch，拒绝的 Promise 从此处传播；类型含可选 <code>block</code>/<code>reason</code></td>
+<td>它不是本文的三态 JSON 协议；仅这些代码不足以断言外层执行、超时回收或所有调用通道都 fail-closed</td>
+</tr>
+<tr>
+<td>Kubernetes v1.32.0 的 validating webhook，<strong>用作非 Agent 的契约对照</strong></td>
+<td><code>failurePolicy</code> 的 Ignore/Fail 区分调用故障；dispatcher 对 <code>ErrCallingWebhook</code> 的 Ignore 分支可继续，但 <code>ErrWebhookRejection</code> 仍进入拒绝结果。类型声明 timeout 为1–30秒、默认10秒，failurePolicy 默认 Fail</td>
+<td>不能把 Ignore 理解成忽略显式拒绝，也不能把 Kubernetes 的部署与授权保证移植到 Agent 插件</td>
+</tr>
+</tbody>
+</table></div>
+<p>课程提到的其他实现是学习线索；没有在固定一手调用链中证实的产品行为不写成事实。尤其“某个 Hook 会打印错误继续”和“整个运行时允许执行”之间，还隔着调用者、其他门禁与实际工具入口。</p>
+<h3 id="4-原创实验拒绝不可被覆盖超时必须回收">4. 原创实验：拒绝不可被覆盖，超时必须回收</h3>
+<p>输入固定为合成主体 <code>synthetic-reader</code> 对 <code>mock.append</code> 的请求，目标 <code>mem:demo</code>。基础权限来自内存 allowlist，执行仅向 <code>Gate.effects</code> 列表 append 一条记录。demo 依次运行上表六类事件的 closed/open 两种配置，共12行：closed 的 deny/exception/timeout/invalid_json 四行均为 <code>denied</code>；open 只有显式 deny 为 <code>denied</code>；其余为 <code>executed</code>。这两个状态描述模拟工具是否执行，超时或异常用例预期被拦截不代表插件成功。</p>
+<p>另一个测试链是 <code>deny → 可选 Guard 抛异常（open）→ allow</code>：三条诊断的 <code>denied_after</code> 均为 true，最终 effects 为空。六种 allow/deny/abstain 排列也全部保留拒绝。每个 handler 得到新的嵌套快照，修改自己的参数副本不能影响下一个 handler 或实际执行目标。</p>
+<p>deadline 用事件循环的单调时钟计算，demo 配置每个回调20毫秒。<code>asyncio.wait</code> 超时不会自动取消任务，本例明确 cancel 后 gather；即使回调吞掉取消并返回迟到 allow，也只回收它，保留已经判定的 timeout。调用方再次取消时也先收集已创建任务，再传播取消。串行链最多8个插件，每个配置 deadline 不超过1秒；<strong>这不是总墙钟硬上限</strong>，合作式取消与清理可能超过 deadline。</p>
+<p>fixture 只运行能合作结束的 async mock，没有 CPU 死循环或无限抵抗取消的代码。若要接纳任意插件，必须另有隔离进程/外部有界监督、资源预算和失联处置；仅靠 <code>asyncio</code> 无法提供生产硬时限。这里也没有覆盖插件私自派生的任务、真实网络请求或远端副作用回滚。</p>
+<details>
+<summary>可运行的原创 fixture：合成请求、mock 插件与内存审计</summary>
+<p>保存为 <code>guard_fixture.py</code>，使用 Python3.11.8 运行 <code>python3 guard_fixture.py</code> 即可输出12行决策结果；仅依赖标准库，不需要凭据、真实 Hook 或运行时配置。<code>required_audit</code> 和 plugin failure 是本例的可信宿主输入，不从模型响应读取。</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python"># file: guard_fixture.py
+&quot;&quot;&quot;Original in-memory Hook/Guard model; no real hooks, permissions or business tools.&quot;&quot;&quot;
+import asyncio
+from copy import deepcopy
+from dataclasses import asdict,dataclass
+import hashlib,json,math
+
+
+@dataclass(frozen=True)
+class Request:
+    request_id: str = &#x27;synthetic-1&#x27;
+    principal: str = &#x27;synthetic-reader&#x27;
+    tool: str = &#x27;mock.append&#x27;
+    target: str = &#x27;mem:demo&#x27;
+    value: str = &#x27;synthetic value&#x27;
+
+    def __post_init__(self):
+        if any(type(v) is not str or not v for v in asdict(self).values()):
+            raise ValueError(&#x27;request fields must be nonempty strings&#x27;)
+
+    def view(self):
+        return dict(request_id=self.request_id,principal=self.principal,tool=self.tool,
+                    arguments=dict(target=self.target,value=self.value))
+
+    @property
+    def key(self):
+        return hashlib.sha256(json.dumps(self.view(),sort_keys=True).encode()).hexdigest()
+
+
+@dataclass(frozen=True)
+class Plugin:
+    name: str
+    handler: object
+    kind: str = &#x27;guard&#x27;
+    failure: str = &#x27;closed&#x27;
+    timeout_s: float = 0.2
+
+    def __post_init__(self):
+        if (not self.name or not callable(self.handler) or self.kind not in (&#x27;guard&#x27;,&#x27;observer&#x27;) or
+                self.failure not in (&#x27;open&#x27;,&#x27;closed&#x27;) or type(self.timeout_s) not in (int,float) or
+                not math.isfinite(self.timeout_s) or not 0 &lt; self.timeout_s &lt;= 1):
+            raise ValueError(&#x27;invalid plugin specification&#x27;)
+
+
+def parse_vote(text):
+    if type(text) is not str or len(text.encode()) &gt; 4096:
+        raise ValueError(&#x27;invalid response size/type&#x27;)
+    def unique(pairs):
+        result={}
+        for key,value in pairs:
+            if key in result:raise ValueError(&#x27;duplicate JSON key&#x27;)
+            result[key]=value
+        return result
+    def bad_constant(_):raise ValueError(&#x27;non-finite JSON number&#x27;)
+    data=json.loads(text,object_pairs_hook=unique,parse_constant=bad_constant)
+    if type(data) is not dict or set(data)!={&#x27;decision&#x27;} or data[&#x27;decision&#x27;] not in (&#x27;allow&#x27;,&#x27;deny&#x27;,&#x27;abstain&#x27;):
+        raise ValueError(&#x27;invalid decision schema&#x27;)
+    return data[&#x27;decision&#x27;]
+
+
+class Audit:
+    def __init__(self, fail_phases=()):
+        self.fail_phases=frozenset(fail_phases)
+        self.records=[]
+
+    def write(self,event):
+        if event[&#x27;phase&#x27;] in self.fail_phases:
+            raise OSError(&#x27;synthetic audit acknowledgement failure&#x27;)
+        self.records.append(deepcopy(event))
+
+
+class Gate:
+    def __init__(self,audit=None,required_audit=True):
+        self.audit=audit if audit is not None else Audit()
+        if type(required_audit) is not bool or not callable(getattr(self.audit,&#x27;write&#x27;,None)):
+            raise ValueError(&#x27;invalid audit configuration&#x27;)
+        self.required_audit=required_audit
+        self.allowed=frozenset({(&#x27;synthetic-reader&#x27;,&#x27;mock.append&#x27;)})
+        self.tasks=[]
+        self.collected=[]
+        self.effects=[]
+
+    def authorized(self,request):
+        return (request.principal,request.tool) in self.allowed and request.target.startswith(&#x27;mem:&#x27;)
+
+    async def invoke(self,plugin,request):
+        loop=asyncio.get_running_loop()
+        finished={}
+        async def call():
+            try:return await plugin.handler(request.view())
+            finally:finished[&#x27;at&#x27;]=loop.time()
+        deadline=loop.time()+plugin.timeout_s
+        task=asyncio.create_task(call(),name=&#x27;yao387-&#x27;+plugin.name)
+        self.tasks.append(task)
+        fault=None;raw=None;parent_cancelled=False
+        try:
+            done,_=await asyncio.wait({task},timeout=plugin.timeout_s)
+            if task not in done or finished.get(&#x27;at&#x27;,math.inf) &gt; deadline:
+                fault=&#x27;timeout&#x27;
+            elif task.cancelled():
+                fault=&#x27;plugin_cancelled&#x27;
+            else:
+                try:raw=task.result()
+                except Exception as exc:fault=&#x27;exception:&#x27;+type(exc).__name__
+        except asyncio.CancelledError:
+            parent_cancelled=True
+        finally:
+            if not task.done():task.cancel()
+            collector=asyncio.gather(task,return_exceptions=True)
+            while not collector.done():
+                try:await asyncio.shield(collector)
+                except asyncio.CancelledError:parent_cancelled=True
+            collector.result()  # consume even a late value/exception; do not change fault
+            self.collected.append(dict(name=plugin.name,done=task.done(),cancelled=task.cancelled()))
+        if parent_cancelled:
+            raise asyncio.CancelledError  # caller cancellation is never an allow/abstain
+        if fault is None and plugin.kind==&#x27;guard&#x27;:
+            try:vote=parse_vote(raw)
+            except (ValueError,TypeError,RecursionError):fault=&#x27;invalid_json&#x27;
+        elif fault is None:
+            vote=&#x27;abstain&#x27;  # observational output is not a decision protocol
+        if fault is not None:
+            vote=&#x27;deny&#x27; if plugin.kind==&#x27;guard&#x27; and plugin.failure==&#x27;closed&#x27; else &#x27;abstain&#x27;
+        return dict(plugin=plugin.name,kind=plugin.kind,failure=plugin.failure,
+                    outcome=fault or (&#x27;observed&#x27; if plugin.kind==&#x27;observer&#x27; else vote),vote=vote)
+
+    def record(self,event):
+        try:self.audit.write(event);return True,None
+        except Exception as exc:return False,type(exc).__name__
+
+    async def run(self,request,plugins):
+        plugins=tuple(plugins)
+        if len(plugins)&gt;8 or len({p.name for p in plugins})!=len(plugins):
+            raise ValueError(&#x27;at most eight uniquely named plugins&#x27;)
+        denied=not self.authorized(request)
+        rows=[]
+        for plugin in plugins:
+            row=await self.invoke(plugin,request)
+            denied=denied or row[&#x27;vote&#x27;]==&#x27;deny&#x27;  # absorbing: never assign a later allow
+            row[&#x27;denied_after&#x27;]=denied
+            rows.append(row)
+        # Recheck current synthetic base permissions after all awaited callbacks.
+        denied=denied or not self.authorized(request)
+        pre_ack,pre_error=self.record(dict(phase=&#x27;decision&#x27;,request_id=request.request_id,key=request.key,
+                                           denied=denied,plugins=rows))
+        result=dict(request_id=request.request_id,key=request.key,denied=denied,executed=False,
+                    audit_decision_ack=pre_ack,audit_result_ack=None,plugins=deepcopy(rows),
+                    audit_faults=[] if pre_ack else [dict(phase=&#x27;decision&#x27;,type=pre_error)])
+        if denied:
+            return dict(result,status=&#x27;denied&#x27;)
+        if self.required_audit and not pre_ack:
+            return dict(result,status=&#x27;audit_blocked&#x27;)
+        # Instant, original mock effect: no await between final gate and this append.
+        self.effects.append(dict(request_id=request.request_id,key=request.key,target=request.target))
+        result[&#x27;executed&#x27;]=True
+        post_ack,post_error=self.record(dict(phase=&#x27;result&#x27;,request_id=request.request_id,key=request.key,status=&#x27;mock_done&#x27;))
+        result[&#x27;audit_result_ack&#x27;]=post_ack
+        if not post_ack:result[&#x27;audit_faults&#x27;].append(dict(phase=&#x27;result&#x27;,type=post_error))
+        return dict(result,status=&#x27;executed&#x27; if pre_ack and post_ack else &#x27;executed_audit_failed&#x27;)
+
+
+def reply(decision):
+    async def handler(snapshot):return json.dumps({&#x27;decision&#x27;:decision})
+    return handler
+
+
+async def broken(snapshot):
+    raise RuntimeError(&#x27;synthetic failure&#x27;)
+
+
+async def waiting(snapshot):
+    await asyncio.Event().wait()
+
+
+async def malformed(snapshot):
+    return &#x27;{broken&#x27;
+
+
+async def demo():
+    matrix=[]
+    cases=[(&#x27;allow&#x27;,reply(&#x27;allow&#x27;)),(&#x27;deny&#x27;,reply(&#x27;deny&#x27;)),(&#x27;abstain&#x27;,reply(&#x27;abstain&#x27;)),
+           (&#x27;exception&#x27;,broken),(&#x27;timeout&#x27;,waiting),(&#x27;invalid_json&#x27;,malformed)]
+    for failure in (&#x27;closed&#x27;,&#x27;open&#x27;):
+        for name,handler in cases:
+            gate=Gate()
+            result=await gate.run(Request(),[Plugin(name,handler,failure=failure,timeout_s=0.02)])
+            matrix.append(dict(case=name,failure=failure,vote=result[&#x27;plugins&#x27;][0][&#x27;vote&#x27;],
+                               status=result[&#x27;status&#x27;],effects=len(gate.effects),
+                               collected=len(gate.collected)))
+    return matrix
+
+
+if __name__==&#x27;__main__&#x27;:
+    print(json.dumps(asyncio.run(demo()),indent=2))
+</code></pre>
+</details>
+<p>2026-09-16实测：<strong>18 个测试通过</strong>，创建的64个 mock task 全部完成并被收集；测试在调用返回后检查完成状态，teardown 仅断言、不补救取消。覆盖12行决策表、六种投票顺序、基础权限缺失/撤销、观察输出不能投票、JSON 边界、参数副本隔离、迟到 allow、插件自行取消、调用方取消与重复取消，以及下节的审计故障。唯一合成输入文件逐字节未变，专属临时目录已移除。源码阅读、fixture 合同测试和真实运行时集成验证是不同证据层级，本次没有后者。</p>
+<h3 id="5-审计失败不能改写已经发生的事">5. 审计失败不能改写已经发生的事</h3>
+<p>建议决策事件至少关联请求、插件和策略版本、原始故障、映射后的投票与最终结果；按权限控制和脱敏规则记录参数，不能为排错倾倒秘密。执行前记录说明“依据什么准备执行”，执行后记录说明“知道发生了什么”，两者不可混用。观察 Hook 丢日志与强制审计存储不可用也应分别建模。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>故障时点</th>
+<th>本例返回和 effects</th>
+<th>结论与处置边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>必需 decision 审计失败，尚未执行</td>
+<td><code>audit_blocked</code>，executed=false，0条 effect</td>
+<td>缺少必需审计确认，禁止新执行；不是声称业务操作已回滚</td>
+</tr>
+<tr>
+<td>非必需 decision 审计失败</td>
+<td>无其他否决时为 <code>executed_audit_failed</code>，1条 effect；有 deny 仍为 denied</td>
+<td>可用性策略允许继续，但必须保留 audit_faults，不得报告完整审计成功</td>
+</tr>
+<tr>
+<td>result 审计失败，mock effect 已发生</td>
+<td><code>executed_audit_failed</code>，executed=true，1条 effect</td>
+<td>拒绝下一次调用无法撤销过去；需状态核对、幂等键或业务补偿，不能自动安全重试</td>
+</tr>
+<tr>
+<td>审计先 append，再抛“确认丢失”</td>
+<td><code>audit_blocked</code>，decision ack=false，但内存已有1条审计记录</td>
+<td>未获确认不等于未写入；按关联 ID 核对，不能补造不存在的执行结果</td>
+</tr>
+</tbody>
+</table></div>
+<p>这里 <code>Audit</code> 是会立即返回或抛错的受信同步内存 sink；并非持久日志服务，也不执行任意重入回调。若换成异步、可能阻塞或能改权限的 sink，需要独立的写入预算、失败传播与执行前身份/策略复核，不能照搬“中间无 await”的局部条件。若请求在插件阶段被外层取消，本例只回收并传播取消，不生成最终审计行；需要完整取消/崩溃审计的产品还必须在外层记录请求生命周期。</p>
+<p>测试有意展示 result 审计失败后对同一请求再调用一次会得到2条 mock effect：此 fixture <strong>没有幂等性或 exactly-once 保证</strong>。它也不证明生产持久性、审计服务可用性、真实主体身份或远端事务回滚。响应中的 audit_faults 只是本地可见诊断，不保证故障报告自身已成功送达运维系统。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>“可观测 Hook 就是不可绕过的权限边界。”</strong> 是否强制经过、能否绕到其他执行入口、插件能否改策略，需要独立证明；有日志只能说明观察到某条路径。</li>
+<li><strong>“各运行时 Hook 同名，所以异常语义相同。”</strong> 同一 Pi 版本的不同入口已有差异，应追踪固定函数、外层调用链和配置。</li>
+<li><strong>“fail-open 会放过显式 deny，异常就是 allow。”</strong> 故障映射和显式决策不同，弃权也不是授权。</li>
+<li><strong>“把 deny 存在共享对象里就能保持单调。”</strong> 后续插件可以改写共享字段；拒绝状态应由可信聚合器持有。</li>
+<li><strong>“超时等于资源释放，审计失败等于操作没发生。”</strong> 任务需回收，副作用需核对；迟到 allow 和结果日志故障都不能改写已确认的事实。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><p>以下来源核对于2026-09-16；题干、答案与 fixture 独立编写。课程只作学习线索，未搬运 AGPL 正文、代码或图片。</p>
+<ul>
+<li>洛小山《AI 产品从入门到精通》，learn-ai 固定 commit <code>5a933d287dd5074cc1543cb849146f3261d47521</code>：<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/12-19.html" target="_blank" rel="noopener noreferrer">slides/12-19.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/dsh-12.html" target="_blank" rel="noopener noreferrer">slides/dsh-12.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/codex-25.html" target="_blank" rel="noopener noreferrer">slides/codex-25.html</a>，分别提供扩展点、Guard 与故障处理的学习线索。<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/LICENSE" target="_blank" rel="noopener noreferrer">LICENSE</a> 为 AGPL-3.0。</li>
+<li>Mario Zechner / Pi <strong>v0.57.1</strong>，固定 commit <code>a9cedccdde77e9d765303463d8a6cd11c58f7a7f</code>：<a href="https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/packages/coding-agent/src/core/extensions/runner.ts" target="_blank" rel="noopener noreferrer">runner.ts</a> 的 <code>emit</code>（549–578）与 <code>emitToolCall</code>（631–652）；<a href="https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/packages/coding-agent/src/core/extensions/types.ts#L851-L854" target="_blank" rel="noopener noreferrer">types.ts</a> 的 <code>ToolCallEventResult</code>。<a href="https://github.com/earendil-works/pi/blob/a9cedccdde77e9d765303463d8a6cd11c58f7a7f/LICENSE" target="_blank" rel="noopener noreferrer">MIT LICENSE</a>。本文仅据这些入口比较响应及局部异常传播，没有运行 Pi 或证明外层安全隔离。</li>
+<li>Kubernetes <strong>v1.32.0</strong>，tag 解析到 commit <code>70d3cc986aa8221cd1dfb1121852688902d3bf53</code>：<a href="https://github.com/kubernetes/kubernetes/blob/70d3cc986aa8221cd1dfb1121852688902d3bf53/staging/src/k8s.io/api/admissionregistration/v1/types.go#L805-L901" target="_blank" rel="noopener noreferrer">admissionregistration/v1/types.go</a> 的 <code>ValidatingWebhook</code> failurePolicy 与 timeout；<a href="https://github.com/kubernetes/kubernetes/blob/70d3cc986aa8221cd1dfb1121852688902d3bf53/staging/src/k8s.io/apiserver/pkg/admission/plugin/webhook/validating/dispatcher.go#L199-L228" target="_blank" rel="noopener noreferrer">validating/dispatcher.go</a> 区分调用故障与显式拒绝，277–280行为 context 设置 timeout。<a href="https://github.com/kubernetes/kubernetes/blob/70d3cc986aa8221cd1dfb1121852688902d3bf53/LICENSE" target="_blank" rel="noopener noreferrer">Apache-2.0 LICENSE</a>。这是非 Agent 的契约对照，并非宣称 Agent 使用 Kubernetes 的实现。</li>
+<li>CPython <strong>v3.11.8</strong>：<a href="https://github.com/python/cpython/blob/v3.11.8/Doc/library/asyncio-task.rst" target="_blank" rel="noopener noreferrer">asyncio-task.rst</a>，<code>Task Cancellation</code>、<code>shield</code>、<code>wait_for</code>、<code>wait</code> 说明取消传播、等待清理及 <code>wait</code> 超时不自动取消的差异。<a href="https://github.com/python/cpython/blob/v3.11.8/LICENSE" target="_blank" rel="noopener noreferrer">LICENSE</a> 含 PSF License Version 2、历史许可及文档示例的 Zero-Clause BSD 条款；本题代码为原创，未复制文档示例。</li>
+</ul>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">一个 Guard 拒绝后，后续插件有管理员权限，可以返回 allow 撤销吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：一个 Guard 拒绝后，后续插件有管理员权限，可以返回 allow 撤销吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不能通过同一轮返回值覆盖。若业务允许人工覆盖，应走独立、受权且可审计的策略变更/新请求流程，绑定新决策依据；否则插件顺序就变成权限提升通道。是否允许这种覆盖由强制策略决定。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">为什么不让 Guard 只返回 deny 或 abstain？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么不让 Guard 只返回 deny 或 abstain？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>这是合理的收紧型接口：基础授权负责正向许可，Guard 只否决。本文额外保留 allow 方便诊断“检查明确通过”，但聚合时 allow 与 abstain 都不能授予基础权限；缺输出仍是协议故障，不能偷换成弃权。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">超时后回调仍在运行，fail-open 能先执行吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：超时后回调仍在运行，fail-open 能先执行吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>需要先界定回调能否产生副作用、是否还可能修改共享状态以及谁负责回收。本文等自建任务收集完再返回；生产中可在隔离边界撤销其能力或交给受监督生命周期管理，但不能一边遗留可写回调，一边宣称门禁已结束。超时本身也不证明远端操作取消。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-4">
+          <div class="followup-label">追问 04</div><h3 id="followup-4">记录过一次 allow，重试同一请求能直接使用吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：记录过一次 allow，重试同一请求能直接使用吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不能默认复用。主体、参数、权限、策略世代和审批范围可能变化；旧 allow 也不说明工具是否已经执行。先区分授权有效性与业务幂等性，再决定重新评估、状态查询或补偿。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>ENGINEERING-0028 · 单题笔记</span><a href="../questions/engineering-0028-hook-guard-failure-contract.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "engineering-0028", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

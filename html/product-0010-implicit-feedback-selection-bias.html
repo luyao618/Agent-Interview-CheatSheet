@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。AI 产品点踩很少能否说明用户满意，如何校准复制、重生成、编辑等隐式反馈？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/product-0010-implicit-feedback-selection-bias.md">
+  <meta name="source-sha256" content="98dac16bce3fb969d3560307f7e0f472f1be56b6a79eae25787d9e270c3728b6">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>AI 产品点踩很少能否说明用户满意，如何校准复制、重生成、编辑等隐式反馈？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">PRODUCT-0010</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class=""><em>AI</em> 产品点踩很少能否说明用户满意，如何校准复制、重生成、编辑等隐式反馈？</h1>
+        <div class="question-meta"><span>AI 产品与落地</span><span class="meta-dot" aria-hidden="true"></span><span>进阶</span><span class="meta-dot" aria-hidden="true"></span><span>产品经理</span></div>
+<div class="question-context prose"><p>AI 产品点踩很少能否说明用户满意，如何校准复制、重生成、编辑等隐式反馈？面对“点踩率下降但流失上升”，请提出三种可检验解释，用分层抽样和行为序列核验，并说明分母、抽样权重和未回答边界。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-17</span></p><div class="prose"><p><strong>先确认谁有机会反馈、谁选择反馈，再问行为反映了什么。</strong> 点踩少可能来自更好的体验，也可能是入口难找、用户不愿花时间反馈，或困难用户已经离开。没有点踩是缺少一种行为记录，不能自动补成满意。复制、重生成和编辑也受任务目的影响；这些观察适合产生待核假设，不能直接写成训练真值。</p>
+<p>已有 <a href="product-0003-ai-product-metrics.html">product-0003</a> 讲指标体系，<a href="product-0006-ai-product-iteration-loop.html">product-0006</a> 讲迭代闭环。本题专门处理反馈被看见、被表达、被抽到、被回答的选择过程，避免把“采集到了”当成“能代表总体”。</p>
+<h3 id="1-指标先固定分析单位和分母">1. 指标先固定分析单位和分母</h3>
+<p>例如以某期进入产品的合格用户为队列，每人只取首个合格任务，避免重度用户的十次点击算成十个人。任务、平台、版本、入口位置和观察窗事先定义，跨设备身份/重复事件只能在合法且可靠的关联范围内处理；关联不明需单列，不悄悄拼接为完整用户。</p>
+<ul>
+<li><strong>N：合格队列用户数；A：实际看到答案者；E：确认看到反馈入口者。</strong> N−A是未拿到可见答案，A−E是看到答案但未确认入口曝光，二者不是“看了却满意得不想反馈”。没有曝光事件也可能是埋点丢失，先核对观测完整性。</li>
+<li><strong>R：E中作出显式反馈者；D：其中最终点踩者；S=E−R：确认曝光后的沉默者。</strong> 同一任务的重传去重、改赞踩按预先约定的窗内最后有效选择计一次。分别报告D/N、D/E、D/R及R/E，说明面向全队列、曝光者还是反馈者；不能只挑下降的那个口径。</li>
+<li><strong>C：固定七天观察窗内未回访者。</strong> 本题用C/N作流失代理，已回访/确认未回访/未决分别记录；观察未满或跟踪缺失不能记为流失。七天不回访不等于不满意，一次性任务完成后可能本来就无需回来。</li>
+<li><strong>追访是另一层响应过程。</strong> 被抽中、实际邀请、完成追访及未答各自有分母，不能混同于模型给出答案或用户点了赞踩。追访结果即使来自真人，也不自动覆盖没回应的人。</li>
+</ul>
+<p>真实系统先核对事件定义、版本和丢失率，必要时用专属测试对象检查入口曝光到事件落库链路；本题不操作真实业务系统。若无法确认观测完整，就报告无法识别，不把空日志当沉默证据。</p>
+<h3 id="2-同一表象至少有三种可检验解释">2. 同一表象至少有三种可检验解释</h3>
+<p>三种解释可能并存。先固定比较期和任务上下文，检查序列与分层结果；拒绝一个解释不等于其他解释已获证实。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>假设</th>
+<th>需要核对的行为序列与分层证据</th>
+<th>什么结果会削弱它</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1：反馈入口或上报变化造成测量下降</td>
+<td>按平台/版本抽核“答案可见→入口曝光→反馈→服务端接收”的关联；对比E/A、R/E和D/E，确认按钮是否移位、未渲染或事件丢失</td>
+<td>入口可见性及接收完整性稳定，且相同曝光条件下D/E仍下降；单靠D/N下降不足以支持此解释</td>
+</tr>
+<tr>
+<td>H2：困难任务用户不再反馈，沉默后离开</td>
+<td>从反馈者、沉默回访者、沉默未回访者中抽样，核对“重生成/编辑→放弃”等完整序列、任务目标及追访；检查困难任务的独立结果证据</td>
+<td>任务构成与观测稳定，沉默未回访者的任务完成及追访证据并不更差；只有重生成或退出动作不能证明失败</td>
+</tr>
+<tr>
+<td>H3：用户/任务构成变化，混合指标误导</td>
+<td>用进入任务前定义的一次性/周期性需求、新老用户等分层，对比层内D/E与回访；按固定基准构成标准化，结合抽样序列核对分类</td>
+<td>构成变化很小，或固定构成后反向趋势仍存在；不能事后按点踩/流失分层来声称消除了因果混杂</td>
+</tr>
+</tbody>
+</table></div>
+<p>对H1，测量修复与产品质量修复要分开验证；对H2，需要知道用户想做什么、结果是否满足目标，不能从一串按钮推断情绪；对H3，固定构成对比是描述性诊断，不会自动控制未观测混杂。若要判断改入口、降低反馈成本是否改变结果，需要另行设计适当单位的随机实验和护栏，不能把前后差当因果。</p>
+<h3 id="3-原创合成反例三份世界都出现点踩降未回访升">3. 原创合成反例：三份世界都出现“点踩降、未回访升”</h3>
+<p>以下不是用户日志或满意度调查，而是原创生成的三个不同世界。每份before/after各100个虚构首任务用户，共600条；所有人都看到答案，观测完整、七天窗口已满。H1只把after的反馈入口曝光设为50；H2入口曝光仍100，但反馈者减少，沉默未回访者增加；H3改变任务构成，同时保持每个任务层的反馈与回访比例不变。各世界的未回访计数也是预写输入，不是程序证明的原因。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>世界 / 时期</th>
+<th>合格 / 答案 / 入口曝光</th>
+<th>响应 / 点踩 / 沉默</th>
+<th>点踩/合格</th>
+<th>点踩/曝光</th>
+<th>点踩/响应</th>
+<th>七天未回访/合格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1 / before</td>
+<td>100 / 100 / 100</td>
+<td>40 / 20 / 60</td>
+<td>1/5</td>
+<td>1/5</td>
+<td>1/2</td>
+<td>1/5</td>
+</tr>
+<tr>
+<td>H1 / after</td>
+<td>100 / 100 / 50</td>
+<td>20 / 10 / 30</td>
+<td>1/10</td>
+<td>1/5</td>
+<td>1/2</td>
+<td>3/10</td>
+</tr>
+<tr>
+<td>H2 / before</td>
+<td>100 / 100 / 100</td>
+<td>40 / 20 / 60</td>
+<td>1/5</td>
+<td>1/5</td>
+<td>1/2</td>
+<td>1/5</td>
+</tr>
+<tr>
+<td>H2 / after</td>
+<td>100 / 100 / 100</td>
+<td>20 / 10 / 80</td>
+<td>1/10</td>
+<td>1/10</td>
+<td>1/2</td>
+<td>2/5</td>
+</tr>
+<tr>
+<td>H3 / before</td>
+<td>100 / 100 / 100</td>
+<td>34 / 17 / 66</td>
+<td>17/100</td>
+<td>17/100</td>
+<td>1/2</td>
+<td>4/25</td>
+</tr>
+<tr>
+<td>H3 / after</td>
+<td>100 / 100 / 100</td>
+<td>16 / 8 / 84</td>
+<td>2/25</td>
+<td>2/25</td>
+<td>1/2</td>
+<td>17/50</td>
+</tr>
+</tbody>
+</table></div>
+<p>H1的D/N由20%降到10%，但D/E仍20%；不能据此宣布曝光者更满意，更不能将未回访上升归因为入口变化。H2的确认曝光沉默者从60增到80，其中七天未回访者从20增到40；合成序列包含重生成、编辑再离开，仍须核对意图和结果，动作本身不定性。</p>
+<p>H3的一次性任务占比20%→80%。其层内点踩率5%、七天未回访率40%；周期性任务层内分别20%、10%，前后均不变。混合点踩率17%→8%，未回访率16%→34%；按before的20%/80%构成对after标准化，得到17%和16%，与before相同。这个算术反例说明总体变化可来自构成，不能把真实产品也直接判成构成问题。</p>
+<p>程序在每个世界/时期内，再按任务类型×已观测反馈/回访状态分层，层内无放回抽2条（不足2条则全取），固定种子20260917，共抽核48段合成序列。保留纳入概率、权重、关联ID及解析后的曝光/反馈/操作记录，验证没有只抽点踩者或把未曝光样本漏出抽样框。这里使用结果状态分层是为了诊断覆盖，不是因果调整。</p>
+<h3 id="4-分层抽样怎么避免再次只听见愿意说话的人">4. 分层抽样怎么避免再次只听见愿意说话的人</h3>
+<p>两种合理方案：<strong>全量行为监测配低打扰的概率抽样追访</strong>覆盖沉默者，可估计有明确抽样框的目标量，但有追访成本与未答偏差；<strong>围绕异常序列做目的性深访/人工核查</strong>适合发现原因和修正标注规范，代价较低，却不能用样本比例代表总体。实践中可分别使用，报告清楚哪一份用于解释、哪一份用于带权估计；不能给方便样本补一个权重就声称随机抽样。</p>
+<p>例如从H2 after的100人抽样，三层都保留，不按“反馈热情”邀请。每层简单随机无放回抽4人，纳入概率π=n/N，设计权重w=1/π=N/n。抽样在前，追访是否回答在后；样本ID、层、N/n、π和权重必须与冻结抽样框对应，不能仅信任保存文件里的权重字段。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>H2 after追访层</th>
+<th>框内N</th>
+<th>抽取n / 纳入概率</th>
+<th>设计权重</th>
+<th>预写追访：任务未达成 / 达成 / 未答</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>显式反馈者</td>
+<td>20</td>
+<td>4 / 1/5</td>
+<td>5</td>
+<td>2 / 2 / 0</td>
+</tr>
+<tr>
+<td>曝光沉默且回访</td>
+<td>40</td>
+<td>4 / 1/10</td>
+<td>10</td>
+<td>1 / 2 / 1</td>
+</tr>
+<tr>
+<td>曝光沉默且未回访</td>
+<td>40</td>
+<td>4 / 1/10</td>
+<td>10</td>
+<td>2 / 0 / 2</td>
+</tr>
+</tbody>
+</table></div>
+<p>12条脚本邀请对应9条预写回答、3条未答；这不是实际联系用户。权重总和100，报告任务未达成的加权量为2×5+1×10+2×10=40，未答权重为30。将未答在“全部达成/全部未达成”之间作情景变化，得到<strong>设计加权样本的40%–70%情景范围</strong>。它不是总体真实任务失败率的已识别界限，不是置信区间，更不是满意率；随机抽样误差、抽样框遗漏及追访测量误差都尚未纳入。</p>
+<p>只看回答者，未加权是5/9，加权后是40/70=4/7；这两个值也不能直接代表总体。1/π只纠正已知抽样设计，不自动解决“越不满越不愿答”等非随机未答。只有额外的可辩护响应模型、辅助变量和正纳入/响应概率条件成立，才考虑未答调整，并报告敏感性、极端权重与有效样本量；截断权重也可能引入偏差。不能把未答改成满意，或用抽样概率代替未知的响应概率。</p>
+<p>真实追访应说明为何抽取、可跳过及数据用途，允许不回答，控制打扰与隐私范围。对付出反馈的用户可确认已收到、提供可选原因或修复入口；不能伪称问题已解决，或用只奖励好评的激励改变样本。反馈体验的改动还要验证是否改变响应机制，保持前后指标可比。</p>
+<h3 id="5-行为序列只能产生候选解释不能直接作训练真值">5. 行为序列只能产生候选解释，不能直接作训练真值</h3>
+<p>同样的按钮动作可以对应相反结果。下面6个原创标签案例同时提供任务意图和预写追访回答；意图是合成输入，不是程序从自然语言中推断的事实。单次自报结果也只是报告，真实标注还需核对任务前提、前后答案版本及独立结果证据。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>案例 / 行为</th>
+<th>给定上下文</th>
+<th>可保留的候选记录</th>
+<th>禁止跳步</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L1：复制→编辑</td>
+<td>为修正错误；追访报告任务未达成</td>
+<td>reported_task_failed，待核查原答案和修改</td>
+<td>复制不能直接标正样本</td>
+</tr>
+<tr>
+<td>L2：重生成</td>
+<td>想比较多个方案；报告任务达成</td>
+<td>reported_task_met，保留探索意图</td>
+<td>重生成不能直接标失败</td>
+</tr>
+<tr>
+<td>L3：编辑</td>
+<td>调整语气；报告任务达成</td>
+<td>reported_task_met，核对是否仅风格修改</td>
+<td>不能把所有编辑当纠错</td>
+</tr>
+<tr>
+<td>L4：复制</td>
+<td>意图未知，追访未答</td>
+<td>候选结果null</td>
+<td>没有反对不等于满意</td>
+</tr>
+<tr>
+<td>L5：点踩</td>
+<td>没有任务结果证据</td>
+<td>保存评价事件，候选结果null</td>
+<td>显式负评也不等于可直接用于训练的事实标签</td>
+</tr>
+<tr>
+<td>L6：重生成</td>
+<td>意图未知，追访未答</td>
+<td>候选结果null</td>
+<td>不自动补失败标签</td>
+</tr>
+</tbody>
+</table></div>
+<p>实际流水线应把“行为特征→待核候选→按任务标注/复核→用途与隐私审核→受控训练或评估”分开。隐式特征可用于抽样、弱监督候选或排序信号，但要验证其对目标标签的精度、覆盖和分群偏差；训练集与评估集按用户/问题族/时间等隔离，不能让同一序列衍生样本跨集泄漏。标签规范、来源、版本和争议都应留档，不仅保存一个正负数。</p>
+<p>本例只输出reported候选，所有 <code>training_truth=null</code>、<code>training_eligible=false</code>、<code>user_satisfaction=null</code>。因此没有启动或修改真实训练流程，也不能把本地字段看作真实权限或用途授权门禁。</p>
+<h3 id="6-实际验证与未测范围">6. 实际验证与未测范围</h3>
+<p>原创Python标准库验证共<strong>37项测试通过</strong>，覆盖600用户的6份世界/时期汇总、4份任务层汇总、48段分层抽核、12条带权追访、6个标签案例，以及未知观测/未满窗口、重复和冲突事件、关联ID、改评价取最后有效值、错误权重/抽样框绑定、未答记录不丢失。行为最多16个事件、时间上限300,000ms，分析总量最多600单位；没有读取真实日志。</p>
+<p>三种教学错误副本分别把曝光分母偷换成全队列、把未答当成功、把复制当正训练真值。同一组三项断言对每份各真实exit1 / 1 failure / 0 errors；正常副本exit0 / 3pass。初始35项通过记录保留，增加全世界分层抽核后37项通过；这些是人工注入的教学反例，不冒充生产缺陷或用户实验。</p>
+<p>便携临时副本复跑主测试、实验和反例，收集3个直接与4个嵌套子进程；结果除执行时间/Python/平台元数据外一致，输入和源码未变，临时目录已删除。完整原始输入、抽样名单/概率、候选标签、stdout/stderr与来源记录随验收附件提供。</p>
+<p><code>subjective_satisfaction=null</code>、<code>causal_effect=null</code>，真人实验/浏览器/业务服务/真实训练均 <code>not_run</code>，<code>production_approved=false</code>。事件和追访都是预编程合成数据；代码只验证测量、抽样和标签契约，不证明真实满意度、流失原因、训练收益或因果效应。固定种子、记录比对和本地静态文件也不提供身份认证、CAS或权限隔离；GFM文本/表格检查不等于浏览器或图像布局验收。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>“不点踩就是满意，没日志就是沉默。”</strong> 曝光、观测完整性和自选择决定谁能留下反馈；缺失不是正例。</li>
+<li><strong>“复制一定满意，重生成一定失败，编辑一定在纠错。”</strong> 需要行为前后版本、任务目标和结果证据，同样动作可能是探索、格式调整或人工补救。</li>
+<li><strong>“有设计权重就消除了所有选择偏差。”</strong> 抽样、未答、曝光策略和任务构成是不同机制；已知1/π不能解决未知响应机制。</li>
+<li><strong>“未回访说明被产品伤害，合成比例改善就是用户收益。”</strong> 回访需求因任务而异；模拟只验证计算契约，不能制造人的意图、满意度或因果结论。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>课程线索：洛小山《AI 产品从入门到精通》learn-ai，固定 <code>5a933d287dd5074cc1543cb849146f3261d47521</code>；<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/psy-16.html" target="_blank" rel="noopener noreferrer">slides/psy-16.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/psy-interview.html" target="_blank" rel="noopener noreferrer">slides/psy-interview.html</a>。只作选题和待检验假设线索；课程漏斗与心理解释不冒充本产品观察。本题独立组织案例、正文、代码和表格，不搬运AGPL素材。</li>
+<li>Tobias Schnabel、Adith Swaminathan、Ashudeep Singh、Navin Chandak、Thorsten Joachims，2016，<a href="https://proceedings.mlr.press/v48/schnabel16.html" target="_blank" rel="noopener noreferrer">Recommendations as Treatments: Debiasing Learning and Evaluation，PMLR 48</a>。核对出版页摘要：推荐训练/评估数据可受用户自选择和推荐系统动作影响。仅读摘要，未阅读全文、复现实验或将推荐研究效果外推到AI问答满意度。</li>
+<li>Thomas Lumley等维护者，survey 4.5，CRAN镜像固定 <code>4834b8bc91f6414ad4514552daaed8990a86d9c1</code>：<a href="https://github.com/cran/survey/blob/4834b8bc91f6414ad4514552daaed8990a86d9c1/man/svydesign.Rd#L32-L43" target="_blank" rel="noopener noreferrer">man/svydesign.Rd</a>说明概率、分层和设计权重，同文件89–97行说明分层简单随机抽样及总体规模；<a href="https://github.com/cran/survey/blob/4834b8bc91f6414ad4514552daaed8990a86d9c1/R/multistage.R#L113-L126" target="_blank" rel="noopener noreferrer">R/multistage.R</a>是实际svydesign.default内权重与概率互斥、倒数转换的位置。本题只静态核对，未运行R或survey；原创Fraction计算不冒充该包的方差估计或未答调整。来源访问/核对日期为2026-09-17。</li>
+</ul>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">点踩率下降，能否先宣布改版成功？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：点踩率下降，能否先宣布改版成功？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>先固定分母、观测完整性和队列构成，再看任务结果、分群回访与抽样未答。若只是入口曝光少了，不能说质量变好；因果收益仍需额外实验。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">沉默未回访者也不答追访，怎么办？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：沉默未回访者也不答追访，怎么办？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>保留未知，报告覆盖与未答模式，结合合法辅助信息做敏感性分析；不能只提高权重就声称补回了缺失体验。若某层没有任何可观测回应，强结论更依赖不可检验假设。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">为了快速训练，可以先把复制当正、重生成当负吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为了快速训练，可以先把复制当正、重生成当负吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>可作为明确标为弱信号的候选策略去评估，但应先抽样核验任务语境、误标和偏差，隔离评估集与用途授权；不能把未经验证的代理信号冒充ground truth。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>PRODUCT-0010 · 单题笔记</span><a href="../questions/product-0010-implicit-feedback-selection-bias.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "product-0010", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

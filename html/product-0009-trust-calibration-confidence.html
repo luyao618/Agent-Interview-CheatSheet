@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。怎样让用户对 AI 的信任与真实能力匹配，答案旁的置信度和引用应如何设计？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/product-0009-trust-calibration-confidence.md">
+  <meta name="source-sha256" content="89a6d9c50e26c9b67bf2a4152a3a8a71aeb43888365c24351a98af40e839a98a">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>怎样让用户对 AI 的信任与真实能力匹配，答案旁的置信度和引用应如何设计？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">PRODUCT-0009</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="">怎样让用户对 AI 的信任与真实能力匹配，答案旁的置信度和引用应如何设计？</h1>
+        <div class="question-meta"><span>AI 产品与落地</span><span class="meta-dot" aria-hidden="true"></span><span>进阶</span><span class="meta-dot" aria-hidden="true"></span><span>产品经理</span></div>
+<div class="question-context prose"><p>怎样让用户对 AI 的信任与真实能力匹配，答案旁的置信度和引用应如何设计？请为高低风险答案各设计提示，逐项检验引用是否支持结论，并说明校准数据、过信和弃用如何评估。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-17</span></p><div class="prose"><p><strong>目标是让用户在适合的任务上采用可靠帮助，在证据不足或后果严重时停下来核对。</strong> 信任不是越高越好，也不能把一个人的信任量表分数与模型正确率直接画等号。系统能力随任务、输入分布和版本变化；采用行为还受风险、授权、时间压力和替代方案影响。应先界定能力与使用条件，再把逐项证据及限制呈现出来，最后分别检验概率质量和用户决策。</p>
+<p>已有 <a href="product-0005-human-in-the-loop-risk.html">product-0005</a> 讨论审批分级，<a href="rag-0014-prompt-boundary-anti-hallucination.html">rag-0014</a> 讨论生成约束。本题补充的是用户看到的结论究竟得到什么支持，以及何时采用它才合理；提示、引用和自动核查都不等于真实权限校验或正确性保证。</p>
+<h3 id="1-先分清三种置信度">1. 先分清三种“置信度”</h3>
+<ul>
+<li><strong>模型自报、检索相似度、一致性等代理信号</strong>：自报“99%”、相似分0.98、五次回答相同只描述某种输出或测量。相关材料可以共同过时，相同模型也可以稳定答错；这些信号都不是已经校准的正确概率。可以作为候选特征或明确命名的诊断值，不能换个标签就给用户显示“正确率98%”。</li>
+<li><strong>经独立数据检验的概率估计</strong>：先定义事件，例如“此版本模型给出的单个事实断言，在指定任务分布和标注规范下正确”。接近0.8的预测组中约80%正确是群体频率含义，不是某个答案的保证，更不是“执行此操作安全”的概率。概率校准与区分能力、引用质量也不同。</li>
+<li><strong>用户信任和实际依赖</strong>：自评信任是态度；采用、核查或拒绝是行为。拒绝可能是合理的高风险防范，复制可能只是留待核查。必须结合答案质量、适用范围和执行条件判断，不能直接从点击推断信念变化。</li>
+</ul>
+<p>产品没有足够校准数据时，优先呈现“给定材料支持什么、缺什么、哪里冲突”，不编精确数字。开放问题中的复合答案尤其不能用一个总分盖住关键的未支持断言。</p>
+<h3 id="2-引用经过可访问相关支持三个检查">2. 引用经过可访问、相关、支持三个检查</h3>
+<p>将答案拆成可核查的原子断言，保留主体、版本/时间、条件、单位和否定词，再为每条建立“断言→文档版本→原文位置→判断理由”的记录。一个句子同时说导出格式和数量限制，应拆成两条，不能因为格式有出处就背书数量。</p>
+<ul>
+<li><strong>可访问</strong>：指定快照是否取得、定位是否存在、保存内容是否与记录匹配。HTTP 200 可能是登录页或错误页；本地快照可读也不证明线上链接今天仍可用。取不到材料是“无法核验”，不能据此判结论错误。</li>
+<li><strong>相关</strong>：主体、主题和适用上下文是否匹配。提到导出功能不代表说明了导出上限；旧版本即使主题吻合，也未必适用于当前版本。</li>
+<li><strong>支持</strong>：原文是否在相同条件下蕴含这条结论，还是明确矛盾或覆盖不足。有出处、相似度高、多篇互相转载都不能替代这一步。相互冲突且无法按事先规则消解时展示分歧，不挑支持自己的那一篇。</li>
+</ul>
+<p>证据本身也可能错误；“忠实于来源”与“事实为真”需要分开评估。真正的引用核查应检查原始材料的权威性、时效与完整上下文，而不是只用生成答案的模型再次表示同意。可用人工复核或经过独立标注验证的 entailment/NLI 辅助，但核查器也会错，需报告分风险的误支持与漏支持。</p>
+<p>ALCE 作者的固定实现分别处理引用缺失/越界，再把引用段落与目标句输入 AutoAIS 做支持判断；它区分正确性和引用质量。该实现调用模型的二元 NLI，不是真值认证，也不等于本题下面的精确事实比较；本题没有运行 ALCE、下载其评估数据或调用任何模型。</p>
+<h3 id="3-高低风险提示怎样选">3. 高低风险提示怎样选</h3>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>适用条件与展示</th>
+<th>代价与不适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>逐条证据状态 + 条件化提醒</td>
+<td>开放问答、数据不足时展示支持范围、可展开原文、矛盾与待核项；高风险保留具体复核动作</td>
+<td>增加核查负担，需要可靠的断言拆分；不适合用一个“有引用”徽章给整段答案背书</td>
+</tr>
+<tr>
+<td>概率估计 + 校准范围 + 证据</td>
+<td>稳定且可标注的任务，已冻结模型/映射并完成独立评估；展示事件定义、评估时期和有效分群</td>
+<td>需要样本、标签、漂移监控，数字可能诱发过信；不适合分布外、高风险但没有足够分群证据的决策</td>
+</tr>
+</tbody>
+</table></div>
+<p>低风险原创示例：“演练笔记A v1默认夜间模式。依据D1的L1；仅支持v1，可展开核对。”这是有条件的事实陈述。若引用只提到导出功能，则改为“现有材料未说明导出上限，请补充对应版本文档”，不要把一个不确定数值与免责语一起留在答案里。</p>
+<p>高风险原创示例：“演练清理B v2条款要求2名复核人，依据D4的L4。高风险：这里只支持该版本条款；执行前由责任人核对对象、适用范围与授权。”这些全是虚构演练对象；材料支持条款不表示某次删除已经获准。若材料写2人、拟答却说无需复核，应撤下该断言并指出冲突，而不是显示高概率加一个可忽略的警告。</p>
+<p>提醒随风险和证据缺口变化，写清原因和下一步，避免在每句话旁重复空泛的“AI可能出错”。但不能为了减少警告数量隐藏高风险限制；低风险也必须显示矛盾和不足。实验比较可采用紧凑提示与可展开证据两种形式，双方保留必要风险信息，不能用“移除所有安全提示”制造漂亮指标。</p>
+<h3 id="4-原创合成案例与实际判断">4. 原创合成案例与实际判断</h3>
+<p>验证包用7份原创结构化快照、10个案例共11条断言。事实结构是主体/属性/版本/值，引用带文档ID、定位和整个快照的SHA256。只比较指定位置，不暗中换用其他段落；严格保留JSON类型，true不等于1，嵌套列表中的类型也不能互换。某主体每个属性/版本被约定为单值，因此同条件不同值判矛盾；这套有限规则不适用于自然语言、区间、蕴含链或多值属性的通用推理。</p>
+<p>D1说明默认dark，D2说明导出JSON，D3只说明存在导出功能；D4说明v2需要2人，D5只说明v1需要1人，D6模拟不可访问，D7与D4对同版本给出相冲突的1人条款。C9故意使用错误快照hash；C10包含已支持的模式和未支持的导出上限。每个案例还携带预写自报0.99和相似度0.98，它们不参与支持判断或数字展示。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>案例 / 风险</th>
+<th>逐项关系</th>
+<th>答案展示</th>
+<th>风险提醒</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1 / low</td>
+<td>supported</td>
+<td>answer，1条</td>
+<td>无高风险专用提示</td>
+</tr>
+<tr>
+<td>C2 / low</td>
+<td>contradicted</td>
+<td>withhold，0条</td>
+<td>无高风险专用提示</td>
+</tr>
+<tr>
+<td>C3 / low</td>
+<td>insufficient</td>
+<td>withhold，0条</td>
+<td>无高风险专用提示</td>
+</tr>
+<tr>
+<td>C4 / high</td>
+<td>supported</td>
+<td>answer，1条</td>
+<td>执行前人工核对范围与授权</td>
+</tr>
+<tr>
+<td>C5 / high</td>
+<td>contradicted</td>
+<td>withhold，0条</td>
+<td>执行前人工核对范围与授权</td>
+</tr>
+<tr>
+<td>C6 / high</td>
+<td>insufficient</td>
+<td>withhold，0条</td>
+<td>执行前人工核对范围与授权</td>
+</tr>
+<tr>
+<td>C7 / high</td>
+<td>insufficient</td>
+<td>withhold，0条</td>
+<td>执行前人工核对范围与授权</td>
+</tr>
+<tr>
+<td>C8 / high</td>
+<td>conflict</td>
+<td>withhold，0条</td>
+<td>执行前人工核对范围与授权</td>
+</tr>
+<tr>
+<td>C9 / low</td>
+<td>insufficient</td>
+<td>withhold，0条</td>
+<td>无高风险专用提示</td>
+</tr>
+<tr>
+<td>C10 / low</td>
+<td>supported, insufficient</td>
+<td>partial，1条</td>
+<td>无高风险专用提示</td>
+</tr>
+</tbody>
+</table></div>
+<p>表中的“无高风险专用提示”不等于隐藏证据警告：C2/C3/C9仍指出未支持，C10只展示支持的一条。所有结果的 <code>display_probability=null</code>、<code>action_approved=false</code>、<code>production_approved=false</code>。hash只检查本地记录一致性，不证明来源身份、抗篡改存储、并发CAS或执行权限；accessible是预设快照状态，未发生真实HTTP/业务调用。</p>
+<h3 id="5-校准要怎样留数据与验证">5. 校准要怎样留数据与验证</h3>
+<p>先冻结模型/Prompt/检索配置、任务和“正确”的标注规范；标注者不应看到待校准分数，并为争议与证据不足设置明确处理规则。模型拟合、校准映射/阈值开发、最终评估分别留数据，按用户/问题族/来源文档分组去重，必要时采用时间外推切分。校准器使用未用于拟合基础模型的输出；最终评估不能参与拟合、挑分箱或调阈值。反复看过的test已经成为开发数据，不能再称独立保留集。</p>
+<p>按风险、语言、领域、版本和分布外输入报告可靠性分箱及样本量，检查区分能力和拒答后的coverage/错误率。二元 Brier = 平均 <code>(p−y)²</code>；本例 ECE = 各固定分箱的样本占比 × 预测均值与正确比例之差的绝对值之和。Brier同时受校准、区分能力和数据不确定性影响，ECE受分箱和样本量影响；两者都不能单独证明用户会正确使用系统，也不能掩盖高风险小群体的误差。</p>
+<p>合成算术示例把原始分数固定为0.2/0.8，各4条校准标签正确数为1/3，得到映射0.25/0.75并冻结。另8条不同ID/问题族的评估标签正确数为0/3。程序只用calibration拟合；eval用于计算，不反向修改映射。这里的分数和标签均由作者预写，没有模型训练或真实模型校准。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>评估分箱</th>
+<th>n / 正确数</th>
+<th>原始分数</th>
+<th>拟合后值</th>
+<th>评估观察正确比例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>低分箱</td>
+<td>4 / 0</td>
+<td>0.2</td>
+<td>0.25</td>
+<td>0</td>
+</tr>
+<tr>
+<td>高分箱</td>
+<td>4 / 3</td>
+<td>0.8</td>
+<td>0.75</td>
+<td>0.75</td>
+</tr>
+</tbody>
+</table></div>
+<p>实际Fraction计算：原始 Brier=23/200=0.115，拟合后=1/8=0.125；ECE均为1/8=0.125。<strong>拟合后Brier变差</strong>，没有把不利结果删掉，也不靠重新调映射“修好评估”。这个8条保留集只验证合成算术/划分契约，不提供真实能力、泛化或统计显著性证据；分箱样本太少，不能据此把概率展示上线。</p>
+<h3 id="6-过信和弃用要与真实使用条件对齐">6. 过信和弃用要与真实使用条件对齐</h3>
+<p>实验前为每个评估任务由独立规则或领域标注确定“在此条件下是否适合采用”，包含正确性、适用性、授权和风险，不简单等同于有引用或答案正确。过信行为率可定义为“不适合采用却采用”的次数/全部不适合采用的机会；弃用行为率为“适合采用却拒绝”的次数/全部适合采用的机会。合理的人工作业复核或高风险拒绝不能被记作弃用，无法观察的行为单列未知。</p>
+<p>另8条原创脚本选择只检查分母：两风险组各4条，整体4次不适合采用中2次采用、1次拒绝、1次未知；4次适合采用中2次采用、1次拒绝、1次未知。因此过信行为率识别范围为2/4到3/4，弃用为1/4到2/4；这是未知行为的上下界，不是置信区间。零分母输出null。分风险结果也保留：低风险过信1/2到2/2、弃用1/2；高风险过信1/2、弃用0/2到1/2。不能删除未知样本来换一个更好看的比例。</p>
+<p>真实研究应事先按风险和任务分层、以用户等适当单位稳定随机分配提示形式，冻结观察窗、主要终点和停实验规则；测量查证后的最终决策、误采用的严重程度、任务完成率、正确答案弃用和核查耗时，配合信任自评理解原因。失败、退出、未曝光和缺失反馈保留在预注册分析中，报告缺失与敏感性分析。任何严重误用护栏失守先暂停；不能只追求点击引用、信任分或采用率上升。样本量、统计方法和可接受差值需事先设计，本题未开展真人实验。</p>
+<h3 id="7-真实验证及未测范围">7. 真实验证及未测范围</h3>
+<p>原创标准库程序的31项测试通过，覆盖10案例、逐项展示、缺文档/定位/快照失配、错误版本、冲突不挑选、JSON嵌套类型、校准分组隔离和未知行为分母。三种教学错误副本分别把“可访问当支持”“有支持就撤掉高风险提醒”“自报数当正确概率”，在同一组三项断言下各真实exit1 / 1 failure / 0 errors；正常副本exit0 / 3pass。它们是刻意构造的反例，不冒充发现的生产缺陷。</p>
+<p>便携临时副本复跑31项、实验及三类反例，收集3个直接子进程和4个嵌套子进程，结果除执行时间/Python/平台元数据外一致，输入和源码未变，临时目录已删除。原始输入、完整判断、分箱与分群结果、stdout/stderr、hash和运行命令随验收附件保存。运行规模固定为10案例、16条校准/评估标签、8条脚本选择；没有收费模型或用户数据。</p>
+<p><code>subjective_trust=null</code>，模型训练/真实模型/真人实验/统计因果/浏览器/业务服务均 <code>not_run</code>，<code>production_approved=false</code>。本题是同进程、静态快照的协议与算术验证，不提供权限隔离、自然语言核验能力或人类心理收益证据；题库GFM文本表格检查也不等于浏览器交互或图像布局验收。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>“模型自报百分比、相似分、多次一致就是正确概率。”</strong> 这些至多是待验证的代理特征；未经目标分布的独立标注校准，不得贴概率标签。</li>
+<li><strong>“可点击、相关、多篇引用就证明整段正确。”</strong> 需要逐项支持、条件匹配和来源质量检查；未支持的后半句不能跟着前半句得到背书。</li>
+<li><strong>“高风险有证据就不用提示，拒绝正确答案都是弃用。”</strong> 事实支持不代表执行条件满足；采用是否合适必须包括风险、授权与上下文。</li>
+<li><strong>“校准图好看或脚本选择改善，用户就更会用AI。”</strong> 概率质量、提示契约和人的信念/行为是不同评估对象；模拟不能替代真实研究。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>课程线索：洛小山《AI 产品从入门到精通》learn-ai，固定 <code>5a933d287dd5074cc1543cb849146f3261d47521</code>；<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/psy-5.html" target="_blank" rel="noopener noreferrer">slides/psy-5.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/ai-tips-boundary.html" target="_blank" rel="noopener noreferrer">slides/ai-tips-boundary.html</a>、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/psy-interview.html" target="_blank" rel="noopener noreferrer">slides/psy-interview.html</a>。只作选题/误区线索；交互中的预写校准分数和效果不是人类实验。本题独立组织正文与合成数据，不搬运AGPL课件文字、代码或图片。</li>
+<li>Chuan Guo、Geoff Pleiss、Yu Sun、Kilian Q. Weinberger，2017，<a href="https://proceedings.mlr.press/v70/guo17a.html" target="_blank" rel="noopener noreferrer">On Calibration of Modern Neural Networks，PMLR 70</a>。核对出版页摘要：研究图像/文档分类的概率校准及后处理，不外推为LLM自报概率或本产品的实验证据；本题未阅读全文或复现实验。</li>
+<li>scikit-learn维护者，1.7.2固定 <code>25dee604bae18205b01548348388baf7a1cdfe0e</code>，<a href="https://github.com/scikit-learn/scikit-learn/blob/25dee604bae18205b01548348388baf7a1cdfe0e/doc/modules/calibration.rst#L20-L59" target="_blank" rel="noopener noreferrer">Probability calibration文档源码</a>：群体频率含义、Brier限制与可靠性分箱；同文件129–141行说明calibrator及独立拟合数据。仅核对文档，示例未调用scikit-learn。</li>
+<li>Tianyu Gao、Howard Yen、Jiatong Yu、Danqi Chen，2023，ALCE作者仓库固定 <code>246c476a4edfc564266b7346b6e29ef4861ae937</code>：<a href="https://github.com/princeton-nlp/ALCE/blob/246c476a4edfc564266b7346b6e29ef4861ae937/README.md#L9-L13" target="_blank" rel="noopener noreferrer">README</a>、<a href="https://github.com/princeton-nlp/ALCE/blob/246c476a4edfc564266b7346b6e29ef4861ae937/eval.py#L269-L280" target="_blank" rel="noopener noreferrer">eval.py</a>。269–280行是模型NLI，357–376行分离引用有效性与联合段落支持检查；核对的是固定实现，不把本题有限事实比较冒充论文复现。以上来源访问/核对日期为2026-09-17。</li>
+</ul>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">引用都是真的，但答案仍错，先查什么？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：引用都是真的，但答案仍错，先查什么？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>查引用是否逐项蕴含结论，主体/版本/限定条件是否错配，以及来源本身是否可靠。必要时标为冲突或不足，检查是否把“来源支持率”误当“事实正确率”。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">校准误差下降，可以立刻显示百分比吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：校准误差下降，可以立刻显示百分比吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>还要看独立评估、样本量、风险分群、分布漂移、概率对应的事件及用户是否理解。旧映射失效或新任务超出范围时应撤下数值，回到具体证据限制并重新校准。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">提醒后采用率下降，是产品失败吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：提醒后采用率下降，是产品失败吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>若减少的是不适合采用的错误决策，下降可能符合目标；同时看正确答案弃用、严重错误、完成率和核查成本。没有随机化及完整观察，不能宣称提示造成改善。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>PRODUCT-0009 · 单题笔记</span><a href="../questions/product-0009-trust-calibration-confidence.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "product-0009", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

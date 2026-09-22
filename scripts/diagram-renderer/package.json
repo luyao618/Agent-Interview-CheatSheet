@@ -1,0 +1,8 @@
+{
+  "name": "interview-diagram-renderer",
+  "private": true,
+  "description": "Build-time Mermaid to SVG rendering for standalone question pages",
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "11.12.0"
+  }
+}

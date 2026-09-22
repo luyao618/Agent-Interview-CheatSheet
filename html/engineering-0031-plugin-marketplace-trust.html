@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。Agent 插件从发现到执行经过哪些信任状态，如何防范路径穿越、同名抢占和更新投毒？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/engineering-0031-plugin-marketplace-trust.md">
+  <meta name="source-sha256" content="a5abf91e21b395c8ec7cd18d2b5b6698462829416c77e6ab9a57e5398763d834">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>Agent 插件从发现到执行经过哪些信任状态，如何防范路径穿越、同名抢占和更新投毒？ · 面试题</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">ENGINEERING-0031</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class=""><em>Agent</em> 插件从发现到执行经过哪些信任状态，如何防范路径穿越、同名抢占和更新投毒？</h1>
+        <div class="question-meta"><span>工程化、部署、性能、成本</span><span class="meta-dot" aria-hidden="true"></span><span>进阶</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>Agent 插件从发现到执行经过哪些信任状态，如何防范路径穿越、同名抢占和更新投毒？请为包含 Skill、Hook、MCP 的插件画状态机和威胁表，区分来源校验、安装、启用及能力授权。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6</span><span>2026-09-16</span></p><div class="prose"><p><strong>市场解决“找到什么”，安装解决“存了什么”，启用决定“哪些组件进入运行时”，授权决定“这个版本能做什么”。</strong> 四者不是同一个安全结论。插件在市场出现、下载成功或签名有效，都不能直接推出其 Hook 可以运行、MCP 可以访问网络，或 Skill 可以改变系统权限。</p>
+<p>建议把信任记录绑定到<strong>发布者/来源、固定源码版本、实际交付物摘要、依赖清单、组件能力及运行约束</strong>，再让执行入口检查当前启用和授权状态。升级是一个新的候选版本，需要重新核对发生了什么变化；不能因为名称相同就继承所有旧授权。工具目录设计见 <a href="agent-0014-tool-registry-design.html">agent-0014</a>，不可信指令的处理见 <a href="agent-0017-prompt-injection-defense.html">agent-0017</a>，本题关注从分发到调用的生命周期。</p>
+<h3 id="1-给版本画状态机而不是给名字贴安全标签">1. 给版本画状态机，而不是给名字贴“安全”标签</h3>
+<p>下面是<strong>原创教学状态机</strong>。<code>checked</code> 只表示固定来源记录、归档结构和摘要等检查通过；<code>reviewed</code> 表示对此交付物记录了复核决定，仍不代表获得全部能力。这里的“启用”只设置调度资格，不自动加载代码；真实产品若在安装、import、注册 Hook 或启动 MCP 时已经执行代码，所需授权和隔离必须提前到该步骤，不能等执行后再询问。</p>
+<figure class="diagram" data-diagram-sha256="ff2a424135bd67354804285aa268766287969fa6fc870d7494a092e029900bcf"><button type="button" class="media-trigger" data-image-preview aria-label="放大查看流程图"><img src="data:image/svg+xml;base64,PHN2ZyBpZD0ibXktc3ZnIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiBjbGFzcz0ic3RhdGVkaWFncmFtIiBzdHlsZT0ibWF4LXdpZHRoOiA3MDguNTI1cHg7IGJhY2tncm91bmQtY29sb3I6IHRyYW5zcGFyZW50OyIgdmlld0JveD0iMCAwIDcwOC41MjUwMjQ0MTQwNjI1IDgwOC4xNDk5NjMzNzg5MDYyIiByb2xlPSJncmFwaGljcy1kb2N1bWVudCBkb2N1bWVudCIgYXJpYS1yb2xlZGVzY3JpcHRpb249InN0YXRlRGlhZ3JhbSIgd2lkdGg9IjcwOC41MjUiIGhlaWdodD0iODA4LjE1Ij48c3R5bGU+I215LXN2Z3tmb250LWZhbWlseTpBcmlhbCxQaW5nRmFuZyBTQyxzYW5zLXNlcmlmO2ZvbnQtc2l6ZToxNnB4O2ZpbGw6IzIwMmQ0ODt9QGtleWZyYW1lcyBlZGdlLWFuaW1hdGlvbi1mcmFtZXtmcm9te3N0cm9rZS1kYXNob2Zmc2V0OjA7fX1Aa2V5ZnJhbWVzIGRhc2h7dG97c3Ryb2tlLWRhc2hvZmZzZXQ6MDt9fSNteS1zdmcgLmVkZ2UtYW5pbWF0aW9uLXNsb3d7c3Ryb2tlLWRhc2hhcnJheTo5LDUhaW1wb3J0YW50O3N0cm9rZS1kYXNob2Zmc2V0OjkwMDthbmltYXRpb246ZGFzaCA1MHMgbGluZWFyIGluZmluaXRlO3N0cm9rZS1saW5lY2FwOnJvdW5kO30jbXktc3ZnIC5lZGdlLWFuaW1hdGlvbi1mYXN0e3N0cm9rZS1kYXNoYXJyYXk6OSw1IWltcG9ydGFudDtzdHJva2UtZGFzaG9mZnNldDo5MDA7YW5pbWF0aW9uOmRhc2ggMjBzIGxpbmVhciBpbmZpbml0ZTtzdHJva2UtbGluZWNhcDpyb3VuZDt9I215LXN2ZyAuZXJyb3ItaWNvbntmaWxsOmhzbCg0Ni4zNjM2MzYzNjM2LCAxMDAlLCAxMDAlKTt9I215LXN2ZyAuZXJyb3ItdGV4dHtmaWxsOiMwMDAwMDA7c3Ryb2tlOiMwMDAwMDA7fSNteS1zdmcgLmVkZ2UtdGhpY2tuZXNzLW5vcm1hbHtzdHJva2Utd2lkdGg6MXB4O30jbXktc3ZnIC5lZGdlLXRoaWNrbmVzcy10aGlja3tzdHJva2Utd2lkdGg6My41cHg7fSNteS1zdmcgLmVkZ2UtcGF0dGVybi1zb2xpZHtzdHJva2UtZGFzaGFycmF5OjA7fSNteS1zdmcgLmVkZ2UtdGhpY2tuZXNzLWludmlzaWJsZXtzdHJva2Utd2lkdGg6MDtmaWxsOm5vbmU7fSNteS1zdmcgLmVkZ2UtcGF0dGVybi1kYXNoZWR7c3Ryb2tlLWRhc2hhcnJheTozO30jbXktc3ZnIC5lZGdlLXBhdHRlcm4tZG90dGVke3N0cm9rZS1kYXNoYXJyYXk6Mjt9I215LXN2ZyAubWFya2Vye2ZpbGw6IzY5N2VhODtzdHJva2U6IzY5N2VhODt9I215LXN2ZyAubWFya2VyLmNyb3Nze3N0cm9rZTojNjk3ZWE4O30jbXktc3ZnIHN2Z3tmb250LWZhbWlseTpBcmlhbCxQaW5nRmFuZyBTQyxzYW5zLXNlcmlmO2ZvbnQtc2l6ZToxNnB4O30jbXktc3ZnIHB7bWFyZ2luOjA7fSNteS1zdmcgZGVmcyBbaWQkPSItYmFyYkVuZCJde2ZpbGw6IzY5N2VhODtzdHJva2U6IzY5N2VhODt9I215LXN2ZyBnLnN0YXRlR3JvdXAgdGV4dHtmaWxsOiM5YWFlZTk7c3Ryb2tlOm5vbmU7Zm9udC1zaXplOjEwcHg7fSNteS1zdmcgZy5zdGF0ZUdyb3VwIHRleHR7ZmlsbDojMjAyZDQ4O3N0cm9rZTpub25lO2ZvbnQtc2l6ZToxMHB4O30jbXktc3ZnIGcuc3RhdGVHcm91cCAuc3RhdGUtdGl0bGV7Zm9udC13ZWlnaHQ6Ym9sZGVyO2ZpbGw6IzIwMmQ0ODt9I215LXN2ZyBnLnN0YXRlR3JvdXAgcmVjdHtmaWxsOiNlOWVlZmY7c3Ryb2tlOiM5YWFlZTk7fSNteS1zdmcgZy5zdGF0ZUdyb3VwIGxpbmV7c3Ryb2tlOiM2OTdlYTg7c3Ryb2tlLXdpZHRoOjE7fSNteS1zdmcgLnRyYW5zaXRpb257c3Ryb2tlOiM2OTdlYTg7c3Ryb2tlLXdpZHRoOjE7ZmlsbDpub25lO30jbXktc3ZnIC5zdGF0ZUdyb3VwIC5jb21wb3NpdHtmaWxsOiNmNGY0ZjQ7Ym9yZGVyLWJvdHRvbToxcHg7fSNteS1zdmcgLnN0YXRlR3JvdXAgLmFsdC1jb21wb3NpdHtmaWxsOiNlMGUwZTA7Ym9yZGVyLWJvdHRvbToxcHg7fSNteS1zdmcgLnN0YXRlLW5vdGV7c3Ryb2tlOmhzbCg1Mi42ODI5MjY4MjkzLCA2MCUsIDczLjkyMTU2ODYyNzUlKTtmaWxsOiNmZmY1YWQ7fSNteS1zdmcgLnN0YXRlLW5vdGUgdGV4dHtmaWxsOiMzMzM7c3Ryb2tlOm5vbmU7Zm9udC1zaXplOjEwcHg7fSNteS1zdmcgLnN0YXRlTGFiZWwgLmJveHtzdHJva2U6bm9uZTtzdHJva2Utd2lkdGg6MDtmaWxsOiNlOWVlZmY7b3BhY2l0eTowLjU7fSNteS1zdmcgLmVkZ2VMYWJlbCAubGFiZWwgcmVjdHtmaWxsOiNlOWVlZmY7b3BhY2l0eTowLjU7fSNteS1zdmcgLmVkZ2VMYWJlbHtiYWNrZ3JvdW5kLWNvbG9yOmhzbCgxMDYuMzYzNjM2MzYzNiwgMTAwJSwgOTUuNjg2Mjc0NTA5OCUpO3RleHQtYWxpZ246Y2VudGVyO30jbXktc3ZnIC5lZGdlTGFiZWwgcHtiYWNrZ3JvdW5kLWNvbG9yOmhzbCgxMDYuMzYzNjM2MzYzNiwgMTAwJSwgOTUuNjg2Mjc0NTA5OCUpO30jbXktc3ZnIC5lZGdlTGFiZWwgcmVjdHtvcGFjaXR5OjAuNTtiYWNrZ3JvdW5kLWNvbG9yOmhzbCgxMDYuMzYzNjM2MzYzNiwgMTAwJSwgOTUuNjg2Mjc0NTA5OCUpO2ZpbGw6aHNsKDEwNi4zNjM2MzYzNjM2LCAxMDAlLCA5NS42ODYyNzQ1MDk4JSk7fSNteS1zdmcgLmVkZ2VMYWJlbCAubGFiZWwgdGV4dHtmaWxsOiMyMDJkNDg7fSNteS1zdmcgLmxhYmVsIGRpdiAuZWRnZUxhYmVse2NvbG9yOiMyMDJkNDg7fSNteS1zdmcgLnN0YXRlTGFiZWwgdGV4dHtmaWxsOiMyMDJkNDg7Zm9udC1zaXplOjEwcHg7Zm9udC13ZWlnaHQ6Ym9sZDt9I215LXN2ZyAubm9kZSBjaXJjbGUuc3RhdGUtc3RhcnR7ZmlsbDojNjk3ZWE4O3N0cm9rZTojNjk3ZWE4O30jbXktc3ZnIC5ub2RlIC5mb3JrLWpvaW57ZmlsbDojNjk3ZWE4O3N0cm9rZTojNjk3ZWE4O30jbXktc3ZnIC5ub2RlIGNpcmNsZS5zdGF0ZS1lbmR7ZmlsbDojOWFhZWU5O3N0cm9rZTojZjRmNGY0O3N0cm9rZS13aWR0aDoxLjU7fSNteS1zdmcgLmVuZC1zdGF0ZS1pbm5lcntmaWxsOiNmNGY0ZjQ7c3Ryb2tlLXdpZHRoOjEuNTt9I215LXN2ZyAubm9kZSByZWN0e2ZpbGw6I2U5ZWVmZjtzdHJva2U6IzlhYWVlOTtzdHJva2Utd2lkdGg6MXB4O30jbXktc3ZnIC5ub2RlIHBvbHlnb257ZmlsbDojZTllZWZmO3N0cm9rZTojOWFhZWU5O3N0cm9rZS13aWR0aDoxcHg7fSNteS1zdmcgW2lkJD0iLWJhcmJFbmQiXXtmaWxsOiM2OTdlYTg7fSNteS1zdmcgLnN0YXRlZGlhZ3JhbS1jbHVzdGVyIHJlY3R7ZmlsbDojZTllZWZmO3N0cm9rZTojOWFhZWU5O3N0cm9rZS13aWR0aDoxcHg7fSNteS1zdmcgLmNsdXN0ZXItbGFiZWwsI215LXN2ZyAubm9kZUxhYmVse2NvbG9yOiMyMDJkNDg7fSNteS1zdmcgLnN0YXRlZGlhZ3JhbS1jbHVzdGVyIHJlY3Qub3V0ZXJ7cng6NXB4O3J5OjVweDt9I215LXN2ZyAuc3RhdGVkaWFncmFtLXN0YXRlIC5kaXZpZGVye3N0cm9rZTojOWFhZWU5O30jbXktc3ZnIC5zdGF0ZWRpYWdyYW0tc3RhdGUgLnRpdGxlLXN0YXRle3J4OjVweDtyeTo1cHg7fSNteS1zdmcgLnN0YXRlZGlhZ3JhbS1jbHVzdGVyLnN0YXRlZGlhZ3JhbS1jbHVzdGVyIC5pbm5lcntmaWxsOiNmNGY0ZjQ7fSNteS1zdmcgLnN0YXRlZGlhZ3JhbS1jbHVzdGVyLnN0YXRlZGlhZ3JhbS1jbHVzdGVyLWFsdCAuaW5uZXJ7ZmlsbDpoc2woNDYuMzYzNjM2MzYzNiwgMTAwJSwgMTAwJSk7fSNteS1zdmcgLnN0YXRlZGlhZ3JhbS1jbHVzdGVyIC5pbm5lcntyeDowO3J5OjA7fSNteS1zdmcgLnN0YXRlZGlhZ3JhbS1zdGF0ZSByZWN0LmJhc2lje3J4OjVweDtyeTo1cHg7fSNteS1zdmcgLnN0YXRlZGlhZ3JhbS1zdGF0ZSByZWN0LmRpdmlkZXJ7c3Ryb2tlLWRhc2hhcnJheToxMCwxMDtmaWxsOmhzbCg0Ni4zNjM2MzYzNjM2LCAxMDAlLCAxMDAlKTt9I215LXN2ZyAubm90ZS1lZGdle3N0cm9rZS1kYXNoYXJyYXk6NTt9I215LXN2ZyAuc3RhdGVkaWFncmFtLW5vdGUgcmVjdHtmaWxsOiNmZmY1YWQ7c3Ryb2tlOmhzbCg1Mi42ODI5MjY4MjkzLCA2MCUsIDczLjkyMTU2ODYyNzUlKTtzdHJva2Utd2lkdGg6MXB4O3J4OjA7cnk6MDt9I215LXN2ZyAuc3RhdGVkaWFncmFtLW5vdGUgcmVjdHtmaWxsOiNmZmY1YWQ7c3Ryb2tlOmhzbCg1Mi42ODI5MjY4MjkzLCA2MCUsIDczLjkyMTU2ODYyNzUlKTtzdHJva2Utd2lkdGg6MXB4O3J4OjA7cnk6MDt9I215LXN2ZyAuc3RhdGVkaWFncmFtLW5vdGUgdGV4dHtmaWxsOiMzMzM7fSNteS1zdmcgLnN0YXRlZGlhZ3JhbS1ub3RlIC5ub2RlTGFiZWx7Y29sb3I6IzMzMzt9I215LXN2ZyAuc3RhdGVkaWFncmFtIC5lZGdlTGFiZWx7Y29sb3I6cmVkO30jbXktc3ZnIFtpZCQ9Ii1kZXBlbmRlbmN5U3RhcnQiXSwjbXktc3ZnIFtpZCQ9Ii1kZXBlbmRlbmN5RW5kIl17ZmlsbDojNjk3ZWE4O3N0cm9rZTojNjk3ZWE4O3N0cm9rZS13aWR0aDoxO30jbXktc3ZnIC5zdGF0ZWRpYWdyYW1UaXRsZVRleHR7dGV4dC1hbmNob3I6bWlkZGxlO2ZvbnQtc2l6ZToxOHB4O2ZpbGw6IzIwMmQ0ODt9I215LXN2ZyBbZGF0YS1sb29rPSJuZW8iXS5zdGF0ZWRpYWdyYW0tY2x1c3RlciByZWN0e2ZpbGw6I2U5ZWVmZjtzdHJva2U6dXJsKCNteS1zdmctZ3JhZGllbnQpO3N0cm9rZS13aWR0aDoxO30jbXktc3ZnIFtkYXRhLWxvb2s9Im5lbyJdLnN0YXRlZGlhZ3JhbS1jbHVzdGVyIHJlY3Qub3V0ZXJ7cng6NXB4O3J5OjVweDtmaWx0ZXI6ZHJvcC1zaGFkb3coIDFweCAycHggMnB4IHJnYmEoMTg1LDE4NSwxODUsMSkpO30jbXktc3ZnIC5ub2RlIC5uZW8tbm9kZXtzdHJva2U6IzlhYWVlOTt9I215LXN2ZyBbZGF0YS1sb29rPSJuZW8iXS5ub2RlIHJlY3QsI215LXN2ZyBbZGF0YS1sb29rPSJuZW8iXS5jbHVzdGVyIHJlY3QsI215LXN2ZyBbZGF0YS1sb29rPSJuZW8iXS5ub2RlIHBvbHlnb257c3Ryb2tlOnVybCgjbXktc3ZnLWdyYWRpZW50KTtmaWx0ZXI6ZHJvcC1zaGFkb3coIDFweCAycHggMnB4IHJnYmEoMTg1LDE4NSwxODUsMSkpO30jbXktc3ZnIFtkYXRhLWxvb2s9Im5lbyJdLnN3aW1sYW5lLmNsdXN0ZXIgcmVjdHtmaWx0ZXI6bm9uZTt9I215LXN2ZyBbZGF0YS1sb29rPSJuZW8iXS5ub2RlIHBhdGh7c3Ryb2tlOnVybCgjbXktc3ZnLWdyYWRpZW50KTtzdHJva2Utd2lkdGg6MXB4O30jbXktc3ZnIFtkYXRhLWxvb2s9Im5lbyJdLm5vZGUgLm91dGVyLXBhdGh7ZmlsdGVyOmRyb3Atc2hhZG93KCAxcHggMnB4IDJweCByZ2JhKDE4NSwxODUsMTg1LDEpKTt9I215LXN2ZyBbZGF0YS1sb29rPSJuZW8iXS5ub2RlIC5uZW8tbGluZSBwYXRoe3N0cm9rZTojOWFhZWU5O2ZpbHRlcjpub25lO30jbXktc3ZnIFtkYXRhLWxvb2s9Im5lbyJdLm5vZGUgY2lyY2xle3N0cm9rZTp1cmwoI215LXN2Zy1ncmFkaWVudCk7ZmlsdGVyOmRyb3Atc2hhZG93KCAxcHggMnB4IDJweCByZ2JhKDE4NSwxODUsMTg1LDEpKTt9I215LXN2ZyBbZGF0YS1sb29rPSJuZW8iXS5ub2RlIGNpcmNsZSAuc3RhdGUtc3RhcnR7ZmlsbDojMDAwMDAwO30jbXktc3ZnIFtkYXRhLWxvb2s9Im5lbyJdLmljb24tc2hhcGUgLmljb257ZmlsbDp1cmwoI215LXN2Zy1ncmFkaWVudCk7ZmlsdGVyOmRyb3Atc2hhZG93KCAxcHggMnB4IDJweCByZ2JhKDE4NSwxODUsMTg1LDEpKTt9I215LXN2ZyBbZGF0YS1sb29rPSJuZW8iXS5pY29uLXNoYXBlIC5pY29uLW5lbyBwYXRoe3N0cm9rZTp1cmwoI215LXN2Zy1ncmFkaWVudCk7ZmlsdGVyOmRyb3Atc2hhZG93KCAxcHggMnB4IDJweCByZ2JhKDE4NSwxODUsMTg1LDEpKTt9I215LXN2ZyA6cm9vdHstLW1lcm1haWQtZm9udC1mYW1pbHk6InRyZWJ1Y2hldCBtcyIsdmVyZGFuYSxhcmlhbCxzYW5zLXNlcmlmO308L3N0eWxlPjxnPjxkZWZzPjxtYXJrZXIgaWQ9Im15LXN2Z19zdGF0ZURpYWdyYW0tYmFyYkVuZCIgcmVmWD0iMTkiIHJlZlk9IjciIG1hcmtlcldpZHRoPSIyMCIgbWFya2VySGVpZ2h0PSIxNCIgbWFya2VyVW5pdHM9InVzZXJTcGFjZU9uVXNlIiBvcmllbnQ9ImF1dG8iPjxwYXRoIGQ9Ik0gMTksNyBMOSwxMyBMMTQsNyBMOSwxIFoiLz48L21hcmtlcj48L2RlZnM+PGcgY2xhc3M9InJvb3QiPjxnIGNsYXNzPSJjbHVzdGVycyIvPjxnIGNsYXNzPSJlZGdlUGF0aHMiPjxwYXRoIGQ9Ik0zOTksMjJMMzk5LDI2LjE2N0MzOTksMzAuMzMzLDM5OSwzOC42NjcsMzk5LDQ3QzM5OSw1NS4zMzMsMzk5LDYzLjY2NywzOTksNjcuODMzTDM5OSw3MiIgaWQ9Im15LXN2Zy1lZGdlMCIgY2xhc3M9ImVkZ2UtdGhpY2tuZXNzLW5vcm1hbCBlZGdlLXBhdHRlcm4tc29saWQgdHJhbnNpdGlvbiIgc3R5bGU9ImZpbGw6bm9uZTs7O2ZpbGw6bm9uZSIgZGF0YS1lZGdlPSJ0cnVlIiBkYXRhLWV0PSJlZGdlIiBkYXRhLWlkPSJlZGdlMCIgZGF0YS1wb2ludHM9Ilczc2llQ0k2TXprNUxDSjVJam95TW4wc2V5SjRJam96T1Rrc0lua2lPalEzZlN4N0luZ2lPak01T1N3aWVTSTZOeko5WFE9PSIgZGF0YS1sb29rPSJjbGFzc2ljIiBtYXJrZXItZW5kPSJ1cmwoI215LXN2Z19zdGF0ZURpYWdyYW0tYmFyYkVuZCkiLz48cGF0aCBkPSJNMzY4LjIyMSwxMDVMMzU3LjE4NCwxMTAuOTE3QzM0Ni4xNDcsMTE2LjgzMywzMjQuMDc0LDEyOC42NjcsMzEzLjAzNywxNDAuNUMzMDIsMTUyLjMzMywzMDIsMTY0LjE2NywzMDIsMTcwLjA4M0wzMDIsMTc2IiBpZD0ibXktc3ZnLWVkZ2UxIiBjbGFzcz0iZWRnZS10aGlja25lc3Mtbm9ybWFsIGVkZ2UtcGF0dGVybi1zb2xpZCB0cmFuc2l0aW9uIiBzdHlsZT0iZmlsbDpub25lOzs7ZmlsbDpub25lIiBkYXRhLWVkZ2U9InRydWUiIGRhdGEtZXQ9ImVkZ2UiIGRhdGEtaWQ9ImVkZ2UxIiBkYXRhLXBvaW50cz0iVzNzaWVDSTZNelk0TGpJeU1URTFNemcwTmpFMU16ZzNMQ0o1SWpveE1EVjlMSHNpZUNJNk16QXlMQ0o1SWpveE5EQXVOWDBzZXlKNElqb3pNRElzSW5raU9qRTNObjFkIiBkYXRhLWxvb2s9ImNsYXNzaWMiIG1hcmtlci1lbmQ9InVybCgjbXktc3ZnX3N0YXRlRGlhZ3JhbS1iYXJiRW5kKSIvPjxwYXRoIGQ9Ik00MjkuNzc5LDEwNUw0NDAuODE2LDExMC45MTdDNDUxLjg1MywxMTYuODMzLDQ3My45MjYsMTI4LjY2Nyw0ODQuOTYzLDE0MC41QzQ5NiwxNTIuMzMzLDQ5NiwxNjQuMTY3LDQ5NiwxNzAuMDgzTDQ5NiwxNzYiIGlkPSJteS1zdmctZWRnZTIiIGNsYXNzPSJlZGdlLXRoaWNrbmVzcy1ub3JtYWwgZWRnZS1wYXR0ZXJuLXNvbGlkIHRyYW5zaXRpb24iIHN0eWxlPSJmaWxsOm5vbmU7OztmaWxsOm5vbmUiIGRhdGEtZWRnZT0idHJ1ZSIgZGF0YS1ldD0iZWRnZSIgZGF0YS1pZD0iZWRnZTIiIGRhdGEtcG9pbnRzPSJXM3NpZUNJNk5ESTVMamMzT0RnME5qRTFNemcwTmpFekxDSjVJam94TURWOUxIc2llQ0k2TkRrMkxDSjVJam94TkRBdU5YMHNleUo0SWpvME9UWXNJbmtpT2pFM05uMWQiIGRhdGEtbG9vaz0iY2xhc3NpYyIgbWFya2VyLWVuZD0idXJsKCNteS1zdmdfc3RhdGVEaWFncmFtLWJhcmJFbmQpIi8+PHBhdGggZD0iTTMwMiwyMDlMMzAyLDIxNC45MTdDMzAyLDIyMC44MzMsMzAyLDIzMi42NjcsMzAyLDI0NC41QzMwMiwyNTYuMzMzLDMwMiwyNjguMTY3LDMwMiwyNzQuMDgzTDMwMiwyODAiIGlkPSJteS1zdmctZWRnZTMiIGNsYXNzPSJlZGdlLXRoaWNrbmVzcy1ub3JtYWwgZWRnZS1wYXR0ZXJuLXNvbGlkIHRyYW5zaXRpb24iIHN0eWxlPSJmaWxsOm5vbmU7OztmaWxsOm5vbmUiIGRhdGEtZWRnZT0idHJ1ZSIgZGF0YS1ldD0iZWRnZSIgZGF0YS1pZD0iZWRnZTMiIGRhdGEtcG9pbnRzPSJXM3NpZUNJNk16QXlMQ0o1SWpveU1EbDlMSHNpZUNJNk16QXlMQ0o1SWpveU5EUXVOWDBzZXlKNElqb3pNRElzSW5raU9qSTRNSDFkIiBkYXRhLWxvb2s9ImNsYXNzaWMiIG1hcmtlci1lbmQ9InVybCgjbXktc3ZnX3N0YXRlRGlhZ3JhbS1iYXJiRW5kKSIvPjxwYXRoIGQ9Ik0zNTQuNTIyLDMxM0wzNzMuMzU2LDMxOC45MTdDMzkyLjE5LDMyNC44MzMsNDI5Ljg1NywzMzYuNjY3LDQ0OC42OTEsMzQ4LjVDNDY3LjUyNSwzNjAuMzMzLDQ2Ny41MjUsMzcyLjE2Nyw0NjcuNTI1LDM3OC4wODNMNDY3LjUyNSwzODQiIGlkPSJteS1zdmctZWRnZTQiIGNsYXNzPSJlZGdlLXRoaWNrbmVzcy1ub3JtYWwgZWRnZS1wYXR0ZXJuLXNvbGlkIHRyYW5zaXRpb24iIHN0eWxlPSJmaWxsOm5vbmU7OztmaWxsOm5vbmUiIGRhdGEtZWRnZT0idHJ1ZSIgZGF0YS1ldD0iZWRnZSIgZGF0YS1pZD0iZWRnZTQiIGRhdGEtcG9pbnRzPSJXM3NpZUNJNk16VTBMalV5TWpNMU5UYzJPVE0wT0RrMkxDSjVJam96TVROOUxIc2llQ0k2TkRZM0xqVXlOVEF3TURBd01ETTNNalV6TENKNUlqb3pORGd1Tlgwc2V5SjRJam8wTmpjdU5USTFNREF3TURBd016Y3lOVE1zSW5raU9qTTROSDFkIiBkYXRhLWxvb2s9ImNsYXNzaWMiIG1hcmtlci1lbmQ9InVybCgjbXktc3ZnX3N0YXRlRGlhZ3JhbS1iYXJiRW5kKSIvPjxwYXRoIGQ9Ik00NDAuNTQ2LDQxN0w0MzAuODcyLDQyMi45MTdDNDIxLjE5Nyw0MjguODMzLDQwMS44NDksNDQwLjY2NywzOTYuNTAxLDQ1Mi41QzM5MS4xNTMsNDY0LjMzMywzOTkuODA2LDQ3Ni4xNjcsNDA0LjEzMyw0ODIuMDgzTDQwOC40NTksNDg4IiBpZD0ibXktc3ZnLWVkZ2U2IiBjbGFzcz0iZWRnZS10aGlja25lc3Mtbm9ybWFsIGVkZ2UtcGF0dGVybi1zb2xpZCB0cmFuc2l0aW9uIiBzdHlsZT0iZmlsbDpub25lOzs7ZmlsbDpub25lIiBkYXRhLWVkZ2U9InRydWUiIGRhdGEtZXQ9ImVkZ2UiIGRhdGEtaWQ9ImVkZ2U2IiBkYXRhLXBvaW50cz0iVzNzaWVDSTZORFF3TGpVME5Ua3hNelEyTVRjNU1qZ3NJbmtpT2pReE4zMHNleUo0SWpvek9ESXVOU3dpZVNJNk5EVXlMalY5TEhzaWVDSTZOREE0TGpRMU9UTTNOVEF3TURJMU5ETTBMQ0o1SWpvME9EaDlYUT09IiBkYXRhLWxvb2s9ImNsYXNzaWMiIG1hcmtlci1lbmQ9InVybCgjbXktc3ZnX3N0YXRlRGlhZ3JhbS1iYXJiRW5kKSIvPjxwYXRoIGQ9Ik00MjAuNTI1LDUyMUw0MjAuNTI1LDUyNi45MTdDNDIwLjUyNSw1MzIuODMzLDQyMC41MjUsNTQ0LjY2Nyw0MzIuMjQ1LDU1Ni41QzQ0My45NjQsNTY4LjMzMyw0NjcuNDAzLDU4MC4xNjcsNDc5LjEyMyw1ODYuMDgzTDQ5MC44NDIsNTkyIiBpZD0ibXktc3ZnLWVkZ2U3IiBjbGFzcz0iZWRnZS10aGlja25lc3Mtbm9ybWFsIGVkZ2UtcGF0dGVybi1zb2xpZCB0cmFuc2l0aW9uIiBzdHlsZT0iZmlsbDpub25lOzs7ZmlsbDpub25lIiBkYXRhLWVkZ2U9InRydWUiIGRhdGEtZXQ9ImVkZ2UiIGRhdGEtaWQ9ImVkZ2U3IiBkYXRhLXBvaW50cz0iVzNzaWVDSTZOREl3TGpVeU5UQXdNREF3TURNM01qVXpMQ0o1SWpvMU1qRjlMSHNpZUNJNk5ESXdMalV5TlRBd01EQXdNRE0zTWpVekxDSjVJam8xTlRZdU5YMHNleUo0SWpvME9UQXVPRFF5TXpBM05qa3lOamd3TWl3aWVTSTZOVGt5ZlYwPSIgZGF0YS1sb29rPSJjbGFzc2ljIiBtYXJrZXItZW5kPSJ1cmwoI215LXN2Z19zdGF0ZURpYWdyYW0tYmFyYkVuZCkiLz48cGF0aCBkPSJNNTMzLjk5Niw1OTJMNTM3Ljc1MSw1ODYuMDgzQzU0MS41MDYsNTgwLjE2Nyw1NDkuMDE1LDU2OC4zMzMsNTM3LjI5Niw1NTYuNUM1MjUuNTc2LDU0NC42NjcsNDk0LjYyOCw1MzIuODMzLDQ3OS4xNTMsNTI2LjkxN0w0NjMuNjc5LDUyMSIgaWQ9Im15LXN2Zy1lZGdlOSIgY2xhc3M9ImVkZ2UtdGhpY2tuZXNzLW5vcm1hbCBlZGdlLXBhdHRlcm4tc29saWQgdHJhbnNpdGlvbiIgc3R5bGU9ImZpbGw6bm9uZTs7O2ZpbGw6bm9uZSIgZGF0YS1lZGdlPSJ0cnVlIiBkYXRhLWV0PSJlZGdlIiBkYXRhLWlkPSJlZGdlOSIgZGF0YS1wb2ludHM9Ilczc2llQ0k2TlRNekxqazVOakUxTXpnME5qVXlOak1zSW5raU9qVTVNbjBzZXlKNElqbzFOVFl1TlRJMU1EQXdNREF3TXpjeU5Td2llU0k2TlRVMkxqVjlMSHNpZUNJNk5EWXpMalkzT0RnME5qRTFOREl4T0RZMkxDSjVJam8xTWpGOVhRPT0iIGRhdGEtbG9vaz0iY2xhc3NpYyIgbWFya2VyLWVuZD0idXJsKCNteS1zdmdfc3RhdGVEaWFncmFtLWJhcmJFbmQpIi8+PHBhdGggZD0iTTQ0Ny4xNzksNDg4TDQ1Ni43MzcsNDgyLjA4M0M0NjYuMjk0LDQ3Ni4xNjcsNDg1LjQxLDQ2NC4zMzMsNDkwLjc1Nyw0NTIuNUM0OTYuMTA1LDQ0MC42NjcsNDg3LjY4NSw0MjguODMzLDQ4My40NzUsNDIyLjkxN0w0NzkuMjY1LDQxNyIgaWQ9Im15LXN2Zy1lZGdlMTAiIGNsYXNzPSJlZGdlLXRoaWNrbmVzcy1ub3JtYWwgZWRnZS1wYXR0ZXJuLXNvbGlkIHRyYW5zaXRpb24iIHN0eWxlPSJmaWxsOm5vbmU7OztmaWxsOm5vbmUiIGRhdGEtZWRnZT0idHJ1ZSIgZGF0YS1ldD0iZWRnZSIgZGF0YS1pZD0iZWRnZTEwIiBkYXRhLXBvaW50cz0iVzNzaWVDSTZORFEzTGpFM09EZzBOakUxTkRJeE9EWTJMQ0o1SWpvME9EaDlMSHNpZUNJNk5UQTBMalV5TlRBd01EQXdNRE0zTWpVekxDSjVJam8wTlRJdU5YMHNleUo0SWpvME56a3VNalkxTXpnME5qRTFOelUzTVRjc0lua2lPalF4TjMxZCIgZGF0YS1sb29rPSJjbGFzc2ljIiBtYXJrZXItZW5kPSJ1cmwoI215LXN2Z19zdGF0ZURpYWdyYW0tYmFyYkVuZCkiLz48cGF0aCBkPSJNNTU2LjIwOCw1OTJMNTY3LjkyNyw1ODYuMDgzQzU3OS42NDcsNTgwLjE2Nyw2MDMuMDg2LDU2OC4zMzMsNjE0LjgwNSw1NTMuNzVDNjI2LjUyNSw1MzkuMTY3LDYyNi41MjUsNTIxLjgzMyw2MjYuNTI1LDUwNC41QzYyNi41MjUsNDg3LjE2Nyw2MjYuNTI1LDQ2OS44MzMsNjA4LjQzNCw0NTUuMjVDNTkwLjM0Miw0NDAuNjY3LDU1NC4xNiw0MjguODMzLDUzNi4wNjgsNDIyLjkxN0w1MTcuOTc3LDQxNyIgaWQ9Im15LXN2Zy1lZGdlMTEiIGNsYXNzPSJlZGdlLXRoaWNrbmVzcy1ub3JtYWwgZWRnZS1wYXR0ZXJuLXNvbGlkIHRyYW5zaXRpb24iIHN0eWxlPSJmaWxsOm5vbmU7OztmaWxsOm5vbmUiIGRhdGEtZWRnZT0idHJ1ZSIgZGF0YS1ldD0iZWRnZSIgZGF0YS1pZD0iZWRnZTExIiBkYXRhLXBvaW50cz0iVzNzaWVDSTZOVFUyTGpJd056WTVNak13T0RBMk5EZ3NJbmtpT2pVNU1uMHNleUo0SWpvMk1qWXVOVEkxTURBd01EQXdNemN5TlN3aWVTSTZOVFUyTGpWOUxIc2llQ0k2TmpJMkxqVXlOVEF3TURBd01ETTNNalVzSW5raU9qVXdOQzQxZlN4N0luZ2lPall5Tmk0MU1qVXdNREF3TURBek56STFMQ0o1SWpvME5USXVOWDBzZXlKNElqbzFNVGN1T1RjMk9USXpNRGMzTWprMU5pd2llU0k2TkRFM2ZWMD0iIGRhdGEtbG9vaz0iY2xhc3NpYyIgbWFya2VyLWVuZD0idXJsKCNteS1zdmdfc3RhdGVEaWFncmFtLWJhcmJFbmQpIi8+PHBhdGggZD0iTTM5NS41MjUsNDA5LjgyNEwzNDAuNjA0LDQxNi45MzdDMjg1LjY4Myw0MjQuMDUsMTc1Ljg0Miw0MzguMjc1LDEyMC45MjEsNDU0LjA1NEM2Niw0NjkuODMzLDY2LDQ4Ny4xNjcsNjYsNTA0LjVDNjYsNTIxLjgzMyw2Niw1MzkuMTY3LDY2LDU1Ni41QzY2LDU3My44MzMsNjYsNTkxLjE2Nyw2Niw2MDguNUM2Niw2MjUuODMzLDY2LDY0My4xNjcsNzQuODc1LDY1Ny43NUM4My43NSw2NzIuMzMzLDEwMS41LDY4NC4xNjcsMTEwLjM3NSw2OTAuMDgzTDExOS4yNSw2OTYiIGlkPSJteS1zdmctZWRnZTEyIiBjbGFzcz0iZWRnZS10aGlja25lc3Mtbm9ybWFsIGVkZ2UtcGF0dGVybi1zb2xpZCB0cmFuc2l0aW9uIiBzdHlsZT0iZmlsbDpub25lOzs7ZmlsbDpub25lIiBkYXRhLWVkZ2U9InRydWUiIGRhdGEtZXQ9ImVkZ2UiIGRhdGEtaWQ9ImVkZ2UxMiIgZGF0YS1wb2ludHM9Ilczc2llQ0k2TXprMUxqVXlOVEF3TURBd01ETTNNalV6TENKNUlqbzBNRGt1T0RJME5EVXdOVE15TXpNMk56VjlMSHNpZUNJNk5qWXNJbmtpT2pRMU1pNDFmU3g3SW5naU9qWTJMQ0o1SWpvMU1EUXVOWDBzZXlKNElqbzJOaXdpZVNJNk5UVTJMalY5TEhzaWVDSTZOallzSW5raU9qWXdPQzQxZlN4N0luZ2lPalkyTENKNUlqbzJOakF1Tlgwc2V5SjRJam94TVRrdU1qVXNJbmtpT2pZNU5uMWQiIGRhdGEtbG9vaz0iY2xhc3NpYyIgbWFya2VyLWVuZD0idXJsKCNteS1zdmdfc3RhdGVEaWFncmFtLWJhcmJFbmQpIi8+PHBhdGggZD0iTTM0Ny4zNzgsNTIxTDMyMS4xNDgsNTI2LjkxN0MyOTQuOTE4LDUzMi44MzMsMjQyLjQ1OSw1NDQuNjY3LDIxNi4yMyw1NTkuMjVDMTkwLDU3My44MzMsMTkwLDU5MS4xNjcsMTkwLDYwOC41QzE5MCw2MjUuODMzLDE5MCw2NDMuMTY3LDE4NC43NjYsNjU3Ljc1QzE3OS41MzIsNjcyLjMzMywxNjkuMDY0LDY4NC4xNjcsMTYzLjgzLDY5MC4wODNMMTU4LjU5Niw2OTYiIGlkPSJteS1zdmctZWRnZTEzIiBjbGFzcz0iZWRnZS10aGlja25lc3Mtbm9ybWFsIGVkZ2UtcGF0dGVybi1zb2xpZCB0cmFuc2l0aW9uIiBzdHlsZT0iZmlsbDpub25lOzs7ZmlsbDpub25lIiBkYXRhLWVkZ2U9InRydWUiIGRhdGEtZXQ9ImVkZ2UiIGRhdGEtaWQ9ImVkZ2UxMyIgZGF0YS1wb2ludHM9Ilczc2llQ0k2TXpRM0xqTTNOelkwTkRJek1UQXlNelUzTENKNUlqbzFNakY5TEhzaWVDSTZNVGt3TENKNUlqbzFOVFl1Tlgwc2V5SjRJam94T1RBc0lua2lPall3T0M0MWZTeDdJbmdpT2pFNU1Dd2llU0k2TmpZd0xqVjlMSHNpZUNJNk1UVTRMalU1TmpFMU16ZzBOakUxTXpnMExDSjVJam8yT1RaOVhRPT0iIGRhdGEtbG9vaz0iY2xhc3NpYyIgbWFya2VyLWVuZD0idXJsKCNteS1zdmdfc3RhdGVEaWFncmFtLWJhcmJFbmQpIi8+PHBhdGggZD0iTTQ0NS4xNDIsNjI1TDQxNy4wMzUsNjMwLjkxN0MzODguOTI4LDYzNi44MzMsMzMyLjcxNCw2NDguNjY3LDI4OS41MzEsNjYwLjVDMjQ2LjM0OCw2NzIuMzMzLDIxNi4xOTYsNjg0LjE2NywyMDEuMTE5LDY5MC4wODNMMTg2LjA0Myw2OTYiIGlkPSJteS1zdmctZWRnZTE0IiBjbGFzcz0iZWRnZS10aGlja25lc3Mtbm9ybWFsIGVkZ2UtcGF0dGVybi1zb2xpZCB0cmFuc2l0aW9uIiBzdHlsZT0iZmlsbDpub25lOzs7ZmlsbDpub25lIiBkYXRhLWVkZ2U9InRydWUiIGRhdGEtZXQ9ImVkZ2UiIGRhdGEtaWQ9ImVkZ2UxNCIgZGF0YS1wb2ludHM9Ilczc2llQ0k2TkRRMUxqRTBNakEyTnpNd056azBOallzSW5raU9qWXlOWDBzZXlKNElqb3lOell1TlN3aWVTSTZOall3TGpWOUxIc2llQ0k2TVRnMkxqQTBNekkyT1RJek1EYzJPVEl6TENKNUlqbzJPVFo5WFE9PSIgZGF0YS1sb29rPSJjbGFzc2ljIiBtYXJrZXItZW5kPSJ1cmwoI215LXN2Z19zdGF0ZURpYWdyYW0tYmFyYkVuZCkiLz48cGF0aCBkPSJNMjgzLjc0OCwzMTNMMjc5LjMyMywzMTdDMjc0Ljg5OSwzMjEsMjY2LjA0OSwzMjksMjc2LjU1OCwzMzNDMjg3LjA2NywzMzcsMzE2LjkzMywzMzcsMzI3LjQ0MiwzMzNDMzM3Ljk1MSwzMjksMzI5LjEwMSwzMjEsMzI0LjY3NywzMTdMMzIwLjI1MiwzMTMiIGlkPSJteS1zdmctZWRnZTUiIGNsYXNzPSJlZGdlLXRoaWNrbmVzcy1ub3JtYWwgZWRnZS1wYXR0ZXJuLXNvbGlkIHRyYW5zaXRpb24iIHN0eWxlPSJmaWxsOm5vbmU7OztmaWxsOm5vbmUiIGRhdGEtZWRnZT0idHJ1ZSIgZGF0YS1ldD0iZWRnZSIgZGF0YS1pZD0iZWRnZTUiIGRhdGEtcG9pbnRzPSJXM3NpZUNJNk1qZ3pMamMwT0RFME9ERTBPREUwT0RFc0lua2lPak14TTMwc2V5SjRJam95TlRjdU1pd2llU0k2TXpNM2ZTeDdJbmdpT2pNME5pNDRMQ0o1SWpvek16ZDlMSHNpZUNJNk16SXdMakkxTVRnMU1UZzFNVGcxTVRrc0lua2lPak14TTMxZCIgZGF0YS1sb29rPSJjbGFzc2ljIiBtYXJrZXItZW5kPSJ1cmwoI215LXN2Z19zdGF0ZURpYWdyYW0tYmFyYkVuZCkiLz48cGF0aCBkPSJNNTAzLjE1NSw2MjVMNDk4LjIxNiw2MjlDNDkzLjI3OCw2MzMsNDgzLjQwMiw2NDEsNDk1LjEzLDY0NUM1MDYuODU4LDY0OSw1NDAuMTkyLDY0OSw1NTEuOTIsNjQ1QzU2My42NDgsNjQxLDU1My43NzIsNjMzLDU0OC44MzQsNjI5TDU0My44OTUsNjI1IiBpZD0ibXktc3ZnLWVkZ2U4IiBjbGFzcz0iZWRnZS10aGlja25lc3Mtbm9ybWFsIGVkZ2UtcGF0dGVybi1zb2xpZCB0cmFuc2l0aW9uIiBzdHlsZT0iZmlsbDpub25lOzs7ZmlsbDpub25lIiBkYXRhLWVkZ2U9InRydWUiIGRhdGEtZXQ9ImVkZ2UiIGRhdGEtaWQ9ImVkZ2U4IiBkYXRhLXBvaW50cz0iVzNzaWVDSTZOVEF6TGpFMU5EWXlPVFl6TURBd01qRTFMQ0o1SWpvMk1qVjlMSHNpZUNJNk5EY3pMalV5TlRBd01EQXdNRE0zTWpVekxDSjVJam8yTkRsOUxIc2llQ0k2TlRjekxqVXlOVEF3TURBd01ETTNNalVzSW5raU9qWTBPWDBzZXlKNElqbzFORE11T0RrMU16Y3dNemN3TnpReU9Td2llU0k2TmpJMWZWMD0iIGRhdGEtbG9vaz0iY2xhc3NpYyIgbWFya2VyLWVuZD0idXJsKCNteS1zdmdfc3RhdGVEaWFncmFtLWJhcmJFbmQpIi8+PC9nPjxnIGNsYXNzPSJlZGdlTGFiZWxzIj48ZyBjbGFzcz0iZWRnZUxhYmVsIj48ZyBjbGFzcz0ibGFiZWwiIGRhdGEtaWQ9ImVkZ2UwIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLCAwKSI+PHRleHQgeT0iLTEwLjEiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjx0c3BhbiBjbGFzcz0idGV4dC1vdXRlci10c3BhbiByb3ciIHg9IjAiIHk9Ii0wLjFlbSIgZHk9IjEuMWVtIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIi8+PC90ZXh0PjwvZz48L2c+PGc+PHJlY3QgY2xhc3M9ImJhY2tncm91bmQiIHN0eWxlPSJzdHJva2U6IG5vbmUiLz48L2c+PGcgY2xhc3M9ImVkZ2VMYWJlbCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzAyLCAxNDAuNSkiPjxnIGNsYXNzPSJsYWJlbCIgZGF0YS1pZD0iZWRnZTEiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIC0xMC41KSI+PGc+PHJlY3QgY2xhc3M9ImJhY2tncm91bmQiIHN0eWxlPSIiIHg9Ii05MCIgeT0iMCIgd2lkdGg9IjE4MCIgaGVpZ2h0PSIyMSIvPjx0ZXh0IHk9Ii0xMC4xIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBzdHlsZT0iIj48dHNwYW4gY2xhc3M9InRleHQtb3V0ZXItdHNwYW4gcm93IiB4PSIwIiB5PSItMC4xZW0iIGR5PSIxLjFlbSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PHRzcGFuIGZvbnQtc3R5bGU9Im5vcm1hbCIgY2xhc3M9InRleHQtaW5uZXItdHNwYW4iIGZvbnQtd2VpZ2h0PSJub3JtYWwiPuagoemqjOWbuuWumuadpea6kOS4juWujOaVtOW9kuahozwvdHNwYW4+PC90c3Bhbj48L3RleHQ+PC9nPjwvZz48L2c+PGcgY2xhc3M9ImVkZ2VMYWJlbCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDk2LCAxNDAuNSkiPjxnIGNsYXNzPSJsYWJlbCIgZGF0YS1pZD0iZWRnZTIiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIC0xMC41KSI+PGc+PHJlY3QgY2xhc3M9ImJhY2tncm91bmQiIHN0eWxlPSIiIHg9Ii04MiIgeT0iMCIgd2lkdGg9IjE2NCIgaGVpZ2h0PSIyMSIvPjx0ZXh0IHk9Ii0xMC4xIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBzdHlsZT0iIj48dHNwYW4gY2xhc3M9InRleHQtb3V0ZXItdHNwYW4gcm93IiB4PSIwIiB5PSItMC4xZW0iIGR5PSIxLjFlbSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PHRzcGFuIGZvbnQtc3R5bGU9Im5vcm1hbCIgY2xhc3M9InRleHQtaW5uZXItdHNwYW4iIGZvbnQtd2VpZ2h0PSJub3JtYWwiPuadpea6kOOAgei3r+W+hOaIluaRmOimgeWksei0pTwvdHNwYW4+PC90c3Bhbj48L3RleHQ+PC9nPjwvZz48L2c+PGcgY2xhc3M9ImVkZ2VMYWJlbCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzAyLCAyNDQuNSkiPjxnIGNsYXNzPSJsYWJlbCIgZGF0YS1pZD0iZWRnZTMiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIC0xMC41KSI+PGc+PHJlY3QgY2xhc3M9ImJhY2tncm91bmQiIHN0eWxlPSIiIHg9Ii01OCIgeT0iMCIgd2lkdGg9IjExNiIgaGVpZ2h0PSIyMSIvPjx0ZXh0IHk9Ii0xMC4xIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBzdHlsZT0iIj48dHNwYW4gY2xhc3M9InRleHQtb3V0ZXItdHNwYW4gcm93IiB4PSIwIiB5PSItMC4xZW0iIGR5PSIxLjFlbSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PHRzcGFuIGZvbnQtc3R5bGU9Im5vcm1hbCIgY2xhc3M9InRleHQtaW5uZXItdHNwYW4iIGZvbnQtd2VpZ2h0PSJub3JtYWwiPuWkjeaguOeyvuehruS6pOS7mOeJqTwvdHNwYW4+PC90c3Bhbj48L3RleHQ+PC9nPjwvZz48L2c+PGcgY2xhc3M9ImVkZ2VMYWJlbCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDY3LjUyNTAwMDAwMDM3MjUzLCAzNDguNSkiPjxnIGNsYXNzPSJsYWJlbCIgZGF0YS1pZD0iZWRnZTQiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIC0xMC41KSI+PGc+PHJlY3QgY2xhc3M9ImJhY2tncm91bmQiIHN0eWxlPSIiIHg9Ii03NCIgeT0iMCIgd2lkdGg9IjE0OCIgaGVpZ2h0PSIyMSIvPjx0ZXh0IHk9Ii0xMC4xIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBzdHlsZT0iIj48dHNwYW4gY2xhc3M9InRleHQtb3V0ZXItdHNwYW4gcm93IiB4PSIwIiB5PSItMC4xZW0iIGR5PSIxLjFlbSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PHRzcGFuIGZvbnQtc3R5bGU9Im5vcm1hbCIgY2xhc3M9InRleHQtaW5uZXItdHNwYW4iIGZvbnQtd2VpZ2h0PSJub3JtYWwiPuWujOaIkOaVsOaNruWuieijheWGjeWPkeW4gzwvdHNwYW4+PC90c3Bhbj48L3RleHQ+PC9nPjwvZz48L2c+PGcgY2xhc3M9ImVkZ2VMYWJlbCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzAyLCAzNTEuNSkiPjxnIGNsYXNzPSJsYWJlbCIgZGF0YS1pZD0iZWRnZTUiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIC0xMC41KSI+PGc+PHJlY3QgY2xhc3M9ImJhY2tncm91bmQiIHN0eWxlPSIiIHg9Ii05OCIgeT0iMCIgd2lkdGg9IjE5NiIgaGVpZ2h0PSIyMSIvPjx0ZXh0IHk9Ii0xMC4xIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBzdHlsZT0iIj48dHNwYW4gY2xhc3M9InRleHQtb3V0ZXItdHNwYW4gcm93IiB4PSIwIiB5PSItMC4xZW0iIGR5PSIxLjFlbSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PHRzcGFuIGZvbnQtc3R5bGU9Im5vcm1hbCIgY2xhc3M9InRleHQtaW5uZXItdHNwYW4iIGZvbnQtd2VpZ2h0PSJub3JtYWwiPuWGsueqgeaIluWuieijheWksei0pe+8jOS/neeVmeWAmemAiTwvdHNwYW4+PC90c3Bhbj48L3RleHQ+PC9nPjwvZz48L2c+PGcgY2xhc3M9ImVkZ2VMYWJlbCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzgyLjUsIDQ1Mi41KSI+PGcgY2xhc3M9ImxhYmVsIiBkYXRhLWlkPSJlZGdlNiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgLTEwLjUpIj48Zz48cmVjdCBjbGFzcz0iYmFja2dyb3VuZCIgc3R5bGU9IiIgeD0iLTM0IiB5PSIwIiB3aWR0aD0iNjgiIGhlaWdodD0iMjEiLz48dGV4dCB5PSItMTAuMSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgc3R5bGU9IiI+PHRzcGFuIGNsYXNzPSJ0ZXh0LW91dGVyLXRzcGFuIHJvdyIgeD0iMCIgeT0iLTAuMWVtIiBkeT0iMS4xZW0iIHRleHQtYW5jaG9yPSJtaWRkbGUiPjx0c3BhbiBmb250LXN0eWxlPSJub3JtYWwiIGNsYXNzPSJ0ZXh0LWlubmVyLXRzcGFuIiBmb250LXdlaWdodD0ibm9ybWFsIj7mmL7lvI/lkK/nlKg8L3RzcGFuPjwvdHNwYW4+PC90ZXh0PjwvZz48L2c+PC9nPjxnIGNsYXNzPSJlZGdlTGFiZWwiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQyMC41MjUwMDAwMDAzNzI1MywgNTU2LjUpIj48ZyBjbGFzcz0ibGFiZWwiIGRhdGEtaWQ9ImVkZ2U3IiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLCAtMTAuNSkiPjxnPjxyZWN0IGNsYXNzPSJiYWNrZ3JvdW5kIiBzdHlsZT0iIiB4PSItNjYiIHk9IjAiIHdpZHRoPSIxMzIiIGhlaWdodD0iMjEiLz48dGV4dCB5PSItMTAuMSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgc3R5bGU9IiI+PHRzcGFuIGNsYXNzPSJ0ZXh0LW91dGVyLXRzcGFuIHJvdyIgeD0iMCIgeT0iLTAuMWVtIiBkeT0iMS4xZW0iIHRleHQtYW5jaG9yPSJtaWRkbGUiPjx0c3BhbiBmb250LXN0eWxlPSJub3JtYWwiIGNsYXNzPSJ0ZXh0LWlubmVyLXRzcGFuIiBmb250LXdlaWdodD0ibm9ybWFsIj7mjojkuojmjIflrprnu4Tku7bog73lips8L3RzcGFuPjwvdHNwYW4+PC90ZXh0PjwvZz48L2c+PC9nPjxnIGNsYXNzPSJlZGdlTGFiZWwiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDUyMy41MjUwMDAwMDAzNzI1LCA2NjMuNSkiPjxnIGNsYXNzPSJsYWJlbCIgZGF0YS1pZD0iZWRnZTgiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIC0xMC41KSI+PGc+PHJlY3QgY2xhc3M9ImJhY2tncm91bmQiIHN0eWxlPSIiIHg9Ii03NCIgeT0iMCIgd2lkdGg9IjE0OCIgaGVpZ2h0PSIyMSIvPjx0ZXh0IHk9Ii0xMC4xIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBzdHlsZT0iIj48dHNwYW4gY2xhc3M9InRleHQtb3V0ZXItdHNwYW4gcm93IiB4PSIwIiB5PSItMC4xZW0iIGR5PSIxLjFlbSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PHRzcGFuIGZvbnQtc3R5bGU9Im5vcm1hbCIgY2xhc3M9InRleHQtaW5uZXItdHNwYW4iIGZvbnQtd2VpZ2h0PSJub3JtYWwiPuWPl+aOp+iwg+eUqOaIluWinuWKoOaOiOadgzwvdHNwYW4+PC90c3Bhbj48L3RleHQ+PC9nPjwvZz48L2c+PGcgY2xhc3M9ImVkZ2VMYWJlbCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNTU2LjUyNTAwMDAwMDM3MjUsIDU1Ni41KSI+PGcgY2xhc3M9ImxhYmVsIiBkYXRhLWlkPSJlZGdlOSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgLTEwLjUpIj48Zz48cmVjdCBjbGFzcz0iYmFja2dyb3VuZCIgc3R5bGU9IiIgeD0iLTUwIiB5PSIwIiB3aWR0aD0iMTAwIiBoZWlnaHQ9IjIxIi8+PHRleHQgeT0iLTEwLjEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIHN0eWxlPSIiPjx0c3BhbiBjbGFzcz0idGV4dC1vdXRlci10c3BhbiByb3ciIHg9IjAiIHk9Ii0wLjFlbSIgZHk9IjEuMWVtIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj48dHNwYW4gZm9udC1zdHlsZT0ibm9ybWFsIiBjbGFzcz0idGV4dC1pbm5lci10c3BhbiIgZm9udC13ZWlnaHQ9Im5vcm1hbCI+5pKk6ZSA5YWo6YOo6IO95YqbPC90c3Bhbj48L3RzcGFuPjwvdGV4dD48L2c+PC9nPjwvZz48ZyBjbGFzcz0iZWRnZUxhYmVsIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSg1MDQuNTI1MDAwMDAwMzcyNTMsIDQ1Mi41KSI+PGcgY2xhc3M9ImxhYmVsIiBkYXRhLWlkPSJlZGdlMTAiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIC0xMC41KSI+PGc+PHJlY3QgY2xhc3M9ImJhY2tncm91bmQiIHN0eWxlPSIiIHg9Ii0xOCIgeT0iMCIgd2lkdGg9IjM2IiBoZWlnaHQ9IjIxIi8+PHRleHQgeT0iLTEwLjEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIHN0eWxlPSIiPjx0c3BhbiBjbGFzcz0idGV4dC1vdXRlci10c3BhbiByb3ciIHg9IjAiIHk9Ii0wLjFlbSIgZHk9IjEuMWVtIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj48dHNwYW4gZm9udC1zdHlsZT0ibm9ybWFsIiBjbGFzcz0idGV4dC1pbm5lci10c3BhbiIgZm9udC13ZWlnaHQ9Im5vcm1hbCI+56aB55SoPC90c3Bhbj48L3RzcGFuPjwvdGV4dD48L2c+PC9nPjwvZz48ZyBjbGFzcz0iZWRnZUxhYmVsIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2MjYuNTI1MDAwMDAwMzcyNSwgNTA0LjUpIj48ZyBjbGFzcz0ibGFiZWwiIGRhdGEtaWQ9ImVkZ2UxMSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgLTEwLjUpIj48Zz48cmVjdCBjbGFzcz0iYmFja2dyb3VuZCIgc3R5bGU9IiIgeD0iLTc0IiB5PSIwIiB3aWR0aD0iMTQ4IiBoZWlnaHQ9IjIxIi8+PHRleHQgeT0iLTEwLjEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIHN0eWxlPSIiPjx0c3BhbiBjbGFzcz0idGV4dC1vdXRlci10c3BhbiByb3ciIHg9IjAiIHk9Ii0wLjFlbSIgZHk9IjEuMWVtIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj48dHNwYW4gZm9udC1zdHlsZT0ibm9ybWFsIiBjbGFzcz0idGV4dC1pbm5lci10c3BhbiIgZm9udC13ZWlnaHQ9Im5vcm1hbCI+56aB55So5oiW6KKr5paw54mI5pys5pu/5o2iPC90c3Bhbj48L3RzcGFuPjwvdGV4dD48L2c+PC9nPjwvZz48ZyBjbGFzcz0iZWRnZUxhYmVsIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2NiwgNTU2LjUpIj48ZyBjbGFzcz0ibGFiZWwiIGRhdGEtaWQ9ImVkZ2UxMiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgLTEwLjUpIj48Zz48cmVjdCBjbGFzcz0iYmFja2dyb3VuZCIgc3R5bGU9IiIgeD0iLTU4IiB5PSIwIiB3aWR0aD0iMTE2IiBoZWlnaHQ9IjIxIi8+PHRleHQgeT0iLTEwLjEiIHRleHQtYW5jaG9yPSJtaWRkbGUiIHN0eWxlPSIiPjx0c3BhbiBjbGFzcz0idGV4dC1vdXRlci10c3BhbiByb3ciIHg9IjAiIHk9Ii0wLjFlbSIgZHk9IjEuMWVtIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj48dHNwYW4gZm9udC1zdHlsZT0ibm9ybWFsIiBjbGFzcz0idGV4dC1pbm5lci10c3BhbiIgZm9udC13ZWlnaHQ9Im5vcm1hbCI+5a6M5pW05oCn5qOA5p+l5aSx6LSlPC90c3Bhbj48L3RzcGFuPjwvdGV4dD48L2c+PC9nPjwvZz48ZyBjbGFzcz0iZWRnZUxhYmVsIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxOTAsIDYwOC41KSI+PGcgY2xhc3M9ImxhYmVsIiBkYXRhLWlkPSJlZGdlMTMiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIC0xMC41KSI+PGc+PHJlY3QgY2xhc3M9ImJhY2tncm91bmQiIHN0eWxlPSIiIHg9Ii01OCIgeT0iMCIgd2lkdGg9IjExNiIgaGVpZ2h0PSIyMSIvPjx0ZXh0IHk9Ii0xMC4xIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBzdHlsZT0iIj48dHNwYW4gY2xhc3M9InRleHQtb3V0ZXItdHNwYW4gcm93IiB4PSIwIiB5PSItMC4xZW0iIGR5PSIxLjFlbSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PHRzcGFuIGZvbnQtc3R5bGU9Im5vcm1hbCIgY2xhc3M9InRleHQtaW5uZXItdHNwYW4iIGZvbnQtd2VpZ2h0PSJub3JtYWwiPuWujOaVtOaAp+ajgOafpeWksei0pTwvdHNwYW4+PC90c3Bhbj48L3RleHQ+PC9nPjwvZz48L2c+PGcgY2xhc3M9ImVkZ2VMYWJlbCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjc2LjUsIDY2MC41KSI+PGcgY2xhc3M9ImxhYmVsIiBkYXRhLWlkPSJlZGdlMTQiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDAsIC0xMC41KSI+PGc+PHJlY3QgY2xhc3M9ImJhY2tncm91bmQiIHN0eWxlPSIiIHg9Ii01OCIgeT0iMCIgd2lkdGg9IjExNiIgaGVpZ2h0PSIyMSIvPjx0ZXh0IHk9Ii0xMC4xIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBzdHlsZT0iIj48dHNwYW4gY2xhc3M9InRleHQtb3V0ZXItdHNwYW4gcm93IiB4PSIwIiB5PSItMC4xZW0iIGR5PSIxLjFlbSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+PHRzcGFuIGZvbnQtc3R5bGU9Im5vcm1hbCIgY2xhc3M9InRleHQtaW5uZXItdHNwYW4iIGZvbnQtd2VpZ2h0PSJub3JtYWwiPuWujOaVtOaAp+ajgOafpeWksei0pTwvdHNwYW4+PC90c3Bhbj48L3RleHQ+PC9nPjwvZz48L2c+PC9nPjxnIGNsYXNzPSJub2RlcyI+PGcgY2xhc3M9Im5vZGUgIHN0YXRlZGlhZ3JhbS1zdGF0ZSIgaWQ9Im15LXN2Zy1zdGF0ZS1kaXNjb3ZlcmVkLTIiIGRhdGEtbG9vaz0iY2xhc3NpYyIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzk5LCA4OC41KSI+PHJlY3QgY2xhc3M9ImJhc2ljIGxhYmVsLWNvbnRhaW5lciIgc3R5bGU9IiIgcng9IjUiIHJ5PSI1IiB4PSItNzIiIHk9Ii0xNi41IiB3aWR0aD0iMTQ0IiBoZWlnaHQ9IjMzIi8+PGcgY2xhc3M9ImxhYmVsIiBzdHlsZT0iIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgtNjQsIC04LjUpIj48cmVjdC8+PGc+PHJlY3QgY2xhc3M9ImJhY2tncm91bmQiIHN0eWxlPSJzdHJva2U6IG5vbmUiLz48dGV4dCB5PSItMTAuMSIgc3R5bGU9IiI+PHRzcGFuIGNsYXNzPSJ0ZXh0LW91dGVyLXRzcGFuIHJvdyIgeD0iMCIgeT0iLTAuMWVtIiBkeT0iMS4xZW0iPjx0c3BhbiBmb250LXN0eWxlPSJub3JtYWwiIGNsYXNzPSJ0ZXh0LWlubmVyLXRzcGFuIiBmb250LXdlaWdodD0ibm9ybWFsIj7lj5HnjrDvvJrku4XorrDlvZXlgJnpgIk8L3RzcGFuPjwvdHNwYW4+PC90ZXh0PjwvZz48L2c+PC9nPjxnIGNsYXNzPSJub2RlICBzdGF0ZWRpYWdyYW0tc3RhdGUiIGlkPSJteS1zdmctc3RhdGUtY2hlY2tlZC0zIiBkYXRhLWxvb2s9ImNsYXNzaWMiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMwMiwgMTkyLjUpIj48cmVjdCBjbGFzcz0iYmFzaWMgbGFiZWwtY29udGFpbmVyIiBzdHlsZT0iIiByeD0iNSIgcnk9IjUiIHg9Ii05NiIgeT0iLTE2LjUiIHdpZHRoPSIxOTIiIGhlaWdodD0iMzMiLz48ZyBjbGFzcz0ibGFiZWwiIHN0eWxlPSIiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC04OCwgLTguNSkiPjxyZWN0Lz48Zz48cmVjdCBjbGFzcz0iYmFja2dyb3VuZCIgc3R5bGU9InN0cm9rZTogbm9uZSIvPjx0ZXh0IHk9Ii0xMC4xIiBzdHlsZT0iIj48dHNwYW4gY2xhc3M9InRleHQtb3V0ZXItdHNwYW4gcm93IiB4PSIwIiB5PSItMC4xZW0iIGR5PSIxLjFlbSI+PHRzcGFuIGZvbnQtc3R5bGU9Im5vcm1hbCIgY2xhc3M9InRleHQtaW5uZXItdHNwYW4iIGZvbnQtd2VpZ2h0PSJub3JtYWwiPuWGheWuueS4juadpea6kOe7keWumuajgOafpemAmui/hzwvdHNwYW4+PC90c3Bhbj48L3RleHQ+PC9nPjwvZz48L2c+PGcgY2xhc3M9Im5vZGUgIHN0YXRlZGlhZ3JhbS1zdGF0ZSIgaWQ9Im15LXN2Zy1zdGF0ZS1yZXZpZXdlZC01IiBkYXRhLWxvb2s9ImNsYXNzaWMiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDMwMiwgMjk2LjUpIj48cmVjdCBjbGFzcz0iYmFzaWMgbGFiZWwtY29udGFpbmVyIiBzdHlsZT0iIiByeD0iNSIgcnk9IjUiIHg9Ii01NiIgeT0iLTE2LjUiIHdpZHRoPSIxMTIiIGhlaWdodD0iMzMiLz48ZyBjbGFzcz0ibGFiZWwiIHN0eWxlPSIiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC00OCwgLTguNSkiPjxyZWN0Lz48Zz48cmVjdCBjbGFzcz0iYmFja2dyb3VuZCIgc3R5bGU9InN0cm9rZTogbm9uZSIvPjx0ZXh0IHk9Ii0xMC4xIiBzdHlsZT0iIj48dHNwYW4gY2xhc3M9InRleHQtb3V0ZXItdHNwYW4gcm93IiB4PSIwIiB5PSItMC4xZW0iIGR5PSIxLjFlbSI+PHRzcGFuIGZvbnQtc3R5bGU9Im5vcm1hbCIgY2xhc3M9InRleHQtaW5uZXItdHNwYW4iIGZvbnQtd2VpZ2h0PSJub3JtYWwiPuivpeaRmOimgeW3suWkjeaguDwvdHNwYW4+PC90c3Bhbj48L3RleHQ+PC9nPjwvZz48L2c+PGcgY2xhc3M9Im5vZGUgIHN0YXRlZGlhZ3JhbS1zdGF0ZSIgaWQ9Im15LXN2Zy1zdGF0ZS1pbnN0YWxsZWRfZGlzYWJsZWQtMTIiIGRhdGEtbG9vaz0iY2xhc3NpYyIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDY3LjUyNTAwMDAwMDM3MjUzLCA0MDAuNSkiPjxyZWN0IGNsYXNzPSJiYXNpYyBsYWJlbC1jb250YWluZXIiIHN0eWxlPSIiIHJ4PSI1IiByeT0iNSIgeD0iLTcyIiB5PSItMTYuNSIgd2lkdGg9IjE0NCIgaGVpZ2h0PSIzMyIvPjxnIGNsYXNzPSJsYWJlbCIgc3R5bGU9IiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTY0LCAtOC41KSI+PHJlY3QvPjxnPjxyZWN0IGNsYXNzPSJiYWNrZ3JvdW5kIiBzdHlsZT0ic3Ryb2tlOiBub25lIi8+PHRleHQgeT0iLTEwLjEiIHN0eWxlPSIiPjx0c3BhbiBjbGFzcz0idGV4dC1vdXRlci10c3BhbiByb3ciIHg9IjAiIHk9Ii0wLjFlbSIgZHk9IjEuMWVtIj48dHNwYW4gZm9udC1zdHlsZT0ibm9ybWFsIiBjbGFzcz0idGV4dC1pbm5lci10c3BhbiIgZm9udC13ZWlnaHQ9Im5vcm1hbCI+5pWw5o2u5bey5a6J6KOF77yM56aB55SoPC90c3Bhbj48L3RzcGFuPjwvdGV4dD48L2c+PC9nPjwvZz48ZyBjbGFzcz0ibm9kZSAgc3RhdGVkaWFncmFtLXN0YXRlIiBpZD0ibXktc3ZnLXN0YXRlLWVuYWJsZWQtMTMiIGRhdGEtbG9vaz0iY2xhc3NpYyIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDIwLjUyNTAwMDAwMDM3MjUzLCA1MDQuNSkiPjxyZWN0IGNsYXNzPSJiYXNpYyBsYWJlbC1jb250YWluZXIiIHN0eWxlPSIiIHJ4PSI1IiByeT0iNSIgeD0iLTgwIiB5PSItMTYuNSIgd2lkdGg9IjE2MCIgaGVpZ2h0PSIzMyIvPjxnIGNsYXNzPSJsYWJlbCIgc3R5bGU9IiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTcyLCAtOC41KSI+PHJlY3QvPjxnPjxyZWN0IGNsYXNzPSJiYWNrZ3JvdW5kIiBzdHlsZT0ic3Ryb2tlOiBub25lIi8+PHRleHQgeT0iLTEwLjEiIHN0eWxlPSIiPjx0c3BhbiBjbGFzcz0idGV4dC1vdXRlci10c3BhbiByb3ciIHg9IjAiIHk9Ii0wLjFlbSIgZHk9IjEuMWVtIj48dHNwYW4gZm9udC1zdHlsZT0ibm9ybWFsIiBjbGFzcz0idGV4dC1pbm5lci10c3BhbiIgZm9udC13ZWlnaHQ9Im5vcm1hbCI+5ZCv55So77yM5bCa5peg6IO95Yqb5o6I5p2DPC90c3Bhbj48L3RzcGFuPjwvdGV4dD48L2c+PC9nPjwvZz48ZyBjbGFzcz0ibm9kZSAgc3RhdGVkaWFncmFtLXN0YXRlIiBpZD0ibXktc3ZnLXN0YXRlLWF1dGhvcml6ZWQtMTQiIGRhdGEtbG9vaz0iY2xhc3NpYyIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNTIzLjUyNTAwMDAwMDM3MjUsIDYwOC41KSI+PHJlY3QgY2xhc3M9ImJhc2ljIGxhYmVsLWNvbnRhaW5lciIgc3R5bGU9IiIgcng9IjUiIHJ5PSI1IiB4PSItODAiIHk9Ii0xNi41IiB3aWR0aD0iMTYwIiBoZWlnaHQ9IjMzIi8+PGcgY2xhc3M9ImxhYmVsIiBzdHlsZT0iIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgtNzIsIC04LjUpIj48cmVjdC8+PGc+PHJlY3QgY2xhc3M9ImJhY2tncm91bmQiIHN0eWxlPSJzdHJva2U6IG5vbmUiLz48dGV4dCB5PSItMTAuMSIgc3R5bGU9IiI+PHRzcGFuIGNsYXNzPSJ0ZXh0LW91dGVyLXRzcGFuIHJvdyIgeD0iMCIgeT0iLTAuMWVtIiBkeT0iMS4xZW0iPjx0c3BhbiBmb250LXN0eWxlPSJub3JtYWwiIGNsYXNzPSJ0ZXh0LWlubmVyLXRzcGFuIiBmb250LXdlaWdodD0ibm9ybWFsIj7pg6jliIbmiJblhajpg6jog73lipvojrflh4Y8L3RzcGFuPjwvdHNwYW4+PC90ZXh0PjwvZz48L2c+PC9nPjxnIGNsYXNzPSJub2RlICBzdGF0ZWRpYWdyYW0tc3RhdGUiIGlkPSJteS1zdmctc3RhdGUtcmVqZWN0ZWQtMiIgZGF0YS1sb29rPSJjbGFzc2ljIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSg0OTYsIDE5Mi41KSI+PHJlY3QgY2xhc3M9ImJhc2ljIGxhYmVsLWNvbnRhaW5lciIgc3R5bGU9IiIgcng9IjUiIHJ5PSI1IiB4PSItNDgiIHk9Ii0xNi41IiB3aWR0aD0iOTYiIGhlaWdodD0iMzMiLz48ZyBjbGFzcz0ibGFiZWwiIHN0eWxlPSIiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC00MCwgLTguNSkiPjxyZWN0Lz48Zz48cmVjdCBjbGFzcz0iYmFja2dyb3VuZCIgc3R5bGU9InN0cm9rZTogbm9uZSIvPjx0ZXh0IHk9Ii0xMC4xIiBzdHlsZT0iIj48dHNwYW4gY2xhc3M9InRleHQtb3V0ZXItdHNwYW4gcm93IiB4PSIwIiB5PSItMC4xZW0iIGR5PSIxLjFlbSI+PHRzcGFuIGZvbnQtc3R5bGU9Im5vcm1hbCIgY2xhc3M9InRleHQtaW5uZXItdHNwYW4iIGZvbnQtd2VpZ2h0PSJub3JtYWwiPuWAmemAieiiq+aLkue7nTwvdHNwYW4+PC90c3Bhbj48L3RleHQ+PC9nPjwvZz48L2c+PGcgY2xhc3M9Im5vZGUgIHN0YXRlZGlhZ3JhbS1zdGF0ZSIgaWQ9Im15LXN2Zy1zdGF0ZS1xdWFyYW50aW5lZC0xNCIgZGF0YS1sb29rPSJjbGFzc2ljIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgxNDQsIDcxMi41KSI+PHJlY3QgY2xhc3M9ImJhc2ljIGxhYmVsLWNvbnRhaW5lciIgc3R5bGU9IiIgcng9IjUiIHJ5PSI1IiB4PSItNjQiIHk9Ii0xNi41IiB3aWR0aD0iMTI4IiBoZWlnaHQ9IjMzIi8+PGcgY2xhc3M9ImxhYmVsIiBzdHlsZT0iIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgtNTYsIC04LjUpIj48cmVjdC8+PGc+PHJlY3QgY2xhc3M9ImJhY2tncm91bmQiIHN0eWxlPSJzdHJva2U6IG5vbmUiLz48dGV4dCB5PSItMTAuMSIgc3R5bGU9IiI+PHRzcGFuIGNsYXNzPSJ0ZXh0LW91dGVyLXRzcGFuIHJvdyIgeD0iMCIgeT0iLTAuMWVtIiBkeT0iMS4xZW0iPjx0c3BhbiBmb250LXN0eWxlPSJub3JtYWwiIGNsYXNzPSJ0ZXh0LWlubmVyLXRzcGFuIiBmb250LXdlaWdodD0ibm9ybWFsIj7lhoXlrrnlj5jljJblkI7pmpTnprs8L3RzcGFuPjwvdHNwYW4+PC90ZXh0PjwvZz48L2c+PC9nPjxnIGNsYXNzPSJub2RlIGRlZmF1bHQiIGlkPSJteS1zdmctc3RhdGUtcm9vdF9zdGFydC0wIiBkYXRhLWxvb2s9ImNsYXNzaWMiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDM5OSwgMTUpIj48Y2lyY2xlIGNsYXNzPSJzdGF0ZS1zdGFydCIgcj0iNyIgd2lkdGg9IjE0IiBoZWlnaHQ9IjE0Ii8+PC9nPjxnIGNsYXNzPSJsYWJlbCBlZGdlTGFiZWwiIGlkPSJyZXZpZXdlZC0tLXJldmlld2VkLS0tMSIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTg0LCA0MDAuNSkiPjxyZWN0IHdpZHRoPSIwLjEiIGhlaWdodD0iMC4xIi8+PGcgY2xhc3M9ImxhYmVsIiBzdHlsZT0iIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLCAwKSI+PHJlY3QvPjxnPjxyZWN0IGNsYXNzPSJiYWNrZ3JvdW5kIiBzdHlsZT0ic3Ryb2tlOiBub25lIi8+PHRleHQgeT0iLTEwLjEiIHN0eWxlPSIiPjx0c3BhbiBjbGFzcz0idGV4dC1vdXRlci10c3BhbiByb3ciIHg9IjAiIHk9Ii0wLjFlbSIgZHk9IjEuMWVtIi8+PC90ZXh0PjwvZz48L2c+PC9nPjxnIGNsYXNzPSJsYWJlbCBlZGdlTGFiZWwiIGlkPSJyZXZpZXdlZC0tLXJldmlld2VkLS0tMiIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjQyLjUyNTAwMDAwMDM3MjUzLCA1MDQuNSkiPjxyZWN0IHdpZHRoPSIwLjEiIGhlaWdodD0iMC4xIi8+PGcgY2xhc3M9ImxhYmVsIiBzdHlsZT0iIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLCAwKSI+PHJlY3QvPjxnPjxyZWN0IGNsYXNzPSJiYWNrZ3JvdW5kIiBzdHlsZT0ic3Ryb2tlOiBub25lIi8+PHRleHQgeT0iLTEwLjEiIHN0eWxlPSIiPjx0c3BhbiBjbGFzcz0idGV4dC1vdXRlci10c3BhbiByb3ciIHg9IjAiIHk9Ii0wLjFlbSIgZHk9IjEuMWVtIi8+PC90ZXh0PjwvZz48L2c+PC9nPjxnIGNsYXNzPSJsYWJlbCBlZGdlTGFiZWwiIGlkPSJhdXRob3JpemVkLS0tYXV0aG9yaXplZC0tLTEiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDUyMy41MjUwMDAwMDAzNzI1LCA3MTIuNSkiPjxyZWN0IHdpZHRoPSIwLjEiIGhlaWdodD0iMC4xIi8+PGcgY2xhc3M9ImxhYmVsIiBzdHlsZT0iIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLCAwKSI+PHJlY3QvPjxnPjxyZWN0IGNsYXNzPSJiYWNrZ3JvdW5kIiBzdHlsZT0ic3Ryb2tlOiBub25lIi8+PHRleHQgeT0iLTEwLjEiIHN0eWxlPSIiPjx0c3BhbiBjbGFzcz0idGV4dC1vdXRlci10c3BhbiByb3ciIHg9IjAiIHk9Ii0wLjFlbSIgZHk9IjEuMWVtIi8+PC90ZXh0PjwvZz48L2c+PC9nPjxnIGNsYXNzPSJsYWJlbCBlZGdlTGFiZWwiIGlkPSJhdXRob3JpemVkLS0tYXV0aG9yaXplZC0tLTIiIHRyYW5zZm9ybT0idHJhbnNsYXRlKDU3MC41MjUwMDAwMDAzNzI1LCA4MDAuMDUwMDAwMDAwNzQ1MSkiPjxyZWN0IHdpZHRoPSIwLjEiIGhlaWdodD0iMC4xIi8+PGcgY2xhc3M9ImxhYmVsIiBzdHlsZT0iIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgwLCAwKSI+PHJlY3QvPjxnPjxyZWN0IGNsYXNzPSJiYWNrZ3JvdW5kIiBzdHlsZT0ic3Ryb2tlOiBub25lIi8+PHRleHQgeT0iLTEwLjEiIHN0eWxlPSIiPjx0c3BhbiBjbGFzcz0idGV4dC1vdXRlci10c3BhbiByb3ciIHg9IjAiIHk9Ii0wLjFlbSIgZHk9IjEuMWVtIi8+PC90ZXh0PjwvZz48L2c+PC9nPjwvZz48L2c+PC9nPjxkZWZzPjxmaWx0ZXIgaWQ9Im15LXN2Zy1kcm9wLXNoYWRvdyIgaGVpZ2h0PSIxMzAlIiB3aWR0aD0iMTMwJSI+PGZlRHJvcFNoYWRvdyBkeD0iNCIgZHk9IjQiIHN0ZERldmlhdGlvbj0iMCIgZmxvb2Qtb3BhY2l0eT0iMC4wNiIgZmxvb2QtY29sb3I9IiMwMDAwMDAiLz48L2ZpbHRlcj48L2RlZnM+PGRlZnM+PGZpbHRlciBpZD0ibXktc3ZnLWRyb3Atc2hhZG93LXNtYWxsIiBoZWlnaHQ9IjE1MCUiIHdpZHRoPSIxNTAlIj48ZmVEcm9wU2hhZG93IGR4PSIyIiBkeT0iMiIgc3RkRGV2aWF0aW9uPSIwIiBmbG9vZC1vcGFjaXR5PSIwLjA2IiBmbG9vZC1jb2xvcj0iIzAwMDAwMCIvPjwvZmlsdGVyPjwvZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9Im15LXN2Zy1ncmFkaWVudCIgZ3JhZGllbnRVbml0cz0ib2JqZWN0Qm91bmRpbmdCb3giIHgxPSIwJSIgeTE9IjAlIiB4Mj0iMTAwJSIgeTI9IjAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjOWFhZWU5IiBzdG9wLW9wYWNpdHk9IjEiLz48c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9ImhzbCgxMDYuMzYzNjM2MzYzNiwgNjAlLCA4NS42ODYyNzQ1MDk4JSkiIHN0b3Atb3BhY2l0eT0iMSIvPjwvbGluZWFyR3JhZGllbnQ+PC9zdmc+" alt="原文流程图" loading="lazy" width="708.525" height="808.15"><span class="media-trigger-label">放大查看流程图 ↗</span></button></figure>
+<p>升级包以新的 candidate 从 <code>discovered</code> 开始，不复用旧版本的 review/grant。教学模型在新数据安装成功后停用旧版本、清空旧授权，新版本进入 <code>installed_disabled</code>；新安装失败则保留旧版本。禁用与撤销只限制后续调度，已经运行的 Hook、子进程或远端 MCP 请求还需另行停止、收集和隔离迟到结果；它们不会因此自动回滚。</p>
+<p>组件的信任面也不同。Skill 文本可能在进入模型上下文时造成指令注入；Hook 可由事件自动触发本地副作用；本地 MCP 配置可能启动程序，远端 MCP 则引入独立服务身份、数据出口和更新边界。<strong>协议兼容、组件可见、组件受信任及某次调用获准需要分别表达。</strong></p>
+<h3 id="2-来源路径与名称都必须绑定实际内容">2. 来源、路径与名称都必须绑定实际内容</h3>
+<p>源码固定到 commit SHA 有助于复查，但 tag/branch 可以移动，Git SHA 也未必包含打包过程下载的依赖、构建产物或远端 MCP 实现。还应记录实际归档 digest、依赖锁定版本及内容摘要，必要时核对构建 provenance、发布签名和受信根。hash 与包从同一不可信入口一起到达，只能提供一致性线索，不能自证发布者身份；签名验证也不等于代码无恶意。</p>
+<p>解包前同时检查归档成员路径和 manifest 中的组件路径：拒绝绝对路径、父目录穿越、平台分隔符歧义、链接/特殊文件、重复或规范化后冲突的名称，并约束展开大小和成员数。只检查一个相对路径字符串再拼接不够，安装根及父目录是否为链接、是否存在并发写入者、写入是否覆盖已受信文件也要考虑。最好先完整预检，再写到新建的受控暂存目录，成功后发布；失败不要留下“部分安装却已启用”的状态。</p>
+<p>插件身份应包括发布者和来源，而不是只有显示名。短名或规范化工具名发生冲突时，应拒绝含糊绑定或要求显式选择完整身份，不应让“后扫描的目录”“项目里同名文件”自动覆盖已安装的可信来源。名称尾部加短 hash 可以降低碰撞概率，但不是绝对无碰撞证明，也不能替代来源与权限绑定。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>分发/运行方案</th>
+<th>适用条件与收益</th>
+<th>代价及不适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>受管目录、固定交付物及集中复核</td>
+<td>组织需要可追踪来源和可重现部署，插件集合相对稳定；可集中检查依赖、签名及能力变化</td>
+<td>更新慢、维护成本较高。不能因为目录受管就免除运行期最小权限，也不能覆盖目录外的动态依赖</td>
+</tr>
+<tr>
+<td>开放发现、隔离预检、按版本/能力授权</td>
+<td>需要较广生态和频繁迭代；允许先看元数据，再审查候选并逐项开放能力</td>
+<td>命名、隔离、差异审查和撤销更复杂。若安装脚本或加载回调能绕过授权直接执行，就不宜承诺安全开放安装</td>
+</tr>
+</tbody>
+</table></div>
+<p>两个方案都要考虑更新 freshness 与回滚：旧版本有有效摘要或签名，并不意味着今天仍允许重新安装。正常回滚可以是显式审批流程，不能与攻击者重放旧版本混为一谈。本文示例默认拒绝不递增的 release 计数，这是教学策略，不是完整 TUF 客户端。</p>
+<h3 id="3-含-skillhookmcp-的威胁表与真实反例">3. 含 Skill、Hook、MCP 的威胁表与真实反例</h3>
+<p>原创包名为 <code>demo-publisher/notes</code>，origin是虚构的 <code>https://publisher.example.test/notes.git</code>；<code>111…111</code> 是40位教学标记，<strong>不是实际Git对象</strong>。包只含自制的 <code>manifest.json</code>、<code>skills/demo.md</code>、<code>hooks/audit.mock</code>、<code>mcp/report.mock</code> 和 <code>deps/helper.mock</code>。所有文件都是数据，不执行任何插件代码。</p>
+<p>manifest绑定身份和组件入口，依赖声明包含精确版本与内容SHA256。模型中的受信 <code>Pin</code> 由测试显式提供；它模拟独立取得的期望身份和归档摘要，不实现签名认证。随后 <code>record_mock_review</code> 模拟记录针对该摘要的审核决定，不是对真实第三方插件的 review。</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>威胁/阶段</th>
+<th>判定与处置</th>
+<th>本例证据及剩余边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>市场条目冒用来源或移动引用</td>
+<td>候选publisher/origin/revision必须与受信Pin一致，实际归档摘要也要一致</td>
+<td>source_mismatch/archive_digest阻止进入checked；不证明虚构Pin背后有真实认证链</td>
+</tr>
+<tr>
+<td>归档或组件路径穿越</td>
+<td>在写入前检查全部成员、原始名称与组件入口；不静默“修复”为另一个路径</td>
+<td><code>../escape.mock</code>、绝对路径、反斜杠、NUL别名、链接/特殊成员、文件/目录冲突被拒，数据目录无新增写入</td>
+</tr>
+<tr>
+<td>同名抢占与并发安装</td>
+<td>比较完整来源身份；短名冲突不隐式覆盖，名称检查与发布在同一临界区</td>
+<td>other发布者的notes不能覆盖现有notes；并发安装只有一个名称占用成功，另一方name_collision</td>
+</tr>
+<tr>
+<td>Skill指令注入 / Hook自动执行 / MCP越权</td>
+<td>安装不执行组件，启用后仍逐组件grant；运行入口再查当前版本、授权和完整性</td>
+<td>未grant前mock动作数为0；只授予skill不能调用hook。没有实际模型、回调进程或MCP连接，不能据此宣称防住注入或实现沙箱</td>
+</tr>
+<tr>
+<td>安装后依赖更新、原版本内容被替换</td>
+<td>依赖版本与摘要属于交付物；变化导致旧review不覆盖，安装后内容变化则隔离并撤销grant</td>
+<td>仅改helper内容/版本、保持原revision时旧Pin失败；安装后改helper触发quarantined，没有新增mock调用</td>
+</tr>
+<tr>
+<td>更新投毒、降级重放、旧授权迁移</td>
+<td>新候选独立复核；成功升级停用旧版本，新版默认无grant；默认拒绝不递增release</td>
+<td>旧handle不能调用新版，新版启用后仍需新grant；旧/同release重建被拒。不验证真实签名到期、撤销服务或跨进程更新</td>
+</tr>
+<tr>
+<td>解包资源耗尽、安装中途失败</td>
+<td>限制压缩/展开大小和文件数；写入完成再发布，失败清理本次新目录</td>
+<td>过大归档及展开量被拒；模拟OSError后新暂存目录删除，旧版本仍可使用。断电与崩溃恢复不在本次测试中</td>
+</tr>
+</tbody>
+</table></div>
+<p>正常路径实测为 <code>discovered → checked → reviewed → installed_disabled → enabled → authorized → enabled → installed_disabled</code>。授权前没有组件动作；显式授予三类能力后，只记录 <code>skill.context</code>、<code>hook.observe</code>、<code>mcp.report.read</code> 三条mock动作，撤销后grant为空。这里的能力名仅表示本例的固定适配器，不证明真实工具具有只读属性；实际工具还需检查参数、目标、网络、文件及业务权限。</p>
+<p>依赖变化不能只看插件自己的SHA。未锁定的package范围、安装时拉取的脚本、子模块、容器标签或同URL的远端MCP服务都可能改变实际执行内容。升级复核应查看代码/组件、依赖闭包、权限、外部端点与数据访问差异；变更超过旧批准范围时重新授权，而非继承一个按名称保存的“永久信任”。</p>
+<h3 id="4-可运行-fixture-与验证范围">4. 可运行 fixture 与验证范围</h3>
+<p>本例先把归档完整读入受限内存结构，检查所有成员和manifest，再向<strong>新建的私有测试目录</strong>逐个写普通文件，不调用 <code>extractall</code> 或任何安装器。归档上限32768 bytes，单文件展开上限4096 bytes，总展开量16384 bytes，最多12成员，压缩比上限100；这些只是教学限制。ZIP时间戳固定，便于复跑比较交付物摘要。</p>
+<p>它采用严格ASCII小写路径子集，拒绝目录条目、绝对路径、特殊文件、未声明文件和不精确的依赖版本；真实产品可以支持更多格式，但需要相应验证，不能把简化模型当完整跨平台解包器。Manager API用同一把锁协调状态、名称发布与mock调用；同进程外部代码仍可能直接改对象或文件，不能把Python私有字段、一次路径检查或该锁当成OS隔离/TOCTOU证明。</p>
+<details>
+<summary>保存为 plugin_fixture.py：仅自制归档、数据复制和 mock 动作</summary>
+<p>使用Python3.11.8运行 <code>python3 plugin_fixture.py</code>。脚本只在自身目录下建立 <code>yao390-owned-*</code> 专属临时根，结束后删除；不创建真实插件注册配置，不启动Hook/MCP或执行Skill/依赖内容。示例中的启用和审核都是模型状态，并非宿主插件操作。</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python"># file: plugin_fixture.py
+&quot;&quot;&quot;Original toy plugin lifecycle. Writes only data in an owned test root; never loads code.&quot;&quot;&quot;
+from copy import deepcopy
+from dataclasses import asdict,dataclass
+from functools import wraps
+from io import BytesIO
+from pathlib import Path,PurePosixPath
+import hashlib,json,re,shutil,stat,tempfile,threading,zipfile
+
+ROOT=Path(__file__).resolve().parent
+CAPS={&#x27;skill&#x27;:&#x27;skill.context&#x27;,&#x27;hook&#x27;:&#x27;hook.observe&#x27;,&#x27;mcp&#x27;:&#x27;mcp.report.read&#x27;}
+MAX_ARCHIVE=32768;MAX_FILE=4096;MAX_TOTAL=16384;MAX_MEMBERS=12
+
+
+class Rejected(ValueError):pass
+def sha(data):return hashlib.sha256(data).hexdigest()
+
+
+def serialized(method):
+    @wraps(method)
+    def call(self,*args,**kwargs):
+        with self._lock:return method(self,*args,**kwargs)
+    return call
+
+
+@dataclass(frozen=True)
+class Claim:
+    publisher: str=&#x27;demo-publisher&#x27;
+    name: str=&#x27;notes&#x27;
+    origin: str=&#x27;https://publisher.example.test/notes.git&#x27;
+    revision: str=&#x27;1&#x27;*40  # fictional SHA-shaped marker, not an actual Git object
+    release: int=1
+
+
+@dataclass(frozen=True)
+class Pin:
+    claim: Claim
+    archive_sha256: str
+
+
+def safe_name(name):
+    if type(name) is not str or not name or len(name)&gt;128:raise Rejected(&#x27;path_not_canonical&#x27;)
+    parts=name.split(&#x27;/&#x27;)
+    reserved={&#x27;con&#x27;,&#x27;prn&#x27;,&#x27;aux&#x27;,&#x27;nul&#x27;}|{f&#x27;{p}{i}&#x27; for p in (&#x27;com&#x27;,&#x27;lpt&#x27;) for i in range(1,10)}
+    if any(not re.fullmatch(&#x27;[a-z0-9][a-z0-9_.-]*&#x27;,p) or p.endswith(&#x27;.&#x27;) or
+           p.split(&#x27;.&#x27;)[0] in reserved for p in parts):raise Rejected(&#x27;path_not_canonical&#x27;)
+    return name
+
+
+def parse_json(data):
+    def unique(pairs):
+        out={}
+        for k,v in pairs:
+            if k in out:raise Rejected(&#x27;duplicate_json_key&#x27;)
+            out[k]=v
+        return out
+    def invalid(_):raise Rejected(&#x27;nonfinite_json&#x27;)
+    return json.loads(data.decode(&#x27;utf-8&#x27;),object_pairs_hook=unique,parse_constant=invalid)
+
+
+def inspect_bundle(blob,claim):
+    if len(blob)&gt;MAX_ARCHIVE:raise Rejected(&#x27;archive_limit&#x27;)
+    with zipfile.ZipFile(BytesIO(blob)) as z:
+        infos=z.infolist()
+        if not 0&lt;len(infos)&lt;=MAX_MEMBERS:raise Rejected(&#x27;member_limit&#x27;)
+        names=set();total=0
+        for info in infos:
+            name=safe_name(info.filename)
+            if info.orig_filename!=info.filename:raise Rejected(&#x27;path_not_canonical&#x27;)
+            if name in names:raise Rejected(&#x27;duplicate_path&#x27;)
+            names.add(name);total+=info.file_size
+            mode=stat.S_IFMT(info.external_attr&gt;&gt;16)
+            if info.is_dir() or mode not in (0,stat.S_IFREG):raise Rejected(&#x27;symlink_or_special&#x27;)
+            if info.flag_bits&amp;1 or info.compress_type not in (zipfile.ZIP_STORED,zipfile.ZIP_DEFLATED):
+                raise Rejected(&#x27;unsupported_archive_feature&#x27;)
+            if (info.file_size&gt;MAX_FILE or total&gt;MAX_TOTAL or
+                    info.file_size&gt;100*max(info.compress_size,1)):raise Rejected(&#x27;expanded_size_limit&#x27;)
+        if any(str(p) in names for name in names for p in PurePosixPath(name).parents if str(p)!=&#x27;.&#x27;):
+            raise Rejected(&#x27;file_directory_collision&#x27;)
+        files={}
+        for info in infos:
+            with z.open(info) as stream:data=stream.read(MAX_FILE+1)
+            if len(data)!=info.file_size or len(data)&gt;MAX_FILE:raise Rejected(&#x27;actual_size_mismatch&#x27;)
+            files[info.filename]=data
+    if &#x27;manifest.json&#x27; not in files:raise Rejected(&#x27;manifest_missing&#x27;)
+    manifest=parse_json(files[&#x27;manifest.json&#x27;])
+    if (type(manifest) is not dict or set(manifest)!={&#x27;identity&#x27;,&#x27;components&#x27;,&#x27;dependencies&#x27;} or
+            manifest[&#x27;identity&#x27;]!=asdict(claim)):raise Rejected(&#x27;manifest_identity_or_schema&#x27;)
+    components=manifest[&#x27;components&#x27;];deps=manifest[&#x27;dependencies&#x27;]
+    if type(components) is not dict or set(components)!=set(CAPS) or type(deps) is not list:
+        raise Rejected(&#x27;component_or_dependency_schema&#x27;)
+    expected={&#x27;manifest.json&#x27;};dep_names=set()
+    for kind,path in components.items():
+        safe_name(path)
+        prefix={&#x27;skill&#x27;:&#x27;skills/&#x27;,&#x27;hook&#x27;:&#x27;hooks/&#x27;,&#x27;mcp&#x27;:&#x27;mcp/&#x27;}[kind]
+        if not path.startswith(prefix) or path not in files:raise Rejected(&#x27;component_path&#x27;)
+        expected.add(path)
+    for dep in deps:
+        if type(dep) is not dict or set(dep)!={&#x27;name&#x27;,&#x27;version&#x27;,&#x27;path&#x27;,&#x27;sha256&#x27;}:raise Rejected(&#x27;dependency_schema&#x27;)
+        if (type(dep[&#x27;name&#x27;]) is not str or not re.fullmatch(&#x27;[a-z0-9][a-z0-9.-]*&#x27;,dep[&#x27;name&#x27;]) or
+                dep[&#x27;name&#x27;] in dep_names):raise Rejected(&#x27;dependency_identity&#x27;)
+        dep_names.add(dep[&#x27;name&#x27;])
+        if type(dep[&#x27;version&#x27;]) is not str or not re.fullmatch(r&#x27;[0-9]+\.[0-9]+\.[0-9]+&#x27;,dep[&#x27;version&#x27;]):
+            raise Rejected(&#x27;dependency_unpinned&#x27;)
+        path=safe_name(dep[&#x27;path&#x27;])
+        if not path.startswith(&#x27;deps/&#x27;) or path in expected or path not in files or sha(files[path])!=dep[&#x27;sha256&#x27;]:
+            raise Rejected(&#x27;dependency_digest&#x27;)
+        expected.add(path)
+    if set(files)!=expected:raise Rejected(&#x27;undeclared_file&#x27;)
+    return manifest,files
+
+
+class Pipeline:
+    def __init__(self,test_root):
+        root=Path(test_root)
+        if root.is_symlink() or not root.is_dir():raise Rejected(&#x27;owned_root_required&#x27;)
+        self.root=root.resolve();self._records={};self._current={};self.effects=[];self._lock=threading.RLock()
+    def _move(self,row,state):row[&#x27;state&#x27;]=state;row[&#x27;history&#x27;].append(state)
+    def _expect(self,handle,states):
+        row=self._records[handle]
+        if row[&#x27;state&#x27;] not in states:raise Rejected(&#x27;phase&#x27;)
+        return row
+    @serialized
+    def discover(self,claim,blob):
+        if (not isinstance(claim,Claim) or type(claim.release) is not int or claim.release&lt;1 or
+                any(type(v) is not str for v in (claim.publisher,claim.name,claim.origin,claim.revision)) or
+                not claim.origin.startswith(&#x27;https://&#x27;) or
+                not re.fullmatch(&#x27;[a-z0-9-]+&#x27;,claim.publisher) or not re.fullmatch(&#x27;[a-z0-9-]+&#x27;,claim.name) or
+                not re.fullmatch(&#x27;[0-9a-f]{40}&#x27;,claim.revision) or type(blob) is not bytes):
+            raise Rejected(&#x27;claim_schema&#x27;)
+        handle=f&#x27;candidate-{len(self._records)+1}&#x27;
+        self._records[handle]=dict(claim=claim,blob=blob,digest=sha(blob),state=&#x27;discovered&#x27;,
+                                   history=[&#x27;discovered&#x27;],grants=set(),reviewed=None,directory=None)
+        return handle
+    @serialized
+    def check(self,handle,pin):
+        row=self._expect(handle,{&#x27;discovered&#x27;})
+        try:
+            if not isinstance(pin,Pin) or pin.claim!=row[&#x27;claim&#x27;]:raise Rejected(&#x27;source_mismatch&#x27;)
+            if pin.archive_sha256!=row[&#x27;digest&#x27;]:raise Rejected(&#x27;archive_digest&#x27;)
+            manifest,files=inspect_bundle(row[&#x27;blob&#x27;],row[&#x27;claim&#x27;])
+        except Exception:
+            self._move(row,&#x27;rejected&#x27;);raise
+        row.update(manifest=manifest,files=files);self._move(row,&#x27;checked&#x27;)
+    @serialized
+    def record_mock_review(self,handle,exact_digest):
+        row=self._expect(handle,{&#x27;checked&#x27;})
+        if exact_digest!=row[&#x27;digest&#x27;]:raise Rejected(&#x27;review_digest&#x27;)
+        row[&#x27;reviewed&#x27;]=exact_digest;self._move(row,&#x27;reviewed&#x27;)
+    @serialized
+    def install_data(self,handle,fail_after=None):
+        row=self._expect(handle,{&#x27;reviewed&#x27;});claim=row[&#x27;claim&#x27;];old_handle=self._current.get(claim.name)
+        old=self._records[old_handle] if old_handle else None
+        if old:
+            previous=old[&#x27;claim&#x27;]
+            if (previous.publisher,previous.origin)!=(claim.publisher,claim.origin):raise Rejected(&#x27;name_collision&#x27;)
+            if claim.release&lt;=previous.release:raise Rejected(&#x27;rollback_or_same_release&#x27;)
+        stage=Path(tempfile.mkdtemp(prefix=&#x27;data-&#x27;,dir=self.root))
+        try:
+            for i,(name,data) in enumerate(sorted(row[&#x27;files&#x27;].items()),1):
+                path=stage/name;path.parent.mkdir(parents=True,exist_ok=True)
+                with path.open(&#x27;xb&#x27;) as stream:stream.write(data)
+                if i==fail_after:raise OSError(&#x27;synthetic installation failure&#x27;)
+        except BaseException:
+            shutil.rmtree(stage);raise  # remove only the fresh directory this method owns
+        if old:
+            old[&#x27;grants&#x27;].clear();self._move(old,&#x27;installed_disabled&#x27;)
+        row[&#x27;directory&#x27;]=stage;self._current[claim.name]=handle;self._move(row,&#x27;installed_disabled&#x27;)
+    def _installed(self,handle):
+        row=self._records[handle]
+        if self._current.get(row[&#x27;claim&#x27;].name)!=handle or row[&#x27;directory&#x27;] is None:raise Rejected(&#x27;stale_install&#x27;)
+        base=row[&#x27;directory&#x27;]
+        try:
+            if base.is_symlink() or not base.is_dir():raise Rejected(&#x27;integrity_changed&#x27;)
+            actual={}
+            for path in base.rglob(&#x27;*&#x27;):
+                if path.is_symlink():raise Rejected(&#x27;integrity_changed&#x27;)
+                if path.is_file():
+                    if path.stat().st_size&gt;MAX_FILE:raise Rejected(&#x27;integrity_changed&#x27;)
+                    actual[path.relative_to(base).as_posix()]=path.read_bytes()
+            if actual!=row[&#x27;files&#x27;]:raise Rejected(&#x27;integrity_changed&#x27;)
+        except Exception:
+            row[&#x27;grants&#x27;].clear();self._move(row,&#x27;quarantined&#x27;);raise
+        return row
+    @serialized
+    def enable(self,handle):
+        row=self._expect(handle,{&#x27;installed_disabled&#x27;});self._installed(handle);self._move(row,&#x27;enabled&#x27;)
+    @serialized
+    def grant(self,handle,components):
+        row=self._expect(handle,{&#x27;enabled&#x27;,&#x27;authorized&#x27;});self._installed(handle);requested=set(components)
+        if not requested or not requested&lt;=set(CAPS):raise Rejected(&#x27;capability_scope&#x27;)
+        row[&#x27;grants&#x27;]|=requested;self._move(row,&#x27;authorized&#x27;)
+    @serialized
+    def invoke_mock(self,handle,component):
+        row=self._expect(handle,{&#x27;authorized&#x27;});self._installed(handle)
+        if component not in row[&#x27;grants&#x27;]:raise Rejected(&#x27;capability_not_granted&#x27;)
+        self.effects.append(dict(plugin=row[&#x27;claim&#x27;].publisher+&#x27;/&#x27;+row[&#x27;claim&#x27;].name,
+                                 artifact=row[&#x27;digest&#x27;],capability=CAPS[component]))
+    @serialized
+    def revoke_all(self,handle):
+        row=self._expect(handle,{&#x27;authorized&#x27;});row[&#x27;grants&#x27;].clear();self._move(row,&#x27;enabled&#x27;)
+    @serialized
+    def disable(self,handle):
+        row=self._expect(handle,{&#x27;enabled&#x27;,&#x27;authorized&#x27;});row[&#x27;grants&#x27;].clear();self._move(row,&#x27;installed_disabled&#x27;)
+    @serialized
+    def snapshot(self,handle):
+        row=self._records[handle]
+        return deepcopy(dict(state=row[&#x27;state&#x27;],history=row[&#x27;history&#x27;],grants=sorted(row[&#x27;grants&#x27;]),
+                             identity=asdict(row[&#x27;claim&#x27;]),artifact=row[&#x27;digest&#x27;]))
+
+
+def make_bundle(claim=Claim(),dependency=b&#x27;original synthetic helper v1&#x27;,dep_version=&#x27;1.0.0&#x27;,extra=()):
+    files={&#x27;skills/demo.md&#x27;:b&#x27;Original teaching Skill text; never injected into a model.&#x27;,
+           &#x27;hooks/audit.mock&#x27;:b&#x27;Original mock Hook data; not executable.&#x27;,
+           &#x27;mcp/report.mock&#x27;:b&#x27;Original mock MCP descriptor; no server is started.&#x27;,
+           &#x27;deps/helper.mock&#x27;:dependency}
+    manifest=dict(identity=asdict(claim),components=dict(skill=&#x27;skills/demo.md&#x27;,hook=&#x27;hooks/audit.mock&#x27;,mcp=&#x27;mcp/report.mock&#x27;),
+                  dependencies=[dict(name=&#x27;fixture-helper&#x27;,version=dep_version,path=&#x27;deps/helper.mock&#x27;,sha256=sha(dependency))])
+    files[&#x27;manifest.json&#x27;]=json.dumps(manifest,sort_keys=True).encode()
+    buffer=BytesIO()
+    with zipfile.ZipFile(buffer,&#x27;w&#x27;,compression=zipfile.ZIP_DEFLATED) as z:
+        for name,data in [*files.items(),*extra]:
+            info=zipfile.ZipInfo(name,(2020,1,1,0,0,0)) if type(name) is str else name
+            if type(name) is str:info.external_attr=(stat.S_IFREG|0o600)&lt;&lt;16
+            info.compress_type=zipfile.ZIP_DEFLATED;z.writestr(info,data)
+    return buffer.getvalue()
+
+
+def demo():
+    claim=Claim();blob=make_bundle(claim)
+    with tempfile.TemporaryDirectory(prefix=&#x27;yao390-owned-&#x27;,dir=ROOT) as name:
+        root=Path(name);pipeline=Pipeline(root);handle=pipeline.discover(claim,blob)
+        pipeline.check(handle,Pin(claim,sha(blob)));pipeline.record_mock_review(handle,sha(blob))
+        pipeline.install_data(handle);pipeline.enable(handle)
+        before=len(pipeline.effects);pipeline.grant(handle,[&#x27;skill&#x27;,&#x27;hook&#x27;,&#x27;mcp&#x27;])
+        for kind in CAPS:pipeline.invoke_mock(handle,kind)
+        pipeline.revoke_all(handle);pipeline.disable(handle)
+        result=dict(state=pipeline.snapshot(handle),effects_before_grant=before,effects=pipeline.effects,
+                    all_paths_in_root=all(p.resolve().is_relative_to(root.resolve()) for p in root.rglob(&#x27;*&#x27;)))
+    result[&#x27;temporary_directory_removed&#x27;]=not root.exists()
+    return result
+
+
+if __name__==&#x27;__main__&#x27;:print(json.dumps(demo(),ensure_ascii=False,indent=2))
+</code></pre>
+</details>
+<p>2026-09-16实测：<strong>27 个测试通过</strong>。27个测试根分别检查并清理，哨兵文件字节不变；独立demo目录也已删除。两个并发安装线程已join，只有一个名称占用成功。测试覆盖状态跳跃、固定来源/摘要、穿越与链接、NUL/重复路径、资源预算、未声明安装文件、依赖锁定、同名替换、升级/回滚、逐组件grant、失败清理、安装后篡改和返回快照不可改写授权。</p>
+<p>测试只验证这些自制归档和mock合同，没有安装或启用真实插件，没有读取凭据或修改用户配置。真实发布者身份、签名/TUF更新验证、第三方代码行为、模型注入防御、沙箱隔离、恶意并发文件系统写入、持久授权、崩溃原子性、在途任务回收和远端MCP实现变化仍需独立工程证据。</p>
+<h3 id="5-固定一手来源支持什么不支持什么">5. 固定一手来源支持什么，不支持什么</h3>
+<p><strong>TUF Specification v1.0.36</strong>描述Root、Targets、Snapshot、Timestamp等角色及受信根：Root确定哪些密钥受信；Targets绑定目标文件摘要/长度及委托；Snapshot和Timestamp参与防止混配、回滚、冻结等更新攻击。这解释了为什么不能仅相信市场返回的一个hash或一个旧签名。但TUF处理的是更新分发的信任与一致性，不代替插件代码审阅或运行能力授权。本文没有实现TUF协议。</p>
+<p><strong>CPython3.11.8</strong>的zipfile文档提醒先检查不可信归档，讨论资源耗尽与中断导致的不完整解包；<code>extract</code>会尝试剥离绝对/父目录等部分，并有平台差异。本文选择拒绝非规范路径而不是沿用其自动改名语义。固定源码的<code>ZipInfo</code>保留<code>orig_filename</code>并对NUL作截断，所以本例也比较原始名与处理后名称，避免只看截断结果。没有据此断言所有Python版本的解包行为相同。</p>
+<p>课程中的具体市场或运行时优先级、插件根自动信任、未来版本批准习惯只作学习线索，未在本题固定一手实现中验证的细节不作为通用保证。</p>
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>“市场收录即安全。”</strong> 发现、来源校验、语义审阅和运行授权是不同证据。</li>
+<li><strong>“安装成功就可以启动所有Hook/MCP。”</strong> 加载和启动本身可能执行代码，必须事先明确能力门槛。</li>
+<li><strong>“安装后的依赖更新不影响已有信任。”</strong> 它改变实际执行内容，旧review/grant可能不再适用。</li>
+<li><strong>“同名、同目录或相同短hash就代表同一个可信插件。”</strong> 要绑定完整来源和交付物，并明确冲突策略。</li>
+<li><strong>“签名有效说明代码无恶意；禁用等于回滚。”</strong> 签名与行为审查不同，撤销未来能力也不会抹去过去的效果。</li>
+</ul>
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><p>来源核对于2026-09-16；题干、状态图、威胁表、fixture与测试均独立组织。未搬运AGPL课件正文、代码或图片。</p>
+<ul>
+<li>洛小山《AI 产品从入门到精通》，learn-ai固定 <code>5a933d287dd5074cc1543cb849146f3261d47521</code>：<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/12-21.html" target="_blank" rel="noopener noreferrer">slides/12-21.html</a>（市场与信任）、<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/slides/dsh-21.html" target="_blank" rel="noopener noreferrer">slides/dsh-21.html</a>（MCP与扩展能力）；<a href="https://github.com/itshen/learn-ai/blob/5a933d287dd5074cc1543cb849146f3261d47521/LICENSE" target="_blank" rel="noopener noreferrer">AGPL-3.0 LICENSE</a>。</li>
+<li>The Update Framework Working Group，<strong>The Update Framework Specification v1.0.36</strong>，固定commit <code>59e601ed29c0d2e497264ae8b31c11b8ef07df1e</code>：<a href="https://github.com/theupdateframework/specification/blob/59e601ed29c0d2e497264ae8b31c11b8ef07df1e/tuf-spec.md" target="_blank" rel="noopener noreferrer">tuf-spec.md</a>，<code>Roles</code>、<code>File formats</code>与<code>Detailed client workflow</code>等章节；<a href="https://github.com/theupdateframework/specification/blob/59e601ed29c0d2e497264ae8b31c11b8ef07df1e/LICENSE.md" target="_blank" rel="noopener noreferrer">Community Specification License 1.0</a>。本文仅独立讨论机制，不提供TUF兼容性或安全认证。</li>
+<li>Python Software Foundation，<strong>CPython v3.11.8</strong>，tag对应 <code>db85d51d3ea4adfc6147d6af400e167659689eed</code>：<a href="https://github.com/python/cpython/blob/db85d51d3ea4adfc6147d6af400e167659689eed/Doc/library/zipfile.rst" target="_blank" rel="noopener noreferrer">zipfile文档</a> 的<code>extract</code>/<code>extractall</code>、<code>Decompression pitfalls</code>；<a href="https://github.com/python/cpython/blob/db85d51d3ea4adfc6147d6af400e167659689eed/Lib/zipfile.py" target="_blank" rel="noopener noreferrer">Lib/zipfile.py</a> 的<code>ZipInfo.__init__</code>（374起的原始名/NUL处理）和<code>_extract_member</code>；<a href="https://github.com/python/cpython/blob/db85d51d3ea4adfc6147d6af400e167659689eed/LICENSE" target="_blank" rel="noopener noreferrer">LICENSE</a>含PSF License Version2、历史许可及文档代码示例Zero-Clause BSD条款。本题代码为原创，未复制文档示例。</li>
+</ul>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">只固定插件Git SHA，为什么仍可能升级投毒？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：只固定插件Git SHA，为什么仍可能升级投毒？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>构建/安装可能另取浮动依赖，远端服务也可能在同一地址更换实现。需要核对有效交付物与依赖闭包，限制安装脚本及网络获取，并把外部能力变化纳入复核；Git SHA只能固定它实际覆盖的内容。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">同名插件都通过来源校验，怎么处理？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：同名插件都通过来源校验，怎么处理？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>来源校验不决定别名归属。使用完整身份和明确的选择规则，短名冲突时拒绝或请用户选择，不以扫描顺序覆盖。名称占用和发布还要原子协调，避免两个安装同时通过检查。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">禁用插件是不是就收回所有影响？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：禁用插件是不是就收回所有影响？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>只能阻止后续调度及撤销未来授权。已经执行的副作用、在途MCP请求和注入过的上下文不会自动回滚；需要进程/任务管理、结果世代隔离和业务补偿。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-4">
+          <div class="followup-label">追问 04</div><h3 id="followup-4">一个只提供Skill文本的插件还需要审核吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：一个只提供Skill文本的插件还需要审核吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>需要，它可以影响模型行为和后续工具选择。审核其来源、内容及注入上下文的权限，保持不可信指令与强制策略分离；“不含可执行脚本”不等于不会扩大实际风险。</p>
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>ENGINEERING-0031 · 单题笔记</span><a href="../questions/engineering-0031-plugin-marketplace-trust.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "engineering-0031", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

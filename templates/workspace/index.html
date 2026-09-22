@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="description" content="开源、免费、持续更新的 AI 面试题库。题目由 AI 从公开网络收集或基于项目总结设计，答案由 AI 生成并经 AI Review。">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>AI 面试手记 · 开始</title>
+  <link rel="icon" href="{{favicon}}">
+  <style>{{css}}</style>
+</head>
+<body>
+{{icons}}
+<a class="skip-link" href="#workspace-main">跳到主要内容</a>
+<aside class="app-sidebar" aria-label="学习空间导航">{{sidebar}}</aside>
+<dialog class="mobile-navigation" id="mobile-navigation" aria-label="学习空间导航"><button class="mobile-nav-close icon-button" id="close-navigation" type="button" aria-label="关闭导航"><svg class="w-icon" aria-hidden="true"><use href="#w-close"/></svg></button>{{sidebar}}</dialog>
+<div class="workspace">
+  <header class="workspace-header">
+    <button type="button" class="mobile-nav-open icon-button" id="open-navigation" aria-label="打开导航" aria-controls="mobile-navigation" aria-expanded="false"><svg class="w-icon" aria-hidden="true"><use href="#w-menu"/></svg></button>
+    <div class="workspace-breadcrumb"><span class="workspace-name">AI 面试手记</span><span class="breadcrumb-slash">/</span><span id="view-name">开始</span></div>
+    <form class="global-search" id="search-form" role="search"><svg class="w-icon" aria-hidden="true"><use href="#w-search"/></svg><input id="global-search" type="search" placeholder="搜索题目、关键词或编号" aria-label="搜索题目、关键词或编号" autocomplete="off"><button type="submit">搜索</button></form>
+  </header>
+  <main id="workspace-main">
+    <section class="workspace-view home-view" id="home" aria-labelledby="home-title">
+      <div class="home-hero">
+        <div class="home-introduction"><div class="section-eyebrow platform-eyebrow">持续更新 · OPEN SOURCE</div><h1 id="home-title" tabindex="-1">开源免费的<br><span>AI 面试题库。</span></h1><div class="platform-provenance"><p><strong>题目</strong>由 AI 从公开网络收集，或基于项目总结设计。</p><p><strong>答案</strong>由 AI 生成，再由 AI 进行 Review。</p></div><div class="home-actions"><a class="action-button primary" href="#questions">浏览全部题目<svg class="w-icon" aria-hidden="true"><use href="#w-arrow"/></svg></a><button type="button" class="text-button" data-random><svg class="w-icon" aria-hidden="true"><use href="#w-shuffle"/></svg>随机练一题</button></div></div>
+        <article class="featured-question" id="featured-question"></article>
+      </div>
+      <section class="topic-section" aria-labelledby="topics-title"><div class="section-header"><h2 id="topics-title">按方向练习</h2><span>{{category_count}} 个方向 · {{total}} 道题</span></div><div class="topic-grid" id="topic-grid"></div></section>
+      <div class="home-lower"><section aria-labelledby="starting-title"><div class="section-header"><h2 id="starting-title">推荐起点</h2><a href="#questions?difficulty=easy">查看入门题 ↗</a></div><div class="starting-list" id="starting-list"></div></section><section id="recent-section" aria-labelledby="recent-title"></section></div>
+      <footer class="workspace-footer community-footer">
+        <div class="repository-info"><a class="repository-link" href="https://github.com/luyao618/Agent-Interview-CheatSheet" target="_blank" rel="noopener noreferrer"><svg class="w-icon" aria-hidden="true"><use href="#w-github"/></svg><span>luyao618/Agent-Interview-CheatSheet</span><svg class="w-icon repository-external" aria-hidden="true"><use href="#w-external"/></svg></a><p>欢迎 Star 支持，也欢迎提交 PR，补充题目、完善答案。</p></div>
+        <div class="community-actions"><a class="community-button" href="https://github.com/luyao618/Agent-Interview-CheatSheet" target="_blank" rel="noopener noreferrer"><svg class="w-icon" aria-hidden="true"><use href="#w-star"/></svg>去 Star</a><a class="community-button" href="https://github.com/luyao618/Agent-Interview-CheatSheet/compare" target="_blank" rel="noopener noreferrer"><svg class="w-icon" aria-hidden="true"><use href="#w-pr"/></svg>提交 PR</a></div>
+      </footer>
+    </section>
+    <section class="workspace-view catalog-view" id="questions" aria-labelledby="catalog-title" hidden>
+      <div class="view-heading"><div><div class="section-eyebrow">QUESTION LIBRARY</div><h1 id="catalog-title" tabindex="-1">全部题目</h1><p id="catalog-description">从一个方向、一类难度，或一个关键词开始。</p></div><button class="action-button" type="button" id="catalog-random"><svg class="w-icon" aria-hidden="true"><use href="#w-shuffle"/></svg>随机练一题</button></div>
+      <div class="catalog-filters" aria-label="筛选题目"><label>方向<select id="filter-category"><option value="all">全部方向</option>{{category_options}}</select></label><label>难度<select id="filter-difficulty"><option value="all">全部难度</option><option value="easy">入门</option><option value="medium">进阶</option><option value="hard">困难</option></select></label><label>适用角色<select id="filter-role"><option value="all">全部角色</option><option value="engineer">工程师</option><option value="pm">产品经理</option></select></label><label>作答状态<select id="filter-status"><option value="all">全部题目</option><option value="unanswered">未作答</option><option value="written">已有回答</option></select></label><button type="button" class="filter-reset" id="reset-filters">重置筛选</button></div>
+      <div class="results-toolbar"><span id="result-count" role="status" aria-live="polite"></span><label class="sort-label">排序<select id="sort-order"><option value="id">题目顺序</option><option value="updated">最近更新</option></select></label></div>
+      <div class="question-list" id="question-list"></div>
+      <div class="empty-state" id="catalog-empty" hidden><svg class="w-icon" aria-hidden="true"><use href="#w-search"/></svg><h2>没有找到匹配的题目</h2><p>试试更短的关键词，或减少筛选条件。</p><button type="button" class="action-button" id="empty-reset">查看全部题目</button></div>
+      <nav class="pagination" id="pagination" aria-label="题目分页"></nav>
+    </section>
+    <section class="workspace-view answers-view" id="answers" aria-labelledby="answers-title" hidden>
+      <div class="view-heading"><div><div class="section-eyebrow">IN YOUR OWN WORDS</div><h1 id="answers-title" tabindex="-1">我的回答</h1><p id="answers-description">你写下的理解，都在这里。</p></div><button type="button" class="action-button" data-export disabled><svg class="w-icon" aria-hidden="true"><use href="#w-download"/></svg>导出 Markdown</button></div>
+      <div class="saved-answer-list" id="saved-answer-list"></div>
+      <div class="empty-state" id="answers-empty" hidden><svg class="w-icon" aria-hidden="true"><use href="#w-pen"/></svg><h2 id="answers-empty-title">从第一份回答开始</h2><p id="answers-empty-description">打开一道题，在「我的回答」里写下思路，<br>这里就会自动留下你的记录。</p><a class="action-button primary" href="#questions">去选一道题<svg class="w-icon" aria-hidden="true"><use href="#w-arrow"/></svg></a></div>
+      <p class="storage-message" id="storage-message">回答仅保存在此浏览器。导出一份 Markdown，就可以带走自己的笔记。</p>
+    </section>
+    <section class="reader-view" id="reader" aria-label="题目作答" hidden>
+      <div class="reader-toolbar"><a id="back-to-list" class="reader-back" href="#questions"><svg class="w-icon flip" aria-hidden="true"><use href="#w-arrow"/></svg><span>返回题目列表</span></a><span class="reader-position" id="reader-position"></span><div class="reader-actions"><a id="open-standalone" class="icon-button" target="_blank" rel="noopener noreferrer" aria-label="单独打开题目" title="单独打开题目"><svg class="w-icon" aria-hidden="true"><use href="#w-external"/></svg></a><button type="button" class="action-button compact" id="previous-question" aria-label="上一题"><svg class="w-icon flip" aria-hidden="true"><use href="#w-arrow"/></svg><span>上一题</span></button><button type="button" class="action-button compact" id="next-question" aria-label="下一题"><span>下一题</span><svg class="w-icon" aria-hidden="true"><use href="#w-arrow"/></svg></button></div></div>
+      <div class="reader-loading" id="reader-loading" role="status">正在打开题目…</div><iframe id="question-frame" title="题目作答" src="about:blank"></iframe>
+      <div class="reader-error empty-state" id="reader-error" hidden><h2>没有找到这道题</h2><p>可以回到题库重新选择。</p><a class="action-button primary" href="#questions">返回题库</a></div>
+    </section>
+    <noscript><section class="workspace-view"><h1>题目目录</h1><p>启用 JavaScript 可使用搜索、筛选和学习入口。也可以直接打开以下独立题目。</p>{{fallback_directory}}</section></noscript>
+  </main>
+</div>
+<div class="workspace-toast" id="workspace-toast" role="status" aria-live="polite"></div>
+<script type="application/json" id="workspace-data">{{catalog_json}}</script>
+<script>{{script}}</script>
+</body>
+</html>
