@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：189** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：190** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -43,7 +43,7 @@
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
-| 🧠 大模型基础与原理 | 20 | [查看 ↓](#-大模型基础与原理) |
+| 🧠 大模型基础与原理 | 21 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 44 | [查看 ↓](#-工程化部署性能成本) |
@@ -53,7 +53,7 @@
 
 ## 🧠 大模型基础与原理
 
-<sub>分类 ID：`llm` ｜ 共 20 题</sub>
+<sub>分类 ID：`llm` ｜ 共 21 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -77,6 +77,7 @@
 | 18 | [KV Cache 缓存的到底是什么，为什么能加速自回归推理，却会带来内存压力？](questions/llm-0018-kv-cache-prefill-decode.md) | 🟡 进阶 |
 | 19 | [文生图与参考图生图怎样选择，如何保持角色一致性并决定是否增加 Prompt 改写层？](questions/llm-0019-image-generation-identity-control.md) | 🟡 进阶 |
 | 20 | [用强弱模型筛选合成训练题时，如何控制难度并证明数据有效而非筛选器偏好？](questions/llm-0020-synthetic-data-difficulty-verification.md) | 🔴 困难 |
+| 21 | [DPO 如何直接学习回答偏好，与 PPO 式 RLHF 的训练流程和适用边界有何不同？](questions/llm-0021-dpo-vs-ppo-preference-optimization.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 
