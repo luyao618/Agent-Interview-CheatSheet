@@ -1433,6 +1433,17 @@
       "images": 0
     },
     {
+      "id": "llm-0021",
+      "file": "llm-0021-dpo-vs-ppo-preference-optimization.html",
+      "source": "questions/llm-0021-dpo-vs-ppo-preference-optimization.md",
+      "source_sha256": "507170ba4d7c1ba6298ef37f20fd8371f4253f1e53da677f86b3b739beb6a1b9",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 1,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
