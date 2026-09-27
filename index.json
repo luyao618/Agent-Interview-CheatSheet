@@ -4222,6 +4222,27 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-09-26",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0022",
+      "title": "RoPE 如何把相对位置编码进注意力，为什么调大上下文长度不等于可靠外推？",
+      "category": "llm",
+      "tags": [
+        "rope",
+        "positional-encoding",
+        "context-extension",
+        "position-interpolation"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "Devinterview LLM 面试资料第 5 题扩展改编；RoFormer 与 Position Interpolation 原论文核实（见参考）",
+      "file": "llm-0022-rope-position-extrapolation.md",
+      "language": "zh",
+      "category_label": "大模型基础与原理",
+      "updated": "2026-09-27",
+      "answers_count": 1
     }
   ]
 }
