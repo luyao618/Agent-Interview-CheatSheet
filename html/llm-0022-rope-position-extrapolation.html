@@ -6,7 +6,7 @@
   <meta name="description" content="先独立回答，再展开参考答案与追答。RoPE 如何把相对位置编码进注意力，为什么调大上下文长度不等于可靠外推？">
   <meta name="theme-color" content="#f4f6fb">
   <meta name="source-file" content="questions/llm-0022-rope-position-extrapolation.md">
-  <meta name="source-sha256" content="ffef86956a62222d8134c0524269ddcba5d93471a06840bdda6e31c3fcb36201">
+  <meta name="source-sha256" content="c1b8d80a93aa941fe1204518ad7e3d415d569d779c95858f41dd449ee95a78dc">
   <meta name="generator" content="scripts/gen_html.py">
   <title>RoPE 如何把相对位置编码进注意力，为什么调大上下文长度不等于可靠外推？ · AI 题典</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
@@ -395,7 +395,7 @@ k&#x27;_n = R(n * theta) k_n
 </code></pre>
 <p>因为旋转矩阵满足 <code>R(a)^T R(b) = R(b-a)</code>，两个绝对位置在点积的位置项中化为相对位移。换一种旋转或行向量约定可能写成 m-n，必须与矩阵定义一致。</p>
 <p><strong>这不是说注意力分数只由距离决定。</strong> q_m、k_n 的内容仍参与点积，高层向量还依赖先前层处理的上下文；缩放、mask、softmax 和其他可选分数项也没有消失。</p>
-<p>高维 RoPE 把参与旋转的偶数维度拆成二维对，使用不同频率 theta_i，再把各维度的贡献合起来。原始常用频率形式为 <code>theta_i = 10000^(-2i/d)</code>，这里 d 指该公式中参与旋转的维度；实际模型的 base、部分旋转比例和维度配对布局可能不同，必须跟 checkpoint 一致。频率并非可随意替换的部署参数。</p>
+<p>高维 RoPE 把参与旋转的偶数维度拆成二维对，使用不同频率 theta_i，再把各维度的贡献合起来。原始常用频率形式为 <code>theta_i = 10000^(-2i/d)</code>，其中 <code>i=0,…,d/2-1</code>，d 指该公式中参与旋转的偶数维度；实际模型的 base、部分旋转比例和维度配对布局可能不同，必须跟 checkpoint 一致。频率并非可随意替换的部署参数。</p>
 <p>对任意单个二维对，旋转保持 Q/K 的范数，但改变二者的夹角。<strong>并不保证任意给定 q/k 的点积随距离单调下降</strong>：正弦和余弦会振荡，不能把论文对长距离衰减的分析误读为每个 token 对的硬性单调约束。本文讨论常见的 Q/K 旋转形式，不将 V 的旋转说成所有 RoPE 模型都必需。</p>
 <h3 id="3-一个可运行的代数验证">3. 一个可运行的代数验证</h3>
 <p>下面只使用 Python 标准库，验证旋转恒等式、共同平移位置以及范数保持；另检查错误的相对位移符号会破坏当前约定。q/k 是人为指定的向量，固定不随上下文改变。</p>

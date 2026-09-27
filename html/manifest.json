@@ -1447,7 +1447,7 @@
       "id": "llm-0022",
       "file": "llm-0022-rope-position-extrapolation.html",
       "source": "questions/llm-0022-rope-position-extrapolation.md",
-      "source_sha256": "ffef86956a62222d8134c0524269ddcba5d93471a06840bdda6e31c3fcb36201",
+      "source_sha256": "c1b8d80a93aa941fe1204518ad7e3d415d569d779c95858f41dd449ee95a78dc",
       "answers": 1,
       "followups": 3,
       "missing_followup_answers": 0,
