@@ -4222,6 +4222,28 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-09-26",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0023",
+      "title": "FlashAttention 为什么仍是精确注意力，却能减少显存占用和耗时？",
+      "category": "llm",
+      "tags": [
+        "flashattention",
+        "online-softmax",
+        "gpu-memory",
+        "io-awareness",
+        "inference"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "Devinterview LLM 面试资料第 8 题扩展改编；FlashAttention 原论文核实（见参考）",
+      "file": "llm-0023-flashattention-io-aware.md",
+      "language": "zh",
+      "category_label": "大模型基础与原理",
+      "updated": "2026-09-28",
+      "answers_count": 1
     }
   ]
 }
