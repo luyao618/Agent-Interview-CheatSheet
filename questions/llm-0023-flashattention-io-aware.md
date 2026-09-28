@@ -120,6 +120,11 @@ reference = dense(scores, values)
 for size in (1, 2, 3, 5):
     assert math.isclose(blocked(scores, values, size), reference,
                         rel_tol=0, abs_tol=1e-12)
+# 温和分数避免旧块权重下溢，更直接检查旧状态重缩放。
+mild_scores = [0.0, 1.0, 2.0, 3.0, 4.0]
+for size in (1, 2, 3, 5):
+    assert math.isclose(blocked(mild_scores, values, size),
+                        dense(mild_scores, values), rel_tol=0, abs_tol=1e-12)
 # 把所有分数加同一个常数，softmax 应保持不变。
 assert math.isclose(blocked([x + 5000 for x in scores], values, 2),
                     reference, rel_tol=0, abs_tol=1e-12)

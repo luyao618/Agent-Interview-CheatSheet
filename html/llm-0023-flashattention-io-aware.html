@@ -6,7 +6,7 @@
   <meta name="description" content="先独立回答，再展开参考答案与追答。FlashAttention 为什么仍是精确注意力，却能减少显存占用和耗时？">
   <meta name="theme-color" content="#f4f6fb">
   <meta name="source-file" content="questions/llm-0023-flashattention-io-aware.md">
-  <meta name="source-sha256" content="ab677cbd1e9c0e98861eb119718043696ec9adc7512d4cfa67b14b6a78f76e72">
+  <meta name="source-sha256" content="bca974f60de73adf4991757e66644d207e717d1602646e2a4071f6071ae0fb85">
   <meta name="generator" content="scripts/gen_html.py">
   <title>FlashAttention 为什么仍是精确注意力，却能减少显存占用和耗时？ · AI 题典</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
@@ -447,6 +447,11 @@ reference = dense(scores, values)
 for size in (1, 2, 3, 5):
     assert math.isclose(blocked(scores, values, size), reference,
                         rel_tol=0, abs_tol=1e-12)
+# 温和分数避免旧块权重下溢，更直接检查旧状态重缩放。
+mild_scores = [0.0, 1.0, 2.0, 3.0, 4.0]
+for size in (1, 2, 3, 5):
+    assert math.isclose(blocked(mild_scores, values, size),
+                        dense(mild_scores, values), rel_tol=0, abs_tol=1e-12)
 # 把所有分数加同一个常数，softmax 应保持不变。
 assert math.isclose(blocked([x + 5000 for x in scores], values, 2),
                     reference, rel_tol=0, abs_tol=1e-12)
