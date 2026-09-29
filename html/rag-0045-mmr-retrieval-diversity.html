@@ -6,7 +6,7 @@
   <meta name="description" content="先独立回答，再展开参考答案与追答。检索结果高度重复时，MMR 如何平衡相关性与多样性，与 HNSW 和 Rerank 有何区别？">
   <meta name="theme-color" content="#f4f6fb">
   <meta name="source-file" content="questions/rag-0045-mmr-retrieval-diversity.md">
-  <meta name="source-sha256" content="3694b5b7d5da9f2cde10754ecd47cc33d8653c338ebd67c52509331fdcd0efee">
+  <meta name="source-sha256" content="4868393975f2e23b867f8e8c90c4ae6ad955c1455a5e50dec5336d93d82a683e">
   <meta name="generator" content="scripts/gen_html.py">
   <title>检索结果高度重复时，MMR 如何平衡相关性与多样性，与 HNSW 和 Rerank 有何区别？ · AI 题典</title>
   <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
@@ -413,7 +413,7 @@ h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
 <li><strong>k 不是 token 预算</strong>：不同 chunk 长度不同。最终仍需检查预算、完整证据及引用位置，不能选完再随意截断到半条证据。</li>
 <li><strong>过滤与版本边界优先</strong>：先确定可访问且符合业务范围的候选；MMR 不能替代 ACL、租户隔离、版本规则或硬性相关性门槛。</li>
 </ul>
-<p>若预先获得 query 相关性，且两两相似度计算成本为 O(d)，维护每个候选当前最大冗余并增量更新，可以把选择阶段做到 O(Fkd) 量级。简单实现每轮重新比较候选与所有已选项，可能累积到 O(Fk²d)；预计算完整相似度矩阵则有 O(F²) 存储代价。不能不定义 F、k、d 就笼统宣称“MMR 一定 O(k²)”。</p>
+<p>设 d 为向量维度，假设一次两两相似度计算成本为 O(d)。若预先获得 query 相关性，维护每个候选当前最大冗余并增量更新，可以把选择阶段做到 O(Fkd) 量级。简单实现每轮重新比较候选与所有已选项，可能累积到 O(Fk²d)；预计算完整相似度矩阵则有 O(F²) 存储代价。不能不定义 F、k、d 就笼统宣称“MMR 一定 O(k²)”。下方示例使用预设分数查表，相似度查询按 O(1) 计，不包含真实向量相似度计算成本。</p>
 <h3 id="4-可运行例子避免重复也要防止跑题">4. 可运行例子：避免重复，也要防止跑题</h3>
 <p>下面是人为设定的相关性与对称冗余分数，不声称来自真实 embedding。A/B 表示高度重复证据，C 表示相关的另一角度，D 表示低相关、低冗余的跑题内容；ID 顺序用于确定性平局处理。</p>
 <pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">from math import isfinite
