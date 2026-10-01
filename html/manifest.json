@@ -1444,6 +1444,17 @@
       "images": 0
     },
     {
+      "id": "llm-0024",
+      "file": "llm-0024-perplexity-evaluation-protocol.html",
+      "source": "questions/llm-0024-perplexity-evaluation-protocol.md",
+      "source_sha256": "cf8399e12af391cdd704d11cbe0a56f10c6c9d1291c37161ba0fec2ae7f6084b",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 4,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",

@@ -4222,6 +4222,28 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-09-26",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0024",
+      "title": "困惑度 Perplexity 应怎样计算，为什么不能直接用它比较不同聊天模型的能力？",
+      "category": "llm",
+      "tags": [
+        "perplexity",
+        "evaluation",
+        "cross-entropy",
+        "sliding-window",
+        "tokenization"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "Hugging Face 官方 Perplexity 文档扩展改编；固定版本 loss 源码核实（见参考）",
+      "file": "llm-0024-perplexity-evaluation-protocol.md",
+      "language": "zh",
+      "category_label": "大模型基础与原理",
+      "updated": "2026-10-01",
+      "answers_count": 1
     }
   ]
 }
