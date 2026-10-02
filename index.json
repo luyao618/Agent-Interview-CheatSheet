@@ -4222,6 +4222,28 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-09-26",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0025",
+      "title": "Continuous Batching 为什么能提高 LLM 服务吞吐，却不保证每个请求都更快？",
+      "category": "llm",
+      "tags": [
+        "continuous-batching",
+        "serving",
+        "scheduling",
+        "chunked-prefill",
+        "latency"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开 vLLM 面试题第 8 题扩展改编；Orca 论文与固定版本 vLLM 文档核实（见参考）",
+      "file": "llm-0025-continuous-batching-serving.md",
+      "language": "zh",
+      "category_label": "大模型基础与原理",
+      "updated": "2026-10-02",
+      "answers_count": 1
     }
   ]
 }
