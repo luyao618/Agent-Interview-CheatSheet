@@ -1444,6 +1444,17 @@
       "images": 0
     },
     {
+      "id": "llm-0025",
+      "file": "llm-0025-continuous-batching-serving.html",
+      "source": "questions/llm-0025-continuous-batching-serving.md",
+      "source_sha256": "9bb94064ff6f30b27525890ae1625a6b58205bbf10649ed8b80bcd24e29434fe",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 2,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
