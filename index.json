@@ -4222,6 +4222,27 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-09-26",
       "answers_count": 1
+    },
+    {
+      "id": "rag-0045",
+      "title": "检索结果高度重复时，MMR 如何平衡相关性与多样性，与 HNSW 和 Rerank 有何区别？",
+      "category": "rag",
+      "tags": [
+        "mmr",
+        "retrieval-diversity",
+        "candidate-selection",
+        "reranking"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开 RAG 面试整理中的 HNSW vs MMR 话题扩展改编；原论文与 LangChain 源码核实（见参考）",
+      "file": "rag-0045-mmr-retrieval-diversity.md",
+      "language": "zh",
+      "category_label": "检索增强生成",
+      "updated": "2026-09-29",
+      "answers_count": 1
     }
   ]
 }

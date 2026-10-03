@@ -2091,6 +2091,17 @@
       "missing_followup_answers": 0,
       "code_blocks": 1,
       "images": 0
+    },
+    {
+      "id": "rag-0045",
+      "file": "rag-0045-mmr-retrieval-diversity.html",
+      "source": "questions/rag-0045-mmr-retrieval-diversity.md",
+      "source_sha256": "4868393975f2e23b867f8e8c90c4ae6ad955c1455a5e50dec5336d93d82a683e",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
     }
   ]
 }
