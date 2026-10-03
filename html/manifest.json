@@ -1444,6 +1444,17 @@
       "images": 0
     },
     {
+      "id": "llm-0022",
+      "file": "llm-0022-rope-position-extrapolation.html",
+      "source": "questions/llm-0022-rope-position-extrapolation.md",
+      "source_sha256": "c1b8d80a93aa941fe1204518ad7e3d415d569d779c95858f41dd449ee95a78dc",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
