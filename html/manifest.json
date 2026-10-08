@@ -2091,6 +2091,17 @@
       "missing_followup_answers": 0,
       "code_blocks": 1,
       "images": 0
+    },
+    {
+      "id": "rag-0046",
+      "file": "rag-0046-colbert-late-interaction.html",
+      "source": "questions/rag-0046-colbert-late-interaction.md",
+      "source_sha256": "d42b48286f7b78d6ef30a058ed6f6460dbe02cb5e05f195898ee2a8176630209",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
     }
   ]
 }
