@@ -4222,6 +4222,28 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-09-26",
       "answers_count": 1
+    },
+    {
+      "id": "rag-0046",
+      "title": "ColBERT 的 late interaction 与单向量检索、Cross-Encoder 有何区别，MaxSim 应怎样计算？",
+      "category": "rag",
+      "tags": [
+        "colbert",
+        "late-interaction",
+        "multi-vector",
+        "maxsim",
+        "retrieval"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开 RAG 面试资料第 4 节追问扩展改编；ColBERT 原论文与官方源码核实（见参考）",
+      "file": "rag-0046-colbert-late-interaction.md",
+      "language": "zh",
+      "category_label": "检索增强生成",
+      "updated": "2026-10-08",
+      "answers_count": 1
     }
   ]
 }

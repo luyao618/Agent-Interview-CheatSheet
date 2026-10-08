@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：190** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：191** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -45,7 +45,7 @@
 | :--- | :---: | :--- |
 | 🧠 大模型基础与原理 | 21 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
-| 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
+| 🔍 检索增强生成 | 45 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 44 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 15 | [查看 ↓](#-ai-产品与落地) |
 
@@ -158,7 +158,7 @@
 
 ## 🔍 检索增强生成
 
-<sub>分类 ID：`rag` ｜ 共 44 题</sub>
+<sub>分类 ID：`rag` ｜ 共 45 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -206,6 +206,7 @@
 | 42 | [精确缓存与语义答案缓存如何选，怎样避免相似问题误命中和知识更新后的旧答案？](questions/rag-0042-semantic-cache-invalidation.md) | 🟡 进阶 |
 | 43 | [向量检索的距离度量和 FLAT、IVF、HNSW 索引怎样选择，如何验证 Recall 与延迟取舍？](questions/rag-0043-ann-index-metric-selection.md) | 🟡 进阶 |
 | 44 | [如何让 Milvus 知识库从建表到更新删除都保持可查询、可追溯与幂等？](questions/rag-0044-milvus-data-lifecycle.md) | 🟡 进阶 |
+| 45 | [ColBERT 的 late interaction 与单向量检索、Cross-Encoder 有何区别，MaxSim 应怎样计算？](questions/rag-0046-colbert-late-interaction.md) | 🟡 进阶 |
 
 <div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 
