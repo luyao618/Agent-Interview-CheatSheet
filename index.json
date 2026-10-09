@@ -4222,6 +4222,28 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-09-26",
       "answers_count": 1
+    },
+    {
+      "id": "agent-0067",
+      "title": "Reflexion 架构的核心机制是什么，与 ReAct、传统强化学习（RL）相比有何本质区别？",
+      "category": "agent",
+      "tags": [
+        "reflexion",
+        "self-reflection",
+        "react",
+        "reinforcement-learning",
+        "memory"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开 Agent 架构设计资料第 3 节扩展改编；Reflexion 原论文与官方源码核实（见参考）",
+      "file": "agent-0067-reflexion-verbal-reinforcement.md",
+      "language": "zh",
+      "category_label": "Agent 架构与编排",
+      "updated": "2026-10-09",
+      "answers_count": 1
     }
   ]
 }
