@@ -729,6 +729,17 @@
       "images": 0
     },
     {
+      "id": "agent-0067",
+      "file": "agent-0067-reflexion-verbal-reinforcement.html",
+      "source": "questions/agent-0067-reflexion-verbal-reinforcement.md",
+      "source_sha256": "9f4bfef5614d0f6fd785d79b56bf839c8678c700c7a36e2813a92c3206ae86da",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 2,
+      "images": 0
+    },
+    {
       "id": "engineering-0001",
       "file": "engineering-0001-redis-distributed-lock-failover.html",
       "source": "questions/engineering-0001-redis-distributed-lock-failover.md",
