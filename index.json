@@ -4222,6 +4222,29 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-09-26",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0026",
+      "title": "QLoRA 是如何通过 4-bit NF4、双重量化与分页优化器实现极低显存微调的？",
+      "category": "llm",
+      "tags": [
+        "qlora",
+        "lora",
+        "peft",
+        "quantization",
+        "nf4",
+        "fine-tuning"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开大模型微调面试整理第 4 题扩展改编；QLoRA 原论文与官方源码核实（见参考）",
+      "file": "llm-0026-qlora-nf4-double-quantization.md",
+      "language": "zh",
+      "category_label": "大模型基础与原理",
+      "updated": "2026-10-11",
+      "answers_count": 1
     }
   ]
 }

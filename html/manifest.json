@@ -1444,6 +1444,17 @@
       "images": 0
     },
     {
+      "id": "llm-0026",
+      "file": "llm-0026-qlora-nf4-double-quantization.html",
+      "source": "questions/llm-0026-qlora-nf4-double-quantization.md",
+      "source_sha256": "20c169508a629cfd5a4d2e2a8cd955044dfdcfc1268a2d66b4a4e3f807cfa659",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 2,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
