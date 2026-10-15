@@ -2091,6 +2091,17 @@
       "missing_followup_answers": 0,
       "code_blocks": 1,
       "images": 0
+    },
+    {
+      "id": "rag-0047",
+      "file": "rag-0047-self-rag-reflection-tokens.html",
+      "source": "questions/rag-0047-self-rag-reflection-tokens.md",
+      "source_sha256": "0b0b6a5c682a655170c3e145321cd3c12f319951b4506b6b3194a91b4f663c40",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 2,
+      "images": 0
     }
   ]
 }
