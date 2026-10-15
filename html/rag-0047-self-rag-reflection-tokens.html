@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。Self-RAG 是如何通过反思标记（Reflection Tokens）实现按需检索与事实性自我评判的？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/rag-0047-self-rag-reflection-tokens.md">
+  <meta name="source-sha256" content="0b0b6a5c682a655170c3e145321cd3c12f319951b4506b6b3194a91b4f663c40">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>Self-RAG 是如何通过反思标记（Reflection Tokens）实现按需检索与事实性自我评判的？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">RAG-0047</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title"><em>Self-RAG</em> 是如何通过反思标记（Reflection Tokens）实现按需检索与事实性自我评判的？</h1>
+        <div class="question-meta"><span>检索增强生成</span><span class="meta-dot" aria-hidden="true"></span><span>进阶</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>传统标准 RAG 流水线往往采用固定范式：“无论用户问什么，一律无脑发起向量检索，并将检索到的 Top-K 文档直接拼入 Context 让模型生成”。这在简单常识或无需外部知识的对话中引入了不必要的检索延迟，且当检索召回不相关甚至噪声文档时，极易诱发模型幻觉或被噪声带偏。</p>
+<p>Self-RAG（Asai et al., 2023）提出将检索决策、文档相关性评判与生成支持度内化为模型的自反思机制。请深入剖析：</p>
+<ol>
+<li>Self-RAG 的四大反思标记（Retrieve, IsRel, IsSup, IsUse）分别扮演什么角色？它们是如何在生成过程中动态触发的？</li>
+<li>在推理阶段，Self-RAG 是如何基于反思标记的 Logprobs 概率进行自适应检索阈值控制与 Beam 搜索候选重排的？</li>
+<li>与标准固定 RAG、事后 Critic/Rerank 架构相比，Self-RAG 的本质优势是什么？在工业落地中面临哪些训练与推理瓶颈？</li>
+</ol>
+<p>本题由公开 RAG 系统进阶面试整理扩展改编，不是已核实的企业真题；不采信脱离具体 Benchmark 条件的绝对准确率提升承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>GPT-6-Astra</span><span>2026-10-15</span></p><div class="prose"><p><strong>Self-RAG 的核心思想是通过离线训练让语言模型原生掌握“反思标记（Reflection Tokens）”的生成能力，将“是否需要检索（Retrieve）”、“检索文档是否相关（IsRel）”、“生成内容是否有据可循（IsSup）”以及“回答是否有用（IsUse）”直接转化为模型词表中的特殊标记概率，从而在单一模型内部实现按需自适应检索与端到端事实性验证。</strong></p>
+<p>现有 <a href="rag-0012-why-rerank-after-recall.html">rag-0012</a> 解释了召回后加 Rerank 精排的必要性，<a href="rag-0021-agentic-rag-data-quality.html">rag-0021</a> 讨论了基于 Agent 循环的多步检索。本题聚焦<strong>端到端模型内部的反思标记内生触发、Logprob 阈值自适应控制与段落级 Beam 搜索重排机制</strong>。</p>
+<hr />
+<h3 id="1-四大反思标记reflection-tokens的作用与生命周期">1. 四大反思标记（Reflection Tokens）的作用与生命周期</h3>
+<p>根据 Asai et al. (2023) 原论文规范，Self-RAG 扩展了模型词表，引入了 4 类可生成的特殊标记（包含多个离散值取向）：</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>反思标记类别</th>
+<th>评估维度</th>
+<th>离散标记值（Token Values）</th>
+<th>生成时机与作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>[Retrieve]</code></strong></td>
+<td>是否需要检索</td>
+<td><code>[Retrieval]</code> / <code>[No Retrieval]</code> / <code>[Continue to Use]</code></td>
+<td>在处理输入或生成新段落前预测。若 <code>P([Retrieval]) &gt; threshold</code>，则触发外部检索器；否则直接自回归生成。</td>
+</tr>
+<tr>
+<td><strong><code>[IsRel]</code></strong></td>
+<td>文档相关性</td>
+<td><code>[Relevant]</code> / <code>[Irrelevant]</code></td>
+<td>检索召回到候选文档 $d$ 后生成。判断该文档是否真正提供了有助于解答输入 $x$ 的有用信息；无关文档直接过滤。</td>
+</tr>
+<tr>
+<td><strong><code>[IsSup]</code></strong></td>
+<td>事实支持度</td>
+<td><code>[Fully supported]</code> / <code>[Partially supported]</code> / <code>[No support]</code></td>
+<td>在利用文档 $d$ 生成回答候选段落 $y$ 之后生成。验证 $y$ 中的事实陈述是否完全来自证据 $d$ 的支撑，防范无中生有的幻觉。</td>
+</tr>
+<tr>
+<td><strong><code>[IsUse]</code></strong></td>
+<td>回答实用性</td>
+<td><code>[Utility:5]</code> 到 <code>[Utility:1]</code>（五档打分）</td>
+<td>在回答段落末尾生成。从整体信息量、逻辑连贯性与用户意图满足度对回答进行感知评分。</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h3 id="2-推理阶段的自适应决策与分段-beam-搜索">2. 推理阶段的自适应决策与分段 Beam 搜索</h3>
+<p>Self-RAG 在推理时绝非简单的文本正则匹配，而是严格基于<strong>特殊标记在首位 Logit 分布中的归一化概率</strong>进行加权打分：</p>
+<ol>
+<li><strong>自适应检索门控（Adaptive Retrieval Gate）</strong>：
+模型在生成段落首 Token 时，提取 <code>[Retrieval]</code> 与 <code>[No Retrieval]</code> 的对数概率：
+$$\text{Score}<em>{\text{ret}} = \frac{\exp(\log P([\text{Retrieval}]))}{\exp(\log P([\text{Retrieval}])) + \exp(\log P([\text{No Retrieval}]))}$$
+若 $\text{Score}</em>{\text{ret}} &gt; \tau$（$\tau$ 为预设阈值，如 0.5），则中断纯生成，并发检索 $K$ 个证据段落；若低于阈值，则走 <code>no_retrieval</code> 快速无检索生成路径。</li>
+<li><strong>段落级并行生成与加权重排（Segment-level Rerank）</strong>：
+对于并发召回的 $K$ 个段落，模型分别拼接 <code>[Retrieval]&lt;paragraph&gt;d_k&lt;/paragraph&gt;</code>，并行生成后续段落及 Critique Tokens。每个候选路径的综合评分由基础语言模型对数概率与反思标记概率加权求和：
+$$\text{Score}(y_k) = \text{SeqScore}(y_k) + w_{\text{rel}} \cdot P([\text{Relevant}]) + w_{\text{sup}} \cdot P([\text{Fully supported}]) + w_{\text{use}} \cdot \text{NormalizedUtility}$$
+通过 Beam Search 保留 Top 候选，并在最终输出时将特殊的反思标记自动剥离（Postprocess），呈现干净的文本给用户。</li>
+</ol>
+<hr />
+<h3 id="3-可运行的标准库实现反思门控与多候选重排仿真">3. 可运行的标准库实现：反思门控与多候选重排仿真</h3>
+<p>以下代码使用 Python 3 标准库，完整复现了 Self-RAG 推理引擎中的核心调度算法：自适应检索概率计算、多候选证据并行生成、Critic 标记解析以及加权重排选优：</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+from typing import List, Dict, Any, Tuple
+
+
+class SelfRAGInferenceEngine:
+    def __init__(self, retrieval_threshold: float = 0.5, w_rel: float = 1.0, w_sup: float = 1.0, w_use: float = 0.5):
+        self.retrieval_threshold = retrieval_threshold
+        self.w_rel = w_rel
+        self.w_sup = w_sup
+        self.w_use = w_use
+
+    def compute_retrieval_decision(self, logprob_ret: float, logprob_no_ret: float) -&gt; Tuple[bool, float]:
+        &quot;&quot;&quot;依据 [Retrieval] 与 [No Retrieval] 的 Logprob 计算归一化检索概率&quot;&quot;&quot;
+        p_ret = math.exp(logprob_ret)
+        p_no_ret = math.exp(logprob_no_ret)
+        prob = p_ret / (p_ret + p_no_ret)
+        do_retrieve = prob &gt; self.retrieval_threshold
+        return do_retrieve, prob
+
+    def score_and_rerank_candidates(self, candidates: List[Dict[str, Any]]) -&gt; List[Dict[str, Any]]:
+        &quot;&quot;&quot;依据 Self-RAG 官方公式计算各检索分支的综合奖励分并重排&quot;&quot;&quot;
+        scored_candidates = []
+        for cand in candidates:
+            # 基础序列平均 logprob
+            seq_score = cand[&quot;seq_logprob&quot;] / max(1, cand[&quot;token_len&quot;])
+
+            # 提取反思标记概率
+            p_rel = math.exp(cand[&quot;logprob_rel&quot;])
+            p_sup = math.exp(cand[&quot;logprob_sup&quot;])
+            # Utility 五档打分归一化 (1~5 -&gt; 0.2~1.0)
+            utility_normalized = cand[&quot;utility_level&quot;] / 5.0
+
+            # 综合评分公式 (Asai et al. 公式 4)
+            total_score = seq_score + self.w_rel * p_rel + self.w_sup * p_sup + self.w_use * utility_normalized
+
+            scored_candidates.append({
+                &quot;passage_id&quot;: cand[&quot;passage_id&quot;],
+                &quot;text&quot;: cand[&quot;text&quot;],
+                &quot;total_score&quot;: total_score,
+                &quot;p_rel&quot;: p_rel,
+                &quot;p_sup&quot;: p_sup,
+                &quot;utility&quot;: utility_normalized
+            })
+
+        # 按总分降序排序
+        scored_candidates.sort(key=lambda x: x[&quot;total_score&quot;], reverse=True)
+        return scored_candidates
+
+
+# 构造仿真测试用例
+engine = SelfRAGInferenceEngine(retrieval_threshold=0.5)
+
+# 1. 模拟判断输入是否需要检索
+# 针对常识问答，[No Retrieval] 概率显著高于 [Retrieval]
+do_ret_1, prob_1 = engine.compute_retrieval_decision(logprob_ret=-2.3, logprob_no_ret=-0.1)
+assert do_ret_1 is False
+assert prob_1 &lt; 0.5
+
+# 针对专有知识问答，[Retrieval] 概率占据主导
+do_ret_2, prob_2 = engine.compute_retrieval_decision(logprob_ret=-0.05, logprob_no_ret=-3.0)
+assert do_ret_2 is True
+assert prob_2 &gt; 0.5
+
+# 2. 模拟并发召回两个候选段落并生成评估
+mock_candidates = [
+    {
+        &quot;passage_id&quot;: &quot;doc_noise&quot;,
+        &quot;text&quot;: &quot;噪声文档生成的缺乏证据支撑的回答&quot;,
+        &quot;seq_logprob&quot;: -5.0,
+        &quot;token_len&quot;: 10,
+        &quot;logprob_rel&quot;: -2.0,  # Relevant 概率低 (约 0.135)
+        &quot;logprob_sup&quot;: -3.0,  # Fully supported 概率低 (约 0.050)
+        &quot;utility_level&quot;: 2
+    },
+    {
+        &quot;passage_id&quot;: &quot;doc_perfect&quot;,
+        &quot;text&quot;: &quot;精准文档生成的高相关、强支撑回答&quot;,
+        &quot;seq_logprob&quot;: -4.8,
+        &quot;token_len&quot;: 10,
+        &quot;logprob_rel&quot;: -0.05, # Relevant 概率高 (约 0.951)
+        &quot;logprob_sup&quot;: -0.10, # Fully supported 概率高 (约 0.905)
+        &quot;utility_level&quot;: 5
+    }
+]
+
+ranked = engine.score_and_rerank_candidates(mock_candidates)
+
+assert len(ranked) == 2
+assert ranked[0][&quot;passage_id&quot;] == &quot;doc_perfect&quot;
+assert ranked[0][&quot;total_score&quot;] &gt; ranked[1][&quot;total_score&quot;]
+
+print(f&quot;Retrieval Gate: general_query={do_ret_1} ({prob_1:.3f}), factual_query={do_ret_2} ({prob_2:.3f})&quot;)
+print(f&quot;Top Candidate: {ranked[0][&#x27;passage_id&#x27;]} with total_score={ranked[0][&#x27;total_score&#x27;]:.3f}&quot;)
+print(f&quot;Runner-up Candidate: {ranked[1][&#x27;passage_id&#x27;]} with total_score={ranked[1][&#x27;total_score&#x27;]:.3f}&quot;)
+print(&quot;Self-RAG reflection token inference verification passed&quot;)
+</code></pre>
+<p>实际执行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">Retrieval Gate: general_query=False (0.100), factual_query=True (0.950)
+Top Candidate: doc_perfect with total_score=1.876
+Runner-up Candidate: doc_noise with total_score=-0.115
+Self-RAG reflection token inference verification passed
+</code></pre>
+<hr />
+<h3 id="4-关键权衡与工程落地的常见挑战">4. 关键权衡与工程落地的常见挑战</h3>
+<h4 id="权衡trade-offs与优势">权衡（Trade-offs）与优势</h4>
+<ol>
+<li><strong>摆脱死板的全量检索</strong>：模型对于自己 parametric knowledge（参数知识）已充分掌握的问题（如“写一首关于秋天的七言绝句”），能主动预测 <code>[No Retrieval]</code> 跳过向量数据库检索，端到端延迟直接减半。</li>
+<li><strong>细粒度抗幻觉与事实溯源</strong>：不是在全篇生成完再调用外部模型“做一次昂贵审计”，而是以段落（Segment）为粒度内生生成 <code>[IsSup]</code> 标记，精准阻断幻觉段落的继续展开。</li>
+</ol>
+<h4 id="工程落地的致命挑战">工程落地的致命挑战</h4>
+<ol>
+<li><strong>训练门槛极高（Training Overhead）</strong>：
+Self-RAG 必须对基座模型进行两阶段监督微调（Critic 模型标注 + Generator 强化训练），要求在预训练词表中注入特殊标记并构建包含正负例反思标注的大规模数据集（如 15 万条标注轨迹），无法直接套用只提供 API 的闭源商用大模型（如纯通过 Prompt 无法获得真正的底层 Logprob 分布控制）。</li>
+<li><strong>多分支推理的算力与显存开销</strong>：
+在启用 Beam Search 时，若检索召回 $K=5$ 个段落，相当于在每个思维段落位置同时分裂出 5 条前向生成路径并计算 Logprobs，KV Cache 和显存占用成倍膨胀，吞吐显著受限。</li>
+<li><strong>闭源 API 降级妥协（Prompt-based Simulation）</strong>：
+在不具备自建微调模型条件的团队中，常将 Self-RAG 的思想“降级”实现为三阶段 Prompt 调度器（Gate Agent $\to$ Retriever $\to$ Evaluator Agent）。这种伪 Self-RAG 虽然保留了按需与反思逻辑，但多次 HTTP 往返使延迟急剧上升，失去了原版原生的端到端 token 级控制效率。</li>
+</ol>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“在 System Prompt 里写‘如果你不知道请回答[Retrieve]’就是 Self-RAG。”</strong>
+事实：纯 Prompt 引导属于外层模式匹配，很容易发生拒绝遵循或格式失效；原版 Self-RAG 是在词表中新增专有特殊 Token 并经过监督微调与 Logprob 概率校准的严谨内生机制。</li>
+<li><strong>误区二：“Self-RAG 只能用在段落开头检索，不能多轮检索。”</strong>
+事实：原论文支持在长文本生成的每一个段落切分点（如句号或换行）重新预测 <code>[Retrieve]</code>，实现长文多步渐进式按需检索。</li>
+<li><strong>误区三：“反思标记最终会打印给最终用户看。”</strong>
+事实：反思标记是仅供推理重排和决策的控制元数据，在最终流式输出给用户前必须经过后处理剥离，只呈现干净的自然语言回答。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/pubalisen/ai-ml-interview-deep-dives/blob/05cbb4c7383de742c90ab5e811130f658a4269ef/rag/14-self-rag.md" target="_blank" rel="noopener noreferrer">ai-ml-interview-deep-dives, rag/14-self-rag.md</a>。固定 commit，独立拓展改编。</li>
+<li>Asai et al., <a href="https://arxiv.org/html/2310.11511v1" target="_blank" rel="noopener noreferrer">Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection</a>，ICLR 2024，§2–§3：四大反思标记（Retrieve, IsRel, IsSup, IsUse）定义、两阶段训练与段落级 Beam 搜索重排算法。</li>
+<li>官方 Self-RAG 代码库，<a href="https://github.com/AkariAsai/self-rag/blob/1fcdc420e48f50a7d7ab1ece5494221b93252e99/retrieval_lm/run_short_form.py#L61-L120" target="_blank" rel="noopener noreferrer">retrieval_lm/run_short_form.py</a>：固定 commit 的 <code>do_retrieve</code> 自适应阈值计算与加权奖励公式实现。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-10-15</strong>。仅执行 Python 调度逻辑测试，未调用外部大模型或真实 GPU 评测。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">Self-RAG 与 Corrective RAG（CRAG）有什么异同？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：Self-RAG 与 Corrective RAG（CRAG）有什么异同？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ul>
+<li><strong>CRAG</strong>：更偏向外部流水线编排（Pipeline-level）。由轻量 Evaluator 模型评估检索质量，质量好直接使用，质量差触发 Web 搜索，不确定则结合两组检索结果；基座模型本身无需微调特殊标记。</li>
+<li><strong>Self-RAG</strong>：是模型内生反思（Model-intrinsic）。将是否检索、是否相关、是否支持作为特殊 Token 训练进模型自身，统一在一个生成前向流中完成。</li>
+</ul>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">为什么不简单地看答案中的引用链接，而一定要模型预测 <code>[IsSup]</code>？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么不简单地看答案中的引用链接，而一定要模型预测 [IsSup]？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>模型生成的文字引用链接极易发生“假引用（Hallucinated Citations）”——即文字中标注了 <code>[1]</code>，但翻查文档 1 根本找不到对应陈述。而训练了 <code>[IsSup]</code> 反思标记的模型是在对比当前生成片段与传入证据上下文的一致性，能直接从预测概率上量化事实性支撑强度。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">阈值 $\tau$ 应该如何设置？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：阈值 $\tau$ 应该如何设置？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>阈值 $\tau$ 充当了“检索激进程度”的调节旋钮：</p>
+<ul>
+<li>在对事实准确率极度敏感的医疗、法律、金融场景中，应调低 $\tau$（如 0.2~0.3），让模型倾向于“只要有一点不确定就去查证据”；</li>
+<li>在注重交互低延迟的日常助手场景中，可调高 $\tau$（如 0.6~0.7），减少无效检索开销。</li>
+</ul>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>RAG-0047 · 单题笔记</span><a href="../questions/rag-0047-self-rag-reflection-tokens.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "rag-0047", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
