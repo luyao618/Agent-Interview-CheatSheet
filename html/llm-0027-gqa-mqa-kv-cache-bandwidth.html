@@ -1,0 +1,768 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。GQA（分组查询注意力）与 MQA 是如何缓解 KV Cache 显存与带宽瓶颈的，与标准 MHA 相比如何权衡？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0027-gqa-mqa-kv-cache-bandwidth.md">
+  <meta name="source-sha256" content="4cb327677ddeaf376f0552fbd34e28b6d7af3ae05e1f6158e3e7b1a7e2a0ca98">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>GQA（分组查询注意力）与 MQA 是如何缓解 KV Cache 显存与带宽瓶颈的，与标准 MHA 相比如何权衡？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0027</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title"><em>GQA</em>（分组查询注意力）与 MQA 是如何缓解 KV Cache 显存与带宽瓶颈的，与标准 MHA 相比如何权衡？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>进阶</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>在自回归大语言模型（LLM）的 Decode 阶段，每生成一个新 Token 都需要从高带宽显存（HBM）中读取所有历史位置的 Key 和 Value 缓存（KV Cache），这使得长上下文和高并发推理成为典型的访存受限（Memory-bandwidth Bound）过程。</p>
+<p>为了缓解标准多头注意力（Multi-Head Attention, MHA）的 KV Cache 压力，业界演进出了多查询注意力（Multi-Query Attention, MQA）与分组查询注意力（Grouped-Query Attention, GQA，如 LLaMA-2 70B、LLaMA-3、Qwen2 等广泛采用）。请深入剖析：</p>
+<ol>
+<li>MHA、MQA 与 GQA 在 Query、Key、Value 头数分配与投影参数矩阵维度上有何本质区别？它们对 KV Cache 显存占用与访存带宽的压缩比例如何计算？</li>
+<li>在前向计算中，当 $G$ 个 KV 头需要与 $H$ 个 Query 头做注意力内积时（$H$ 为 $G$ 的整数倍），底层是如何完成组内映射与广播对齐（如 <code>repeat_kv</code>）的？</li>
+<li>如何通过 Uptraining（继续预训练转换）将已有的 MHA 预训练模型低成本改造为 GQA/MQA 模型？在工程实践中如何权衡组数 $G$、张量并行（TP）切分与表达能力？</li>
+</ol>
+<p>本题由公开大模型架构面试整理扩展改编，不是已核实的企业真题；不采信脱离具体上下文长度、Batch Size 与硬件带宽条件的绝对推理加速比承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-10-17</span></p><div class="prose"><p><strong>GQA（Grouped-Query Attention）通过将 $H$ 个 Query 注意力头划分为 $G$ 个组（$1 &lt; G &lt; H$），并让同一组内的 $H/G$ 个 Query 头共享同一套 Key 和 Value 头，直接将 KV Cache 的显存容量与每步 Decode 的 HBM 访存带宽需求降低为标准 MHA 的 $G/H$（压缩 $H/G$ 倍），在几乎不损失模型生成质量的前提下获得了接近 MQA 的推理吞吐。</strong></p>
+<p>现有 <a href="llm-0010-causal-attention-architecture.html">llm-0010</a> 介绍了标准因果自注意力的计算机制，<a href="llm-0016-quantization-local-memory-budget.html">llm-0016</a> 讨论了整机部署的显存预算，<a href="llm-0018-kv-cache-prefill-decode.html">llm-0018</a> 解析了 KV Cache 在 Prefill 与 Decode 阶段的复用原理。本题聚焦 <strong>MHA / MQA / GQA 的头数分组拓扑、KV 缓存与带宽定量推导、组内广播计算流以及 Uptraining 权重转换机制</strong>。</p>
+<hr />
+<h3 id="1-mhamqa-与-gqa-的结构对比与-kv-cache-定量推导">1. MHA、MQA 与 GQA 的结构对比与 KV Cache 定量推导</h3>
+<p>设模型隐藏层维度为 $d_{\text{model}}$，Query 总头数为 $H$，每个头的维度为 $d_k = d_v = d_{\text{head}} = d_{\text{model}} / H$，层数为 $L$，批量大小为 $B$，当前上下文序列长度为 $S$，单个浮点数占 $b$ 字节（例如 FP16/BF16 下 $b=2$）。</p>
+<p>三者在注意力投影层与缓存结构上的核心差异如下：</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>标准多头注意力 (MHA)</th>
+<th>多查询注意力 (MQA)</th>
+<th>分组查询注意力 (GQA-$G$)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Query 头数</strong></td>
+<td>$H$</td>
+<td>$H$</td>
+<td>$H$</td>
+</tr>
+<tr>
+<td><strong>Key / Value 头数</strong></td>
+<td>$H$（一对一独立）</td>
+<td>$1$（全场全局共享）</td>
+<td>$G$（分 $G$ 组，每组 $H/G$ 个 Q 头共享 1 个 KV 头）</td>
+</tr>
+<tr>
+<td><strong>$W_Q$ 投影参数形状</strong></td>
+<td>$d_{\text{model}} \times (H \cdot d_{\text{head}})$</td>
+<td>$d_{\text{model}} \times (H \cdot d_{\text{head}})$</td>
+<td>$d_{\text{model}} \times (H \cdot d_{\text{head}})$</td>
+</tr>
+<tr>
+<td><strong>$W_K, W_V$ 投影参数形状</strong></td>
+<td>$d_{\text{model}} \times (H \cdot d_{\text{head}})$</td>
+<td>$d_{\text{model}} \times (1 \cdot d_{\text{head}})$</td>
+<td>$d_{\text{model}} \times (G \cdot d_{\text{head}})$</td>
+</tr>
+<tr>
+<td><strong>单 Token 跨全层 KV Cache 大小</strong></td>
+<td>$2 \cdot b \cdot L \cdot H \cdot d_{\text{head}}$</td>
+<td>$2 \cdot b \cdot L \cdot 1 \cdot d_{\text{head}}$</td>
+<td>$2 \cdot b \cdot L \cdot G \cdot d_{\text{head}}$</td>
+</tr>
+<tr>
+<td><strong>相对 MHA 的 KV 缓存压缩比</strong></td>
+<td>$1\times$（基准）</td>
+<td>$H\times$（最大压缩）</td>
+<td>$\frac{H}{G}\times$（可调折中）</td>
+</tr>
+<tr>
+<td><strong>表达能力与训练稳定性</strong></td>
+<td>最高（多视角特征捕捉）</td>
+<td>明显退化，训练易出现不稳定性</td>
+<td>接近 MHA，显著优于 MQA</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote>
+<p><strong>统一视角</strong>：GQA 是注意力头共享机制的广义形式（Generalized Multi-Query Attention）——当 $G = H$ 时，GQA 退化为标准 <strong>MHA</strong>；当 $G = 1$ 时，GQA 退化为极端共享的 <strong>MQA</strong>。</p>
+</blockquote>
+<h4 id="实例量化计算以-70b-级模型参数为例">实例量化计算（以 70B 级模型参数为例）</h4>
+<p>假设 $L=80, H=64, d_{\text{head}}=128$，采用 BF16（$b=2$ 字节），序列长度 $S=32768$，Batch Size $B=16$：</p>
+<ul>
+<li><strong>标准 MHA（$G=64$）</strong>：
+$$\text{KV Cache}_{\text{MHA}} = 2 \times 2 \times 80 \times 64 \times 128 \times 32768 \times 16 = 1,374,389,534,720 \text{ Bytes} = 1280 \text{ GiB}$$</li>
+<li><strong>GQA-8（$G=8$，每 8 个 Q 头共享 1 个 KV 头）</strong>：
+$$\text{KV Cache}_{\text{GQA-8}} = \frac{1280 \text{ GiB}}{64 / 8} = 160 \text{ GiB}$$</li>
+<li><strong>MQA（$G=1$）</strong>：
+$$\text{KV Cache}_{\text{MQA}} = \frac{1280 \text{ GiB}}{64} = 20 \text{ GiB}$$</li>
+</ul>
+<p>可以看到，GQA-8 直接将 1280 GiB 的 KV Cache 砍到了 160 GiB（节省 87.5%），使原本需要十几张 80GB 显卡才能放下的长序列批次得以在单机 8 卡内驻留，且每生成一个新 Token 从 HBM 搬运 KV 的字节数也同步减少了 87.5%。</p>
+<hr />
+<h3 id="2-前向计算的组内映射与-repeat_kv-实现细节">2. 前向计算的组内映射与 <code>repeat_kv</code> 实现细节</h3>
+<p>在 GQA 的前向传播中，输入隐状态 $X \in \mathbb{R}^{B \times S \times d_{\text{model}}}$ 经过线性投影后得到：</p>
+<ul>
+<li>$Q \in \mathbb{R}^{B \times H \times S \times d_{\text{head}}}$</li>
+<li>$K, V \in \mathbb{R}^{B \times G \times S \times d_{\text{head}}}$</li>
+</ul>
+<p>设每组包含的 Query 头数为 $r = H / G$（即 <code>num_key_value_groups</code>）。对于第 $h \in {0, 1, \dots, H-1}$ 个 Query 头，它所对应的共享 Key/Value 头索引为：
+$$g(h) = \left\lfloor \frac{h}{r} \right\rfloor = \text{h // (H // G)}$$</p>
+<p>将该组内的单份 $K_{g(h)}, V_{g(h)}$ 与对应的 $Q_h$ 计算缩放点积注意力：
+$$\text{head}<em>h = \text{ softmax}\left(\frac{Q_h K</em>{g(h)}^\top}{\sqrt{d_{\text{head}}}} + M\right) V_{g(h)}$$</p>
+<h4 id="源码级张量对齐与-kernel-优化">源码级张量对齐与 Kernel 优化</h4>
+<p>在 Hugging Face <code>transformers</code>（如 <code>modeling_llama.py</code> 的 <code>repeat_kv</code>）的朴素 PyTorch 实现中，为了让维度为 $(B, G, S, d_{\text{head}})$ 的 $K, V$ 能与 $(B, H, S, d_{\text{head}})$ 的 $Q$ 直接调用批量矩阵乘法（<code>torch.matmul</code>），会通过插入维度并 <code>expand</code> + <code>reshape</code> 将 $K, V$ 扩展为 $H$ 个头。</p>
+<p>但<strong>在生产级推理引擎（如 FlashAttention-2 / vLLM PagedAttention）的融合算子内部，绝不会在 HBM 中真正复制出 $H$ 份物理 KV 显存</strong>，而是直接在 GPU SRAM 寄存器/共享内存层面通过索引偏移 <code>h // r</code> 让同一组内的多个 Query 头并发读取同一块 KV 缓存块，从而真正兑现 HBM 带宽的节省。</p>
+<hr />
+<h3 id="3-从-mha-到-gqa-的-uptraining继续预训练转换">3. 从 MHA 到 GQA 的 Uptraining（继续预训练转换）</h3>
+<p>Ainslie et al. (EMNLP 2023) 指出，不需要从零开始预训练一个 GQA 模型，可以通过 <strong>两步 Uptraining 方案</strong> 将已有的开源 MHA 模型（如 T5、LLaMA-1）低成本转化为 GQA 模型：</p>
+<ol>
+<li><strong>投影权重均值池化（Mean Pooling Checkpoint Conversion）</strong>：
+对于原 MHA 模型的 $H$ 个 Key 投影矩阵 ${W_K^{(0)}, W_K^{(1)}, \dots, W_K^{(H-1)}}$ 和 Value 投影矩阵 ${W_V^{(0)}, \dots, W_V^{(H-1)}}$，按组长 $r = H / G$ 划分为 $G$ 组，对组内原有的投影矩阵直接求算术平均（Mean Pooling），作为新 GQA 第 $g$ 个 KV 头的初始权重：
+$$\widetilde{W}<em>K^{(g)} = \frac{1}{r} \sum</em>{j = g \cdot r}^{(g+1)r - 1} W_K^{(j)}, \quad \widetilde{W}<em>V^{(g)} = \frac{1}{r} \sum</em>{j = g \cdot r}^{(g+1)r - 1} W_V^{(j)}$$
+论文消融实验证明，<strong>Mean Pooling 显著优于随机初始化（Random Initialization）或只挑选组内第一个头（First Head Selection）</strong>，因为它最大程度保留了原多头预训练积累的特征空间信息。</li>
+<li><strong>小比例继续预训练（Short Uptraining）</strong>：
+使用转换后的权重，按照原预训练配方继续训练仅约 <strong>$\alpha = 5%$</strong> 的原始预训练步数/算力，模型即可迅速适应组内共享 KV 的结构约束，恢复到接近原 MHA 的评测指标。</li>
+</ol>
+<hr />
+<h3 id="4-可运行的标准库实现gqa-组映射uptraining-均值池化与显存核算">4. 可运行的标准库实现：GQA 组映射、Uptraining 均值池化与显存核算</h3>
+<p>以下代码使用纯 Python 3 标准库实现 MHA / MQA / GQA 的 KV Cache 容量核算、Uptraining 权重 Mean Pooling 转换，以及 GQA 分组注意力前向计算与 <code>repeat_kv</code> 等价性验证：</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+from typing import List, Tuple
+
+
+def kv_cache_gib(
+    batch_size: int,
+    seq_len: int,
+    num_layers: int,
+    num_kv_heads: int,
+    head_dim: int,
+    bytes_per_elem: int = 2,
+) -&gt; float:
+    &quot;&quot;&quot;计算指定 KV 头数下的 KV Cache 总显存 (GiB)&quot;&quot;&quot;
+    total_bytes = 2 * bytes_per_elem * num_layers * num_kv_heads * head_dim * seq_len * batch_size
+    return total_bytes / (1024 ** 3)
+
+
+def mean_pool_kv_heads(mha_heads: List[List[float]], num_groups: int) -&gt; List[List[float]]:
+    &quot;&quot;&quot;
+    模拟 GQA Uptraining 的 Checkpoint 转换：
+    将 H 个头的参数向量 (H, D) 按组进行 Mean Pooling 聚合为 (G, D)
+    &quot;&quot;&quot;
+    num_q_heads = len(mha_heads)
+    assert num_q_heads % num_groups == 0, &quot;Query 头数必须能被 G 整除&quot;
+    group_size = num_q_heads // num_groups
+    dim = len(mha_heads[0])
+
+    pooled: List[List[float]] = []
+    for g in range(num_groups):
+        group_slice = mha_heads[g * group_size : (g + 1) * group_size]
+        mean_vec = [
+            sum(group_slice[i][d] for i in range(group_size)) / group_size
+            for d in range(dim)
+        ]
+        pooled.append(mean_vec)
+    return pooled
+
+
+def gqa_attention_single_step(
+    q_heads: List[List[float]],
+    k_cache: List[List[List[float]]],
+    v_cache: List[List[List[float]]],
+) -&gt; Tuple[List[List[float]], List[List[float]]]:
+    &quot;&quot;&quot;
+    单步 Decode 的 GQA 注意力计算 (直接通过 h // group_size 索引共享 KV，无物理复制)
+    q_heads: (H, d_head)
+    k_cache, v_cache: (G, seq_len, d_head)
+    返回: (H, d_head) 输出向量列表, (H, seq_len) 注意力权重列表
+    &quot;&quot;&quot;
+    num_q_heads = len(q_heads)
+    num_kv_heads = len(k_cache)
+    assert num_q_heads % num_kv_heads == 0
+    group_size = num_q_heads // num_kv_heads
+    head_dim = len(q_heads[0])
+    scale = 1.0 / math.sqrt(head_dim)
+
+    outputs: List[List[float]] = []
+    attn_weights_all: List[List[float]] = []
+
+    for h in range(num_q_heads):
+        kv_idx = h // group_size  # 组内映射：决定当前 Q 头读取哪一个 KV 头
+        q_vec = q_heads[h]
+        k_seq = k_cache[kv_idx]
+        v_seq = v_cache[kv_idx]
+
+        # 计算缩放点积分数
+        scores = [
+            sum(q_vec[d] * k_token[d] for d in range(head_dim)) * scale
+            for k_token in k_seq
+        ]
+        max_s = max(scores)
+        exps = [math.exp(s - max_s) for s in scores]
+        denom = sum(exps)
+        probs = [e / denom for e in exps]
+        attn_weights_all.append(probs)
+
+        # 加权聚合 Value
+        out_vec = [
+            sum(probs[t] * v_seq[t][d] for t in range(len(v_seq)))
+            for d in range(head_dim)
+        ]
+        outputs.append(out_vec)
+
+    return outputs, attn_weights_all
+
+
+# 1. 验证 70B 模型 (L=80, H=64, d_head=128, B=16, S=32768, BF16) 的 KV Cache 压缩
+mha_mem = kv_cache_gib(16, 32768, 80, num_kv_heads=64, head_dim=128)
+gqa8_mem = kv_cache_gib(16, 32768, 80, num_kv_heads=8, head_dim=128)
+mqa_mem = kv_cache_gib(16, 32768, 80, num_kv_heads=1, head_dim=128)
+assert mha_mem == 1280.0
+assert gqa8_mem == 160.0
+assert mqa_mem == 20.0
+
+# 2. 验证 Uptraining Mean Pooling 转换 (H=4 -&gt; G=2)
+raw_k_heads = [
+    [1.0, 2.0],
+    [3.0, 4.0],
+    [10.0, 20.0],
+    [30.0, 40.0],
+]
+pooled_k = mean_pool_kv_heads(raw_k_heads, num_groups=2)
+assert pooled_k == [[2.0, 3.0], [20.0, 30.0]]
+
+# 3. 验证 GQA (H=4, G=2, S=2, d_head=2) 前向计算与 repeat_kv 展开完全等价
+q_demo = [
+    [1.0, 0.0],  # Group 0, Q0
+    [0.0, 1.0],  # Group 0, Q1
+    [1.0, 1.0],  # Group 1, Q2
+    [2.0, -1.0], # Group 1, Q3
+]
+k_cache_gqa = [
+    [[1.0, 0.0], [0.0, 1.0]],  # KV Head 0 (被 Q0, Q1 共享)
+    [[0.5, 0.5], [1.5, -0.5]], # KV Head 1 (被 Q2, Q3 共享)
+]
+v_cache_gqa = [
+    [[10.0, 20.0], [30.0, 40.0]],
+    [[5.0, 15.0], [25.0, 35.0]],
+]
+
+out_direct, weights_direct = gqa_attention_single_step(q_demo, k_cache_gqa, v_cache_gqa)
+
+# 构造显式 repeat_kv 后的等效 4 头缓存 (G=2 -&gt; H=4)
+k_repeated = [k_cache_gqa[0], k_cache_gqa[0], k_cache_gqa[1], k_cache_gqa[1]]
+v_repeated = [v_cache_gqa[0], v_cache_gqa[0], v_cache_gqa[1], v_cache_gqa[1]]
+out_repeated, _ = gqa_attention_single_step(q_demo, k_repeated, v_repeated)
+
+for h in range(4):
+    for d in range(2):
+        assert math.isclose(out_direct[h][d], out_repeated[h][d], rel_tol=1e-12)
+
+print(f&quot;70B KV Cache (B=16, S=32K): MHA={mha_mem:.0f}GiB, GQA-8={gqa8_mem:.0f}GiB, MQA={mqa_mem:.0f}GiB&quot;)
+print(f&quot;Uptraining Mean-Pooled K heads: {pooled_k}&quot;)
+print(f&quot;GQA Head-0 output: {[round(x, 4) for x in out_direct[0]]}, Head-1 output: {[round(x, 4) for x in out_direct[1]]}&quot;)
+print(&quot;GQA attention, repeat_kv equivalence, and uptraining checks passed&quot;)
+</code></pre>
+<p>实际执行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">70B KV Cache (B=16, S=32K): MHA=1280GiB, GQA-8=160GiB, MQA=20GiB
+Uptraining Mean-Pooled K heads: [[2.0, 3.0], [20.0, 30.0]]
+GQA Head-0 output: [16.6048, 26.6048], Head-1 output: [23.3952, 33.3952]
+GQA attention, repeat_kv equivalence, and uptraining checks passed
+</code></pre>
+<hr />
+<h3 id="5-工程落地的核心权衡与张量并行tp约束">5. 工程落地的核心权衡与张量并行（TP）约束</h3>
+<ol>
+<li><strong>组数 $G$ 与张量并行度（Tensor Parallelism, TP）的整除关系</strong>：
+在多卡张量并行推理中，注意力层是按头（Head Dimension）切分到不同 GPU 上的。
+<ul>
+<li>若选择了 <strong>GQA-$G$</strong>，为了避免跨卡通信或重复存储，通常要求 <strong>$G$ 能被 TP 度数整除</strong>（例如 $G=8$ 恰好完美适配单机 8 卡 <code>TP=8</code>，每张 GPU 持有 $64/8=8$ 个 Query 头和 $8/8=1$ 个 KV 头）。</li>
+<li>如果采用 <strong>MQA（$G=1$）</strong> 跑在 <code>TP=8</code> 上，由于只有 1 个 KV 头无法继续切分，工程上必须在全部 8 张卡上<strong>冗余复制（Replicate）同一份 KV Head</strong>，此时单卡上的 KV Cache 占用与 <code>GQA-8</code> 在 <code>TP=8</code> 下完全一样，MQA 在多卡切分下反而失去了相对 <code>GQA-8</code> 的显存优势！这也是为什么 70B 级模型普遍选择 $G=8$ 而非 $G=1$ 的关键工程原因。</li>
+</ul>
+</li>
+<li><strong>为什么 GQA 主要加速 Decode 而对短序列 Prefill 加速不明显？</strong>
+<ul>
+<li><strong>Prefill 阶段</strong>是计算受限（Compute-bound）：尽管 GQA 减少了 $W_K, W_V$ 的线性投影计算量，但占大头的 $Q K^\top$ 与 $\text{Attn} \cdot V$ 仍然要对全部 $H$ 个 Query 头执行，总 FLOPs 几乎没有减少。</li>
+<li><strong>Decode 阶段</strong>是访存带宽受限（Memory-bandwidth-bound）：算术强度极低，耗时主要花在从 HBM 读取历史 KV Cache 上，因此 GQA 削减 KV Cache 体积能立竿见影地降低每步解码延迟并提升最大并发 Batch Size。</li>
+</ul>
+</li>
+</ol>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“PyTorch 代码里调用了 <code>repeat_kv</code> 把 KV 扩展成了 $H$ 个头，所以 GQA 实际上根本没省显存。”</strong>
+事实：<strong>KV Cache 持久化存储发生在 <code>repeat_kv</code> 之前</strong>！缓存张量在解码步之间一直以 $(B, G, S, d_{\text{head}})$ 的紧凑形状常驻显存。即便使用朴素 <code>repeat_kv</code>，也只是在单层前向计算瞬间产生临时视图/张量，算完该层即释放；而在 FlashAttention / PagedAttention 等生产内核中，连这步临时展开都无需落盘 HBM。</li>
+<li><strong>误区二：“GQA 可以把长序列 Attention 的计算复杂度从 $O(S^2)$ 降到 $O(S)$。”</strong>
+事实：GQA 没有改变自注意力机制对序列长度 $S$ 的二次方复杂度（Prefill 依然是 $O(H \cdot S^2 \cdot d_{\text{head}})$，Decode 每步依然是 $O(H \cdot S \cdot d_{\text{head}})$）。它降低的是 KV 存储与 HBM 内存读取带宽的常数因子 $G/H$。</li>
+<li><strong>误区三：“把预训练好的 MHA 模型转成 GQA，只需要直接挑每组的第 1 个 KV 头留下、其余丢弃即可上线使用。”</strong>
+事实：直接丢弃头或仅做 Mean Pooling 而不经过继续训练，模型困惑度（PPL）会立即崩塌；必须配合小比例（约 5% 原始算力）的 Uptraining 让参数重新对齐分布。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/RiddleGo/agent-interview-300/blob/e29d19298e86f4a779064883e23b1a72bf6687fb/01-LLM%E5%9F%BA%E7%A1%80/18-GQA-MQA.md" target="_blank" rel="noopener noreferrer">RiddleGo/agent-interview-300, 01-LLM基础/18-GQA-MQA.md</a>。固定 commit，独立重构拓展。</li>
+<li>Ainslie et al., <a href="https://arxiv.org/html/2305.13245v3" target="_blank" rel="noopener noreferrer">GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints</a>，EMNLP 2023，§2.1–§3.3：Uptraining 均值池化转换方案、5% 预训练恢复比例与 GQA-$G$ 分组消融实验。</li>
+<li>Shazeer, <a href="https://arxiv.org/abs/1911.02150" target="_blank" rel="noopener noreferrer">Fast Transformer Decoding: One Write-Head is All You Need</a>，2019：Multi-Query Attention (MQA) 原始论文与自回归解码带宽瓶颈分析。</li>
+<li>Hugging Face Transformers 源码，<a href="https://github.com/huggingface/transformers/blob/v4.57.1/src/transformers/models/llama/modeling_llama.py#L159-L169" target="_blank" rel="noopener noreferrer">src/transformers/models/llama/modeling_llama.py</a>：固定版本 tag <code>v4.57.1</code> 的 <code>repeat_kv</code> 组内广播对齐实现。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-10-17</strong>。仅执行标准库代数与数值仿真验证，未运行 GPU 吞吐基准测试。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">同一组内的多个 Query 头既然共享完全相同的 Key 和 Value，它们的注意力输出会完全一样吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：同一组内的多个 Query 头既然共享完全相同的 Key 和 Value，它们的注意力输出会完全一样吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不会。虽然组内共享同一份 $K_{g(h)}$ 和 $V_{g(h)}$，但每个 Query 头拥有<strong>各自独立的投影矩阵 $W_Q^{(h)}$</strong> 和不同的旋转位置编码作用结果，因此生成的查询向量 $Q_h$ 互不相同（如上文代码中 Head-0 与 Head-1 共享 KV Head 0，但因 $Q_0 \neq Q_1$，最终得到的注意力分布和输出向量完全不同）。不同 Query 头依然可以从同一份上下文表征中检索不同的语义侧面。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">既然 GQA 减少了 $W_K$ 和 $W_V$ 的参数量，模型总参数量会大幅缩水吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：既然 GQA 减少了 $W_K$ 和 $W_V$ 的参数量，模型总参数量会大幅缩水吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>为了保持对比公平或维持模型容量，主流架构（如 LLaMA-2 70B）在把 MHA 改为 GQA 省下 $W_K, W_V$ 参数的同时，会<strong>按比例调大前馈网络（FFN / SwiGLU）的中间层维度</strong>（例如将 <code>intermediate_size</code> 扩大），把省下来的参数量补回到计算密集度更高的 MLP 层中，从而在总参数量不变的前提下进一步增强模型表达能力。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">GQA 与 DeepSeek-V2/V3 提出的 MLA（Multi-head Latent Attention）在压缩 KV Cache 的思路上有何本质不同？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：GQA 与 DeepSeek-V2/V3 提出的 MLA（Multi-head Latent Attention）在压缩 KV Cache 的思路上有何本质不同？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ul>
+<li><strong>GQA</strong> 是<strong>硬性的头间共享（Head-wise Sharing）</strong>：直接砍掉独立的 KV 头数量，所有组内头強制看完全相同的低维物理向量。</li>
+<li><strong>MLA</strong> 是<strong>低秩潜在向量联合压缩（Low-rank Joint Compression）</strong>：将所有头的 Key 和 Value 联合投影到一个低维潜在向量 $c_t^{KV}$ 中进行缓存（推理时仅存压缩后的潜变量与解耦的 RoPE key），在矩阵乘法时可将解压矩阵吸收到 $W_Q$ 和 $W_O$ 中，从而在比 GQA 缓存更小的前提下，保留每个注意力头各自独立的等效 Key/Value 特征。</li>
+</ul>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0027 · 单题笔记</span><a href="../questions/llm-0027-gqa-mqa-kv-cache-bandwidth.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0027", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
