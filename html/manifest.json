@@ -1444,6 +1444,17 @@
       "images": 0
     },
     {
+      "id": "llm-0027",
+      "file": "llm-0027-gqa-mqa-kv-cache-bandwidth.html",
+      "source": "questions/llm-0027-gqa-mqa-kv-cache-bandwidth.md",
+      "source_sha256": "4cb327677ddeaf376f0552fbd34e28b6d7af3ae05e1f6158e3e7b1a7e2a0ca98",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 2,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",

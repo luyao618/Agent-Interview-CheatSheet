@@ -4222,6 +4222,30 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-09-26",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0027",
+      "title": "GQA（分组查询注意力）与 MQA 是如何缓解 KV Cache 显存与带宽瓶颈的，与标准 MHA 相比如何权衡？",
+      "category": "llm",
+      "tags": [
+        "gqa",
+        "mqa",
+        "mha",
+        "kv-cache",
+        "attention",
+        "inference",
+        "uptraining"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开大模型推理与架构高频面试题整理第 18 题扩展改编；GQA 原论文与 Transformers 官方源码核实（见参考）",
+      "file": "llm-0027-gqa-mqa-kv-cache-bandwidth.md",
+      "language": "zh",
+      "category_label": "大模型基础与原理",
+      "updated": "2026-10-17",
+      "answers_count": 1
     }
   ]
 }
