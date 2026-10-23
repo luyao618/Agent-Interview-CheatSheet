@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。MoE（混合专家模型）是如何通过 Top-K 路由与负载均衡机制避免路由坍塌（Routing Collapse）的？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0029-moe-routing-load-balancing.md">
+  <meta name="source-sha256" content="1ed5cfef2966fa8d83dc11ee27ce8bedb0cda125f86b86228bd7150348fc8e18">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>MoE（混合专家模型）是如何通过 Top-K 路由与负载均衡机制避免路由坍塌（Routing Collapse）的？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0029</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title"><em>MoE</em>（混合专家模型）是如何通过 Top-K 路由与负载均衡机制避免路由坍塌（Routing Collapse）的？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>进阶</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>在现代前沿大语言模型（如 Mixtral 8x7B、DeepSeek-V2/V3、Qwen2.5-MoE 等）中，稀疏混合专家架构（Sparse Mixture-of-Experts, MoE）通过将标准 Transformer 的稠密前馈网络（FFN）替换为多个并行的专家子网络（Experts）与门控路由器（Router），实现了“总参数量大幅扩展而单 Token 激活计算量（FLOPs）保持恒定”。</p>
+<p>然而，在训练 MoE 模型时，如果仅凭门控网络自由路由，极易发生**路由坍塌（Routing Collapse）**与严重的设备间负载失衡。请深入剖析：</p>
+<ol>
+<li>MoE 层的 Top-$K$ 稀疏门控前向公式是怎样的？为什么不加约束的训练会不可避免地走向“赢家通吃”的路由坍塌？</li>
+<li>经典方案（如 GShard、Switch Transformer、Mixtral）是如何通过**负载均衡辅助损失（Auxiliary Load Balancing Loss）**约束专家负载的？为什么其中的离散比例项 $f_i$ 不能单独求导，必须与连续概率项 $P_i$ 相乘？</li>
+<li>为什么过强的辅助损失会损害语言模型主任务性能？DeepSeek 提出的**无辅助损失负载均衡（Auxiliary-Loss-Free Load Balancing）**是如何通过动态专家偏置 $b_i$ 消除干扰梯度，同时避免 Expert Choice 路由的未来信息泄漏（Future Token Leakage）的？</li>
+</ol>
+<p>本题由公开 AI 系统设计指南与面试整理扩展改编，不是已核实的企业真题；不采信脱离具体拓扑与通信带宽的训练加速比绝对数值承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-10-23</span></p><div class="prose"><p><strong>MoE 的核心挑战在于离散的 Top-$K$ 路由具有正反馈马太效应：早期偶然获得较大梯度的专家会更快降低主任务损失，进而吸引门控网络分配更高权重，最终导致少数专家过载、多数专家“饿死”。工业界主要通过两代机制解决该问题：第一代以 Switch Transformer 和 Mixtral 为代表，在损失函数中加入 $\mathcal{L}<em>{\text{aux}} = \alpha N \sum</em>{i=1}^N f_i P_i$（用连续可导的平均门控概率 $P_i$ 乘以离散的实际分配比例 $f_i$ 提供梯度信号）；第二代以 DeepSeek-V3 为代表，采用无辅助损失策略（Loss-Free Balancing），仅在选 Top-$K$ 集合时叠加动态更新的专家偏置 $s_{i,t} + b_i$，而在加权求和时保持原始门控分 $s_{i,t}$，从而在不引入任何干扰梯度的前提下实现精准负载均衡。</strong></p>
+<p>现有 <a href="llm-0016-quantization-local-memory-budget.html">llm-0016</a> 解释了部署 MoE 模型时为何全部专家权重都必须驻留显存而不能只按激活参数算预算，<a href="llm-0010-causal-attention-architecture.html">llm-0010</a> 介绍了因果自注意力与未来 Token 掩码约束。本题聚焦 <strong>MoE 稀疏路由数学原理、辅助损失梯度构造、无辅助损失偏置更新算法及专家容量（Expert Capacity）工程权衡</strong>。</p>
+<hr />
+<h3 id="1-moe-top-k-稀疏路由公式与路由坍塌的成因">1. MoE Top-$K$ 稀疏路由公式与“路由坍塌”的成因</h3>
+<p>在 $N$ 个专家的 MoE 层中，设第 $t$ 个 Token 进入 FFN 前的隐状态为 $\mathbf{u}<em>t \in \mathbb{R}^d$，第 $i$ 个专家的门控质心向量为 $\mathbf{e}<em>i \in \mathbb{R}^d$。路由器首先计算每个专家的亲和度得分（Affinity Score）：
+$$s</em>{i,t} = G(\mathbf{u}<em>t^\top \mathbf{e}<em>i)$$
+其中非线性门控函数 $G(\cdot)$ 通常取 $\operatorname{Softmax}$（如 Switch Transformer、Mixtral）或 $\operatorname{Sigmoid}$（如 DeepSeek-V3）。随后，系统仅为当前 Token 激活得分最高的 $K$ 个专家（$K \ll N$，例如 $N=8, K=2$）：
+$$g</em>{i,t} = \begin{cases} s</em>{i,t}, &amp; \text{if } s</em>{i,t} \in \operatorname{TopK}({s_{j,t}}<em>{j=1}^N, K) \ 0, &amp; \text{otherwise} \end{cases}$$
+*(注：部分实现会对选出的 $K$ 个 $g</em>{i,t}$ 再次做归一化使 $\sum_i g_{i,t} = 1$)*。MoE 层的输出为：
+$$\mathbf{h}<em>t = \mathbf{u}<em>t + \sum</em>{i=1}^N g</em>{i,t} \operatorname{FFN}_i(\mathbf{u}_t)$$</p>
+<h4 id="为什么不加干预会发生路由坍塌routing-collapse">为什么不加干预会发生路由坍塌（Routing Collapse）？</h4>
+<ol>
+<li><strong>Top-$K$ 截断导致未选中专家零梯度</strong>：
+对于任意未被选入 $\operatorname{TopK}$ 的专家 $j$，其门控权重 $g_{j,t} = 0$。在反向传播时，$\frac{\partial \mathcal{L}<em>{\text{LM}}}{\partial \theta</em>{\text{FFN}_j}} = 0$。这意味着未选中的专家不仅没有学到新知识，其参数还停留在随机初始化状态。</li>
+<li><strong>正反馈马太效应（Rich-get-Richer）</strong>：
+训练初期，偶然被选中的少数专家（如 Expert 1）得到了充分梯度更新，其输出特征对降低语言模型交叉熵损失 $\mathcal{L}<em>{\text{LM}}$ 更有帮助。门控网络为了最小化 $\mathcal{L}</em>{\text{LM}}$，会进一步提高 $\mathbf{e}<em>1$ 的路由得分 $s</em>{1,t}$。如此循环数千步后，几乎 $100%$ 的 Token 都会涌向这 $K$ 个专家，其余 $N-K$ 个专家永久“死亡”，MoE 退化为参数量缩水 $N/K$ 倍的普通稠密模型。</li>
+<li><strong>分布式专家并行（Expert Parallelism, EP）木桶效应</strong>：
+在多卡分布式训练/推理中，不同专家通常放置在不同 GPU 上。如果某张 GPU 上的专家接收了 $80%$ 的 Token，而其他 GPU 闲置等待 All-to-All 通信同步，整个集群的吞吐将被最慢的那张过载卡彻底拖垮。</li>
+</ol>
+<hr />
+<h3 id="2-经典方案负载均衡辅助损失auxiliary-load-balancing-loss">2. 经典方案：负载均衡辅助损失（Auxiliary Load Balancing Loss）</h3>
+<p>为了打破马太效应，Switch Transformer（Fedus et al., 2022）与 Mixtral（Hugging Face <code>modeling_mixtral.py</code> 的 <code>load_balancing_loss_func</code>）定义了批次级辅助损失。</p>
+<p>设一个训练批次共包含 $T$ 个有效 Token，定义两个长度为 $N$ 的专家统计量：</p>
+<ol>
+<li><strong>实际接收 Token 比例 $f_i$（离散统计量，不可导）</strong>：
+$$f_i = \frac{1}{K \cdot T} \sum_{t=1}^{T} \mathbb{I}\left(\text{Token } t \text{ 选中了专家 } i\right)$$
+<em>(注：按此定义，每个 Token 选 $K$ 个专家，因此 $\sum_{i=1}^N f_i = 1$；在完美均匀分布下，每个专家的 $f_i = \frac{1}{N}$。原论文中也常写作乘上 $N$ 后的归一化形式 $\tilde{f}_i = N \cdot f_i$，此时均匀分布下 $\tilde{f}_i = 1$)</em>。</li>
+<li><strong>平均门控路由概率 $P_i$（连续函数，可对路由器参数求导）</strong>：
+$$P_i = \frac{1}{T} \sum_{t=1}^{T} s_{i,t}$$</li>
+</ol>
+<p>负载均衡辅助损失定义为两者的点积并乘以专家总数 $N$ 与超参数系数 $\alpha$（通常取 $\alpha \in [10^{-3}, 10^{-2}]$）：
+$$\mathcal{L}<em>{\text{aux}} = \alpha \cdot N \sum</em>{i=1}^{N} f_i \cdot P_i$$</p>
+<h4 id="核心考点为什么要设计成-f_i-cdot-p_i-的乘积形式">核心考点：为什么要设计成 $f_i \cdot P_i$ 的乘积形式？</h4>
+<ul>
+<li><strong>为什么不能直接最小化 $\sum f_i^2$？</strong>
+因为 $f_i$ 由阶跃指示函数 $\mathbb{I}(\cdot)$（依赖 <code>argmax</code> / <code>topk</code>）计算得出，对路由器权重 $\mathbf{e}_i$ 的导数处处为 $0$（或无定义），反向传播根本无法更新路由器。</li>
+<li><strong>为什么乘上 $P_i$ 就能工作，且在均匀分布时取得全局最小值？</strong>
+在反向传播时，$f_i$ 被视为常数系数（Stop-gradient），梯度通过连续的 $P_i$ 流向门控网络：
+$$\frac{\partial \mathcal{L}<em>{\text{aux}}}{\partial s</em>{i,t}} = \frac{\alpha N}{T} f_i$$
+直观来看，<strong>哪个专家当前实际分到的 Token 比例 $f_i$ 越大，它受到的正向惩罚梯度就越强</strong>，优化器在执行梯度下降时就会更猛烈地压低该专家的门控概率 $s_{i,t}$！当所有专家负载均衡且门控概率均匀（即 $\forall i, f_i = \frac{1}{N}, P_i = \frac{1}{N}$）时，$N \sum_{i=1}^N \left(\frac{1}{N} \cdot \frac{1}{N}\right) = 1$ 达到理想均衡状态。</li>
+</ul>
+<hr />
+<h3 id="3-前沿演进无辅助损失负载均衡auxiliary-loss-free-load-balancing">3. 前沿演进：无辅助损失负载均衡（Auxiliary-Loss-Free Load Balancing）</h3>
+<h4 id="传统辅助损失的两难困境dilemma">传统辅助损失的“两难困境（Dilemma）”</h4>
+<p>在总损失 $\mathcal{L}<em>{\text{total}} = \mathcal{L}</em>{\text{LM}} + \mathcal{L}<em>{\text{aux}}$ 中，$\nabla \mathcal{L}</em>{\text{aux}}$ 本质上是一个<strong>与语言建模主目标冲突的干扰梯度（Interference Gradient）</strong>。如果某段代码语料天然就需要全部路由给“擅长写代码的专家”，强行拉平本批次分布的 $\nabla \mathcal{L}_{\text{aux}}$ 会强迫路由器把代码 Token 分给“擅长古诗的专家”。因此：</p>
+<ul>
+<li>$\alpha$ 设得太小 $\to$ 负载均衡失效，出现路由坍塌；</li>
+<li>$\alpha$ 设得太大 $\to$ 干扰梯度掩盖主任务梯度，模型困惑度（PPL）与下游能力显著退化。</li>
+</ul>
+<h4 id="deepseek-的-loss-free-balancing-机制wang-et-al-2024">DeepSeek 的 Loss-Free Balancing 机制（Wang et al., 2024）</h4>
+<p>为了彻底消除干扰梯度，DeepSeek 引入了一组<strong>不参与梯度反向传播</strong>的专家偏置向量 $\mathbf{b} = {b_1, b_2, \dots, b_N}$（初始化为 $0$）：</p>
+<ol>
+<li><strong>偏置仅用于决定 Top-$K$ 集合，不掺入前向输出加权</strong>：
+$$g_{i,t} = \begin{cases} s_{i,t}, &amp; \text{if } (s_{i,t} + b_i) \in \operatorname{TopK}\left({s_{j,t} + b_j}<em>{j=1}^N, K\right) \ 0, &amp; \text{otherwise} \end{cases}$$
+注意这里的精妙设计：判断谁进前 $K$ 名时看的是**偏置后得分 $s</em>{i,t} + b_i$<strong>；但一旦选出前 $K$ 名，乘在专家输出 $\operatorname{FFN}_i(\mathbf{u}_t)$ 前面的权重依然是</strong>纯粹的原始门控分 $s_{i,t}$**！因此门控网络接收到的梯度 $100%$ 来自语言建模损失 $\mathcal{L}_{\text{LM}}$，没有任何辅助损失干扰。</li>
+<li><strong>基于历史批次负载误差的符号反馈更新（Algorithm 1）</strong>：
+在每个训练 Step 结束后，统计各专家实际分配到的 Token 数 $c_i$ 及所有专家的平均负载 $\bar{c} = \frac{K \cdot T}{N}$。计算负载偏差 $e_i = \bar{c} - c_i$，并以步长 $u$（如 $u = 0.001$）直接更新偏置：
+$$b_i \leftarrow b_i + u \cdot \operatorname{sign}(\bar{c} - c_i)$$
+<ul>
+<li>若专家 $i$ 过载（$c_i &gt; \bar{c}$），则 $e_i &lt; 0$，$b_i$ 减小 $u$，下一批更难进入 Top-$K$；</li>
+<li>若专家 $i$ 欠载（$c_i &lt; \bar{c}$），则 $e_i &gt; 0$，$b_i$ 增加 $u$，下一批更容易被选中。</li>
+</ul>
+</li>
+</ol>
+<h4 id="三种主流负载均衡方案的全方位对比">三种主流负载均衡方案的全方位对比</h4>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>负载均衡机制</th>
+<th>代表模型 / 论文</th>
+<th>专家负载均衡度</th>
+<th>是否产生干扰梯度</th>
+<th>是否泄漏未来 Token 信息</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>辅助损失控制 (Auxiliary Loss)</strong></td>
+<td>Switch Transformer, Mixtral</td>
+<td>取决于 $\alpha$ 强弱</td>
+<td><strong>有</strong>（大 $\alpha$ 损害模型能力）</td>
+<td>无泄漏（Causal 安全）</td>
+</tr>
+<tr>
+<td><strong>专家选择路由 (Expert Choice, EC)</strong></td>
+<td>Zhou et al. (NeurIPS 2022)</td>
+<td>绝对完美均衡（定额挑选）</td>
+<td>无</td>
+<td><strong>严重泄漏</strong>（破坏自回归因果律）</td>
+</tr>
+<tr>
+<td><strong>无辅助损失偏置 (Loss-Free Balancing)</strong></td>
+<td>DeepSeek-V3 (Wang et al., 2024)</td>
+<td>极高（动态闭环调节）</td>
+<td><strong>无</strong>（零辅助损失梯度）</td>
+<td>无泄漏（仅用历史批次更新 $b_i$）</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h3 id="4-可运行的标准库实现路由坍塌辅助损失与无损偏置负载均衡仿真">4. 可运行的标准库实现：路由坍塌、辅助损失与无损偏置负载均衡仿真</h3>
+<p>以下 Python 3 标准库代码对比了（1）无均衡约束下的严重负载倾斜、（2）Switch/Mixtral 辅助损失 <code>load_balancing_loss_func</code> 的精确计算、以及（3）DeepSeek 无辅助损失偏置更新算法如何在保持原始门控输出权重不变的同时将专家负载迅速拉平：</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+from typing import List, Tuple
+
+
+def softmax(logits: List[float]) -&gt; List[float]:
+    m = max(logits)
+    exps = [math.exp(x - m) for x in logits]
+    s = sum(exps)
+    return [x / s for x in exps]
+
+
+def topk_indices(scores: List[float], k: int) -&gt; List[int]:
+    return [idx for idx, _ in sorted(enumerate(scores), key=lambda x: (-x[1], x[0]))[:k]]
+
+
+def compute_switch_aux_loss(
+    gate_probs_batch: List[List[float]], top_k: int, alpha: float = 0.01
+) -&gt; Tuple[float, List[float], List[float]]:
+    &quot;&quot;&quot;对标 Hugging Face modeling_mixtral.py 的 load_balancing_loss_func&quot;&quot;&quot;
+    num_tokens = len(gate_probs_batch)
+    num_experts = len(gate_probs_batch[0])
+    counts = [0] * num_experts
+    prob_sums = [0.0] * num_experts
+
+    for probs in gate_probs_batch:
+        selected = topk_indices(probs, top_k)
+        for idx in selected:
+            counts[idx] += 1
+        for i, p in enumerate(probs):
+            prob_sums[i] += p
+
+    # f_i: 每个专家在全批次 (num_tokens * top_k) 次选择中占的比例，总和为 1.0
+    f = [c / (num_tokens * top_k) for c in counts]
+    # P_i: 每个专家在全批次上的平均路由概率，总和为 1.0
+    P = [ps / num_tokens for ps in prob_sums]
+
+    # L_aux = alpha * N * sum(f_i * P_i)
+    raw_dot = sum(f[i] * P[i] for i in range(num_experts))
+    aux_loss = alpha * num_experts * raw_dot
+    return aux_loss, f, P
+
+
+def simulate_loss_free_balancing(
+    raw_scores_batch: List[List[float]], top_k: int, steps: int = 40, update_rate: float = 0.005
+) -&gt; Tuple[List[int], List[int], List[float]]:
+    &quot;&quot;&quot;对标 DeepSeek Auxiliary-Loss-Free Load Balancing (Algorithm 1)&quot;&quot;&quot;
+    num_tokens = len(raw_scores_batch)
+    num_experts = len(raw_scores_batch[0])
+    biases = [0.0] * num_experts
+    avg_load = (num_tokens * top_k) / num_experts
+
+    initial_counts: List[int] = []
+    final_counts: List[int] = []
+
+    for step in range(steps):
+        counts = [0] * num_experts
+        for scores in raw_scores_batch:
+            # 路由选择使用带偏置分数: s_{i,t} + b_i
+            biased_scores = [scores[i] + biases[i] for i in range(num_experts)]
+            selected = topk_indices(biased_scores, top_k)
+            for idx in selected:
+                counts[idx] += 1
+            # 关键验证: 实际加权专家输出的门控权重仍取自原始 scores[idx]，不加 biases[idx]
+            active_weights = [scores[idx] for idx in selected]
+            assert all(w == scores[idx] for w, idx in zip(active_weights, selected))
+
+        if step == 0:
+            initial_counts = list(counts)
+        if step == steps - 1:
+            final_counts = list(counts)
+
+        # 按历史批次负载误差更新偏置: b_i &lt;- b_i + u * sign(avg_load - c_i)
+        for i in range(num_experts):
+            err = avg_load - counts[i]
+            sign = 1.0 if err &gt; 0 else (-1.0 if err &lt; 0 else 0.0)
+            biases[i] = round(biases[i] + update_rate * sign, 6)
+
+    return initial_counts, final_counts, biases
+
+
+# 构造 16 个 Token 在 4 个专家上的傾斜门控分布 (Expert 0 明显占优，模拟路由坍塌前兆)
+skewed_logits = [
+    [1.8 - 0.1 * (t % 5), 0.9 - 0.08 * (t % 4), 0.3 + 0.09 * (t % 6), 0.1 + 0.11 * (t % 7)]
+    for t in range(16)
+]
+skewed_probs = [softmax(l) for l in skewed_logits]
+
+# 1. 计算倾斜状态 vs 理想均匀状态下的 Switch/Mixtral 辅助损失 (N=4, K=2, alpha=0.01)
+skew_loss, skew_f, _ = compute_switch_aux_loss(skewed_probs, top_k=2, alpha=0.01)
+uniform_probs = [[0.25, 0.25, 0.25, 0.25] for _ in range(16)]
+# 均匀路由时手动构造轮转选择使每个专家恰好分到 8 次 (f_i = 0.25)
+uniform_dot = 4 * sum(0.25 * 0.25 for _ in range(4)) * 0.01
+assert skew_loss &gt; uniform_dot, &quot;Skewed routing must incur higher auxiliary loss than uniform!&quot;
+
+# 2. 运行 DeepSeek 无辅助损失偏置均衡 (N=4, K=2, 总分配次数=32, 理想平均负载=8)
+init_c, final_c, learned_b = simulate_loss_free_balancing(
+    skewed_probs, top_k=2, steps=40, update_rate=0.005
+)
+
+init_max_vio = (max(init_c) - 8.0) / 8.0
+final_max_vio = (max(final_c) - 8.0) / 8.0
+assert final_max_vio &lt; init_max_vio and final_max_vio &lt;= 0.125
+
+print(f&quot;Skewed Aux Loss: {skew_loss:.6f} vs Uniform Minimum: {uniform_dot:.6f}&quot;)
+print(f&quot;Initial token counts per expert (step 0): {init_c} (MaxVio={init_max_vio:.2f})&quot;)
+print(f&quot;Balanced token counts per expert (step 39): {final_c} (MaxVio={final_max_vio:.2f})&quot;)
+print(f&quot;Learned expert biases b_i: {learned_b}&quot;)
+print(&quot;MoE auxiliary loss and auxiliary-loss-free balancing checks passed&quot;)
+</code></pre>
+<p>实际执行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">Skewed Aux Loss: 0.013740 vs Uniform Minimum: 0.010000
+Initial token counts per expert (step 0): [16, 14, 1, 1] (MaxVio=1.00)
+Balanced token counts per expert (step 39): [8, 9, 7, 8] (MaxVio=0.12)
+Learned expert biases b_i: [-0.175, 0.08, 0.135, 0.16]
+MoE auxiliary loss and auxiliary-loss-free balancing checks passed
+</code></pre>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“辅助损失 $\mathcal{L}_{\text{aux}} = \alpha N \sum f_i P_i$ 中的 $f_i$ 和 $P_i$ 是一回事，写两个只是为了平方惩罚。”</strong>
+事实：$f_i$ 是经过离散 Top-$K$ 截断后的<strong>真实硬分配比例</strong>（不可导），而 $P_i$ 是未经截断的<strong>平滑门控概率均值</strong>（可导）。如果只写 $\sum P_i^2$，路由器可能会让所有专家的平均概率看起来接近，但在单个 Token 上依然产生极端偏置；只有用真实硬负载 $f_i$ 给可导概率 $P_i$ 加权，才能精确惩罚实际过载的专家。</li>
+<li><strong>误区二：“DeepSeek 的无辅助损失偏置 $b_i$ 既然加到了门控分上，也会改变专家输出的加权比例。”</strong>
+事实：根据原论文公式 (3)，$b_i$ <strong>只参与 <code>TopK</code> 集合的筛选比较</strong>（决定哪些专家被激活）；一旦选出专家，乘在 $\operatorname{FFN}_i(\mathbf{u}<em>t)$ 上的门控系数仍然是未加偏置的原始得分 $s</em>{i,t}$。如果把 $b_i$ 也加进前向输出权重，就会破坏模型学习到的专家融合比例。</li>
+<li><strong>误区三：“训练好之后到了线上推理阶段，依然需要实时统计每个请求的负载去动态更新 $b_i$。”</strong>
+事实：在推理阶段，模型参数与训练收敛后的偏置向量 $\mathbf{b}$ 通常是固定冻结的（或仅在离线根据目标域批量分布做静态微调），单次在线请求推理不会动态修改 $b_i$，从而保证自回归解码的确定性与并发一致性。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/ombharatiya/ai-system-design-guide/blob/ed955b27d94201b663a741284767a1136dc83e5e/01-foundations/01-llm-internals.md" target="_blank" rel="noopener noreferrer">ombharatiya/ai-system-design-guide, 01-foundations/01-llm-internals.md</a>。固定 commit，独立拓展改编。</li>
+<li>Fedus et al., <a href="https://arxiv.org/abs/2101.03961" target="_blank" rel="noopener noreferrer">Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity</a>，JMLR 2022，Eq. 4–6：负载均衡辅助损失 $f_i \cdot P_i$ 与专家容量因子（Capacity Factor）。</li>
+<li>Wang et al., <a href="https://arxiv.org/html/2408.15664v1" target="_blank" rel="noopener noreferrer">Auxiliary-Loss-Free Load Balancing Strategy for Mixture-of-Experts</a>，2024，§2–§3 &amp; Algorithm 1：辅助损失与主任务梯度的冲突分析、动态专家偏置更新算法及 Expert Choice 未来信息泄漏证明。</li>
+<li>Hugging Face Transformers, <a href="https://github.com/huggingface/transformers/blob/v4.57.1/src/transformers/models/mixtral/modeling_mixtral.py" target="_blank" rel="noopener noreferrer">models/mixtral/modeling_mixtral.py (<code>v4.57.1</code>)</a>：<code>load_balancing_loss_func</code> 官方源码实现。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-10-23</strong>。仅执行标准库路由分布与负载均衡算法数值验证，未运行多卡分布式 MoE 训练基准测试。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">为什么说“专家选择路由（Expert Choice, EC）”在自回归语言模型中会导致未来 Token 信息泄漏（Future Token Leakage）？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么说“专家选择路由（Expert Choice, EC）”在自回归语言模型中会导致未来 Token 信息泄漏（Future Token Leakage）？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ul>
+<li><strong>Token-Choice（常规路由）</strong>：每个 Token 独立在 $N$ 个专家里选 Top-$K$，第 $t$ 个 Token 去哪个专家只取决于 $\mathbf{u}_t$，严格遵守因果掩码（Causal Mask）。</li>
+<li><strong>Expert-Choice（Zhou et al., 2022）</strong>：反过来让每个专家在当前句子的全部 $T$ 个 Token 中挑选得分最高的 $C$ 个 Token。虽然这能保证每个专家负载绝对等于 $C$，但第 $t$ 个 Token 能否被专家 $i$ 选中，取决于同一句话里排在它后面的未来 Token $t' &gt; t$ 的得分高低！这打破了自回归生成的因果独立性（训练时能看到整句未来 Token 分布，推理逐字解码时却看不到），在 DeepSeek 论文附录 D 中被证明会造成严重的信息泄漏与推理退化。</li>
+</ul>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">什么是专家容量因子（Capacity Factor, CF）与 Token Dropping？为什么训练或编译静态图时需要它？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：什么是专家容量因子（Capacity Factor, CF）与 Token Dropping？为什么训练或编译静态图时需要它？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>在使用 XLA/TPU 或静态张量形状的分布式专家并行（EP）中，All-to-All 通信缓冲区必须在运行前确定静态形状。系统将每个专家单批次最多能处理的 Token 上限定为：
+$$\text{Capacity} = \left\lceil \frac{T \cdot K}{N} \times \text{CF} \right\rceil$$
+其中 $\text{CF} \ge 1.0$（常取 $1.25$）。如果某个专家实际被路由了超过 $\text{Capacity}$ 的 Token，多出来的溢出 Token 将被直接跳过 FFN 计算（仅通过残差连接 $\mathbf{h}_t = \mathbf{u}_t$ 透传到下一层），称为 <strong>Token Dropping</strong>。而在动态形状引擎（如 Megatron-LM Dropless MoE / vLLM）结合良好负载均衡时，可以做到不丢弃任何 Token（Dropless）。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">除了辅助损失和偏置外，什么是 Router Z-Loss？它解决什么问题？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：除了辅助损失和偏置外，什么是 Router Z-Loss？它解决什么问题？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>ST-MoE（Zoph et al., 2022）发现门控网络的原始 Logits $z_{i,t} = \mathbf{u}<em>t^\top \mathbf{e}<em>i$ 在混合精度（BF16/FP16）训练中容易数值爆炸，导致 Softmax 指数溢出与训练崩溃。为此引入了 <strong>Router Z-Loss</strong>：
+$$\mathcal{L}<em>z = \frac{1}{T} \sum</em>{t=1}^T \left( \log \sum</em>{i=1}^N \exp(z</em>{i,t}) \right)^2$$
+它直接惩罚门控 Logits 的对数配分函数（Log-partition function）模长，在不改变专家相对排序的前提下把 Logits 幅度稳定在接近 $0$ 的安全区间，提升训练数值稳定性。</p>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0029 · 单题笔记</span><a href="../questions/llm-0029-moe-routing-load-balancing.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0029", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
