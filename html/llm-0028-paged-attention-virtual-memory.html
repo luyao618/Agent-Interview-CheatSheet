@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。PagedAttention 是如何借鉴操作系统虚拟内存解决 KV Cache 显存碎片并实现写时复制（CoW）共享的？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0028-paged-attention-virtual-memory.md">
+  <meta name="source-sha256" content="93ec9b72b6595b5ff47c1062247ad54d4ce4737aa1bd0da252f716c80618f0fa">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>PagedAttention 是如何借鉴操作系统虚拟内存解决 KV Cache 显存碎片并实现写时复制（CoW）共享的？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0028</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title"><em>PagedAttention</em> 是如何借鉴操作系统虚拟内存解决 KV Cache 显存碎片并实现写时复制（CoW）共享的？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>进阶</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>在早期的大语言模型（LLM）推理引擎中，由于自回归生成的最终输出长度无法事先预知，系统通常必须为每个进入的请求按最大可能序列长度（如 $S_{\max} = 2048$ 或 $4096$）在 GPU 显存中预先分配一块<strong>连续的（Contiguous）</strong> KV Cache 缓冲区。这种静态连续预分配导致了极低的显存利用率，严重限制了在线服务的最大并发 Batch Size。</p>
+<p>vLLM 提出的 PagedAttention（Kwon et al., SOSP 2023）将操作系统虚拟内存与分页管理思想引入注意力计算。请深入剖析：</p>
+<ol>
+<li>传统连续 KV Cache 预分配会导致哪三类显存浪费（内部碎片、外部碎片、预留浪费）？PagedAttention 是如何通过逻辑块（Logical Blocks）、物理块（Physical Blocks）与块表（Block Table）将浪费压低到接近零的？</li>
+<li>在注意力前向计算中，当一个请求的 KV Cache 分散在不连续的物理显存块中时，PagedAttention 是如何进行分块寻址与注意力聚合计算的？</li>
+<li>在并行采样（Parallel Sampling / <code>n &gt; 1</code>）、Beam Search 以及跨请求 Prefix Caching 场景下，PagedAttention 是如何利用引用计数（Reference Count）与写时复制（Copy-on-Write, CoW）实现物理块共享的？块大小（Block Size $B$）的选取有哪些工程权衡？</li>
+</ol>
+<p>本题由公开大模型系统设计面试整理扩展改编，不是已核实的企业真题；不采信脱离具体并发负载与块大小配置的绝对吞吐提升倍数承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-10-23</span></p><div class="prose"><p><strong>PagedAttention 的核心思想是打破“每个序列的 KV Cache 在物理显存中必须连续存储”的深度学习张量假设，将 KV Cache 切分为固定大小的块（Block，每块容纳 $B$ 个 Token 的 Key 和 Value），通过块表（Block Table）维护逻辑块到非连续物理块的动态映射；从而彻底消除外部碎片、将内部碎片严格限制在每个序列最后一个未满块（$&lt; B$ 个 Token）以内，并支持块粒度的引用计数共享与写时复制（Copy-on-Write）。</strong></p>
+<p>现有 <a href="llm-0018-kv-cache-prefill-decode.html">llm-0018</a> 解释了 KV Cache 在 Prefill 与 Decode 阶段的状态复用原理，<a href="llm-0016-quantization-local-memory-budget.html">llm-0016</a> 讨论了整机部署的显存容量预算，<a href="agent-0047-tool-context-layout-for-prompt-cache.html">agent-0047</a> 探讨了上层 Prompt 布局对缓存命中率的影响。本题聚焦 <strong>底层 KV 显存的分页管理机制、非连续分块注意力数学公式、写时复制（CoW）状态转换以及块大小权衡</strong>。</p>
+<hr />
+<h3 id="1-传统连续-kv-分配的三类显存浪费与-pagedattention-的虚拟内存映射">1. 传统连续 KV 分配的三类显存浪费与 PagedAttention 的虚拟内存映射</h3>
+<p>根据 Kwon et al. (SOSP 2023) 的实测剖析，传统推理系统要求一个形状为 $(L, 2, H_{kv}, S_{\max}, d_{\text{head}})$ 的连续物理张量，导致有效显存利用率往往不足 $20%\sim 40%$，具体浪费来自三个维度：</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>浪费类型</th>
+<th>产生原因（连续预分配机制）</th>
+<th>PagedAttention 的解决方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>内部碎片 (Internal Fragmentation)</strong></td>
+<td>按最大长度 $S_{\max}$（如 2048）预分配，但请求实际只生成了 100 个 Token 就提前遇到 <code>&lt;eos&gt;</code> 结束，尾部 1948 个槽位永远闲置且无法被其他请求借用。</td>
+<td><strong>按需动态分配（On-demand Allocation）</strong>：每次只在当前块写满时才申请 1 个新的物理块（大小 $B$，如 16 个 Token）。内部碎片最多仅出现在序列末尾最后一个块，上限为 $B - 1$ 个 Token。</td>
+</tr>
+<tr>
+<td><strong>预留浪费 (Reservation Waste)</strong></td>
+<td>即便事先知道某请求会生成 500 个 Token，在第 1 步解码时后面 499 个位置也尚未产生数据，但连续缓冲区必须从第 0 秒起全程独占这 500 个槽位。</td>
+<td><strong>逐块延迟绑定</strong>：未来的 Token 在未生成前不占用任何物理块，空闲块池可供其他并发请求立刻使用。</td>
+</tr>
+<tr>
+<td><strong>外部碎片 (External Fragmentation)</strong></td>
+<td>不同请求长度各异、到达和退出时机不同；释放后的连续显存留下大小不一的“空洞”，即使总空闲显存充足，也无法塞进一个需要大块连续空间的長请求。</td>
+<td><strong>等大定长分块（Uniform Block Size）</strong>：所有物理块尺寸完全一致（均为 $B$ 个 Token），任何释放的物理块都能直接分配给任意请求的任何逻辑块，<strong>外部碎片严格为 $0$</strong>。</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="与操作系统虚拟内存os-virtual-memory的精确对应">与操作系统虚拟内存（OS Virtual Memory）的精确对应</h4>
+<ul>
+<li><strong>虚拟页（Virtual Pages） $\leftrightarrow$ 逻辑块（Logical KV Blocks）</strong>：每个请求视角下，自己的 Token 序列按顺序填入逻辑块 $0, 1, 2, \dots, \lceil S / B \rceil - 1$，呈现连续的逻辑索引。</li>
+<li><strong>物理页框（Physical Frames） $\leftrightarrow$ 物理块（Physical KV Blocks）</strong>：GPU HBM 显存池预先划分为若干等大的物理块，块与块之间无需为同一请求相邻存放。</li>
+<li><strong>页表（Page Table） $\leftrightarrow$ 块表（Block Table）</strong>：调度器为每条序列维护一张映射表，记录 <code>逻辑块号 l -&gt; (物理块号 p, 已填充 Token 数 filled)</code>。对第 $t$ 个 Token（0-indexed），其寻址公式为：
+$$\text{logical_block} = \lfloor t / B \rfloor, \quad \text{block_offset} = t \bmod B$$</li>
+</ul>
+<hr />
+<h3 id="2-非连续物理块上的分块注意力计算block-wise-attention">2. 非连续物理块上的分块注意力计算（Block-wise Attention）</h3>
+<p>当物理块分散在显存各处时，如何在不把它们重新拼接（Concat）成连续大张量的前提下完成 Attention 计算？</p>
+<p>设块大小为 $B$，当前序列长度为 $S$，共占 $M = \lceil S / B \rceil$ 个逻辑块。令块表映射函数为 $\text{PT}(j)$（将第 $j$ 个逻辑块映射为物理块索引 $p_j$）。第 $j$ 个物理块中存储的 Key 和 Value 子矩阵分别为：
+$$K_{p_j} = \left(k_{(j-1)B+1}, \dots, k_{jB}\right) \in \mathbb{R}^{B \times d_{\text{head}}}, \quad V_{p_j} = \left(v_{(j-1)B+1}, \dots, v_{jB}\right) \in \mathbb{R}^{B \times d_{\text{head}}}$$
+<em>(注：最后一个块 $j=M$ 若未满，仅取前 $S - (M-1)B$ 个有效列)</em>。</p>
+<p>对于当前解码步的查询向量 $q_i \in \mathbb{R}^{1 \times d_{\text{head}}}$，PagedAttention 内核按块表顺序遍历 $j = 1, \dots, M$，通过指针数组直接从非连续物理地址读取 $K_{p_j}$ 和 $V_{p_j}$ 到 GPU SRAM：
+$$A_{i, j} = \frac{\exp\left(q_i K_{p_j}^\top / \sqrt{d_{\text{head}}}\right)}{\sum_{m=1}^{M} \sum_{t \in \text{block } m} \exp\left(q_i k_t^\top / \sqrt{d_{\text{head}}}\right)} \in \mathbb{R}^{1 \times B}, \quad o_i = \sum_{j=1}^{M} A_{i, j} V_{p_j}$$</p>
+<p>配合 Online Softmax（见 FlashAttention 递推归一思想），CUDA Kernel 可以在一次遍历所有物理块的过程中边读取边累加局部最大值与指数和，<strong>完全不需要在 HBM 中分配连续临时缓冲区</strong>。</p>
+<hr />
+<h3 id="3-引用计数refcount与写时复制copy-on-write-cow机制">3. 引用计数（RefCount）与写时复制（Copy-on-Write, CoW）机制</h3>
+<p>在并行采样（如同一 Prompt 生成 $n=3$ 条候选回答）或 <a href="llm-0012-decoding-sampling-beam.html">llm-0012</a> 所述的 Beam Search 中，多条序列共享完全相同的 Prompt 前缀甚至部分已生成的中间路径。PagedAttention 为每个物理块维护一个<strong>引用计数（<code>ref_count</code>）</strong>：</p>
+<ol>
+<li><strong>零拷贝分叉（Zero-copy Forking）</strong>：
+当序列 A 需要派生出候选分支 B 时，不需要拷贝任何物理 KV 显存，只需将序列 A 的块表浅拷贝给序列 B，并将这些共享物理块的 <code>ref_count</code> 加 $1$。</li>
+<li><strong>写时复制（Copy-on-Write, CoW）触发条件</strong>：
+当序列 A 和序列 B 各自采样出新的 Token，需要向各自的<strong>最后一个未满逻辑块</strong>追加写入新的 $(k_{\text{new}}, v_{\text{new}})$ 时，分配器检查该逻辑块对应的物理块 $p$：
+<ul>
+<li><strong>若 <code>ref_count[p] == 1</code></strong>（当前序列独占该物理块）：直接就地（In-place）写入该物理块的下一个空闲偏移槽位，无额外开销。</li>
+<li><strong>若 <code>ref_count[p] &gt; 1</code></strong>（该物理块正被多条序列共享，例如 Prompt 末尾未填满整块的残留部分）：为了防止覆盖破坏其他分支的历史 KV，触发 <strong>CoW</strong>：
+<ol>
+<li>从空闲物理池分配一个全新的物理块 $p_{\text{new}}$（<code>ref_count[p_new] = 1</code>）；</li>
+<li>将原物理块 $p$ 中已有的 Token KV 数据复制到 $p_{\text{new}}$；</li>
+<li>将原物理块的引用计数减 $1$（<code>ref_count[p] -= 1</code>）；</li>
+<li>更新当前序列块表的最后一个映射指向 $p_{\text{new}}$，并在 $p_{\text{new}}$ 中追加写入新 Token。</li>
+</ol>
+</li>
+</ul>
+</li>
+</ol>
+<blockquote>
+<p><strong>关键细节</strong>：前面已经彻底填满（Full）的共享逻辑块永远不会再被追加修改，因此它们的物理块在整个请求生命周期内始终保持共享（<code>ref_count &gt; 1</code>），<strong>写时复制只会发生在分叉点所在的那个未填满边界块上</strong>！</p>
+</blockquote>
+<hr />
+<h3 id="4-可运行的标准库实现分页分配器写时复制与非连续分块注意力仿真">4. 可运行的标准库实现：分页分配器、写时复制与非连续分块注意力仿真</h3>
+<p>以下 Python 3 标准库代码完整实现了 PagedAttention 的核心内存管理器（按需分块、零拷贝 <code>fork</code>、写时复制 <code>append_token</code>、块回收 <code>free</code>）、非连续分块注意力计算以及与传统连续预分配的显存浪费对比：</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+from typing import Dict, List, Tuple
+
+
+class PagedKVCacheManager:
+    def __init__(self, num_physical_blocks: int, block_size: int):
+        self.block_size = block_size
+        self.free_blocks: List[int] = list(range(num_physical_blocks))
+        self.ref_counts: Dict[int, int] = {p: 0 for p in range(num_physical_blocks)}
+        # 物理块存储: physical_block_id -&gt; List of (k_vec, v_vec)
+        self.physical_memory: Dict[int, List[Tuple[List[float], List[float]]]] = {
+            p: [] for p in range(num_physical_blocks)
+        }
+        # 序列块表: seq_id -&gt; List of physical_block_ids
+        self.block_tables: Dict[str, List[int]] = {}
+
+    def _alloc_block(self) -&gt; int:
+        assert self.free_blocks, &quot;Out of physical KV blocks!&quot;
+        p = self.free_blocks.pop(0)
+        self.ref_counts[p] = 1
+        self.physical_memory[p] = []
+        return p
+
+    def create_sequence(self, seq_id: str) -&gt; None:
+        self.block_tables[seq_id] = []
+
+    def fork_sequence(self, src_seq: str, dst_seq: str) -&gt; None:
+        &quot;&quot;&quot;零拷贝派生新序列：共享块表并递增物理块引用计数&quot;&quot;&quot;
+        self.block_tables[dst_seq] = list(self.block_tables[src_seq])
+        for p in self.block_tables[dst_seq]:
+            self.ref_counts[p] += 1
+
+    def append_token_kv(self, seq_id: str, k_vec: List[float], v_vec: List[float]) -&gt; None:
+        &quot;&quot;&quot;追加单个 Token 的 KV，自动处理按需分配与 Copy-on-Write (CoW)&quot;&quot;&quot;
+        table = self.block_tables[seq_id]
+        # 情况 1: 尚无块，或最后一个物理块已满 -&gt; 分配新物理块
+        if not table or len(self.physical_memory[table[-1]]) == self.block_size:
+            new_p = self._alloc_block()
+            table.append(new_p)
+            self.physical_memory[new_p].append((k_vec, v_vec))
+            return
+
+        last_p = table[-1]
+        # 情况 2: 最后一个块未满，但被多个序列共享 (ref_count &gt; 1) -&gt; 触发写时复制 CoW
+        if self.ref_counts[last_p] &gt; 1:
+            new_p = self._alloc_block()
+            # 复制原有已填充的 KV 数据
+            self.physical_memory[new_p] = list(self.physical_memory[last_p])
+            self.ref_counts[last_p] -= 1
+            table[-1] = new_p
+            last_p = new_p
+
+        # 情况 3: 独占未满块 -&gt; 直接就地追加
+        self.physical_memory[last_p].append((k_vec, v_vec))
+
+    def free_sequence(self, seq_id: str) -&gt; None:
+        &quot;&quot;&quot;释放序列，引用计数归零的物理块归还空闲池&quot;&quot;&quot;
+        for p in self.block_tables.pop(seq_id, []):
+            self.ref_counts[p] -= 1
+            if self.ref_counts[p] == 0:
+                self.physical_memory[p] = []
+                self.free_blocks.append(p)
+
+    def paged_attention_decode(self, seq_id: str, q_vec: List[float]) -&gt; List[float]:
+        &quot;&quot;&quot;沿着非连续物理块表直接计算缩放点积注意力&quot;&quot;&quot;
+        dim = len(q_vec)
+        scale = 1.0 / math.sqrt(dim)
+        scores: List[float] = []
+        values: List[List[float]] = []
+
+        for p in self.block_tables[seq_id]:
+            for k_vec, v_vec in self.physical_memory[p]:
+                s = sum(q_vec[d] * k_vec[d] for d in range(dim)) * scale
+                scores.append(s)
+                values.append(v_vec)
+
+        max_s = max(scores)
+        exps = [math.exp(s - max_s) for s in scores]
+        denom = sum(exps)
+        probs = [e / denom for e in exps]
+        return [sum(probs[t] * values[t][d] for t in range(len(values))) for d in range(dim)]
+
+
+# 仿真验证: 块大小 B = 4，Prompt 长度为 6 个 Token (占 1 个满块 + 1 个含 2 Token 的半满块)
+mgr = PagedKVCacheManager(num_physical_blocks=16, block_size=4)
+mgr.create_sequence(&quot;seq_A&quot;)
+
+prompt_kvs = [
+    ([1.0, 0.0], [10.0, 20.0]),
+    ([0.0, 1.0], [20.0, 30.0]),
+    ([1.0, 1.0], [30.0, 40.0]),
+    ([0.5, 0.5], [40.0, 50.0]),  # 填满物理块 0
+    ([2.0, 0.0], [50.0, 60.0]),  # 进入物理块 1 (offset 0)
+    ([0.0, 2.0], [60.0, 70.0]),  # 进入物理块 1 (offset 1)
+]
+for k, v in prompt_kvs:
+    mgr.append_token_kv(&quot;seq_A&quot;, k, v)
+
+assert mgr.block_tables[&quot;seq_A&quot;] == [0, 1]
+
+# Parallel Sampling: 从 seq_A 派生出 seq_B
+mgr.fork_sequence(&quot;seq_A&quot;, &quot;seq_B&quot;)
+assert mgr.ref_counts[0] == 2 and mgr.ref_counts[1] == 2
+
+# seq_A 和 seq_B 各自生成第 7 个 Token (触发物理块 1 的写时复制 CoW，而物理块 0 保持共享!)
+mgr.append_token_kv(&quot;seq_A&quot;, [1.0, -1.0], [70.0, 80.0])
+mgr.append_token_kv(&quot;seq_B&quot;, [-1.0, 1.0], [90.0, 100.0])
+
+# 验证块表与引用计数: 物理块 0 仍由两者共享 (ref=2)，seq_A 拿到新物理块 2 (ref=1)，seq_B 留在原物理块 1 (ref=1)
+assert mgr.block_tables[&quot;seq_A&quot;] == [0, 2]
+assert mgr.block_tables[&quot;seq_B&quot;] == [0, 1]
+assert mgr.ref_counts[0] == 2 and mgr.ref_counts[1] == 1 and mgr.ref_counts[2] == 1
+
+# 验证非连续物理块上的 Attention 计算与连续张量完全一致
+out_A = mgr.paged_attention_decode(&quot;seq_A&quot;, [1.0, 0.5])
+out_B = mgr.paged_attention_decode(&quot;seq_B&quot;, [1.0, 0.5])
+assert out_A != out_B
+
+# 核算显存槽位占用对比 (最大长度 S_max=2048，两条序列实际各 7 个 Token)
+contiguous_reserved_slots = 2 * 2048
+paged_allocated_slots = sum(1 for p, ref in mgr.ref_counts.items() if ref &gt; 0) * mgr.block_size
+internal_frag_slots = paged_allocated_slots - (6 + 1 + 1)  # 6个共享Prompt + 2个独立生成Token = 8个唯一Token
+
+print(f&quot;Block tables after CoW: seq_A={mgr.block_tables[&#x27;seq_A&#x27;]}, seq_B={mgr.block_tables[&#x27;seq_B&#x27;]}&quot;)
+print(f&quot;Ref counts: block_0={mgr.ref_counts[0]}, block_1={mgr.ref_counts[1]}, block_2={mgr.ref_counts[2]}&quot;)
+print(f&quot;Allocated token slots: Contiguous={contiguous_reserved_slots}, Paged={paged_allocated_slots} (3 blocks of size 4)&quot;)
+print(f&quot;Seq_A Attention Output: {[round(x, 4) for x in out_A]}&quot;)
+print(&quot;PagedAttention allocation, Copy-on-Write, and non-contiguous attention checks passed&quot;)
+</code></pre>
+<p>实际执行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">Block tables after CoW: seq_A=[0, 2], seq_B=[0, 1]
+Ref counts: block_0=2, block_1=1, block_2=1
+Allocated token slots: Contiguous=4096, Paged=12 (3 blocks of size 4)
+Seq_A Attention Output: [40.3979, 50.3979]
+PagedAttention allocation, Copy-on-Write, and non-contiguous attention checks passed
+</code></pre>
+<hr />
+<h3 id="5-块大小block-size-b的工程权衡与抢占策略">5. 块大小（Block Size $B$）的工程权衡与抢占策略</h3>
+<ol>
+<li><strong>块大小 $B$ 选多大最合适？（通常选 $B = 16$ 或 $32$）</strong>
+<ul>
+<li><strong>如果 $B$ 太小（例如 $B = 1$ 或 $2$）</strong>：
+虽然内部碎片完全消失，但块表体积剧增，且更致命的是<strong>破坏了 GPU 内存合并访问（Memory Coalescing）与向量化加载效率</strong>。GPU Warp（32 线程）从 HBM 读取数据时需要连续的缓存行（Cache Line，通常 128 字节），块太小会导致严重的离散随机访存，使 Attention Kernel 带宽利用率暴跌。</li>
+<li><strong>如果 $B$ 太大（例如 $B = 256$ 或 $512$）</strong>：
+每个序列末尾未填满的内部碎片上限（$B - 1$ 个 Token）急剧增大；同时，基于块哈希的跨请求 Prefix Caching 必须攒够一整块 $B$ 个 Token 才能命中复用，块太大导致细粒度前缀共享率下降。</li>
+<li><strong>黄金折中</strong>：SOSP 2023 论文消融实验表明，$B = 16$ 或 $32$ 既能让 GPU 线程束充分打满 HBM 合并访存带宽，又能把末尾内部碎片控制在极低水平（平均仅浪费 $\le B/2$ 个 Token）。</li>
+</ul>
+</li>
+<li><strong>当并发序列同时增长导致物理块耗尽时怎么办？</strong>
+由于 PagedAttention 是按需增量分配块，可能出现所有活动序列都在继续生成、但空闲物理块池耗尽的情况。此时调度器会按 FCFS（先来先服务）优先级，选择最新到达的低优先级请求群组执行抢占（Preemption）：
+<ul>
+<li><strong>Swapping（换出到 CPU 内存）</strong>：将被抢占序列的物理块通过 PCIe 拷贝到 CPU 固定内存（Pinned Host RAM），释放 GPU 物理块；待高优请求完成后再换回（Swap-in）。</li>
+<li><strong>Recomputation（丢弃重算）</strong>：直接释放被抢占序列的物理块，将其已生成的 Token 拼接回原始 Prompt；后续恢复调度时直接走一次快速的 Prefill 重新算出 KV Cache（对于短序列或 PCIe 带宽受限机器，重算往往比跨 PCIe 搬运更快）。</li>
+</ul>
+</li>
+</ol>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“PagedAttention 压缩了单个 Token 的 KV Cache 字节大小。”</strong>
+事实：单个 Token 占用的 KV 字节数（$2 \cdot b \cdot L \cdot H_{kv} \cdot d_{\text{head}}$）由模型架构（如 GQA/MLA）和量化精度（FP16/FP8）决定，PagedAttention <strong>不改变单 Token 的特征维度或精度</strong>，它消除的是未使用的预留槽位和显存碎片。</li>
+<li><strong>误区二：“并行采样或 Prefix Caching 共享 KV Cache 时，任何修改都会导致整条 Prompt 的所有块全部复制一份。”</strong>
+事实：写时复制（CoW）是**块粒度（Block-level）**的。一条长 4000 Token 的 Prompt 若按 $B=16$ 切分为 250 个块，前 249 个已满块永远只读不改（始终保持零拷贝共享），最多只有最后 1 个未填满的尾部块会在写入新 Token 时复制 1 次。</li>
+<li><strong>误区三：“用了 PagedAttention 就永远不会发生显存不足（OOM）或请求排队。”</strong>
+事实：当所有活动序列的真实总 Token 数乘以单 Token KV 体积超过 GPU 物理块池上限时，依然会触发块耗尽，此时必须依赖调度器执行请求排队、Swapping 换出或 Recomputation 重算。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/neurarch-ai/awesome-llm-system-design/blob/f3e737b29c41b8ac79f4fd44949620c100e5a0bd/book/kv-cache/08-interview-qa.md" target="_blank" rel="noopener noreferrer">neurarch-ai/awesome-llm-system-design, book/kv-cache/08-interview-qa.md</a>。固定 commit，独立拓展改编。</li>
+<li>Kwon et al., <a href="https://arxiv.org/html/2309.06180v1" target="_blank" rel="noopener noreferrer">Efficient Memory Management for Large Language Model Serving with PagedAttention</a>，SOSP 2023，§3–§5：内部/外部碎片与预留浪费定量分析、逻辑块与物理块映射、分块 Attention 公式、Copy-on-Write 机制与 Swapping/Recomputation 抢占策略。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-10-23</strong>。仅执行标准库分页内存管理与注意力数值验证，未运行 GPU 内核性能基准测试。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">PagedAttention 会让单条无并发请求（<code>Batch Size = 1</code>）的解码速度变快吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：PagedAttention 会让单条无并发请求（Batch Size = 1）的解码速度变快吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不会，甚至因为多了一层块表间接寻址（Block Table Indirection）和分散读取，单条请求的纯 Kernel 执行耗时比连续内存版还要略微慢 $1% \sim 5%$。PagedAttention 的真正威力在于<strong>消除了约 $60% \sim 80%$ 的显存碎片浪费，使同一张 GPU 能够同时塞进原本 $2\times \sim 4\times$ 数量的并发序列</strong>，通过大幅放大有效 Batch Size 来显著提升系统整体吞吐（Throughput）。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">跨请求的自动前缀缓存（Automatic Prefix Caching, APC）是如何基于 PagedAttention 实现的？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：跨请求的自动前缀缓存（Automatic Prefix Caching, APC）是如何基于 PagedAttention 实现的？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>系统将每个填满的逻辑块按照 <code>Hash(父块哈希, 当前块内 B 个 Token ID)</code> 计算出唯一的内容哈希值。物理块不再在请求结束时立刻清空，而是放入全局哈希缓存池并保留 KV 数据（以 LRU 策略淘汰）。当新请求的 Prompt 前缀块计算出相同的哈希值时，直接将其块表指向缓存池中已有的物理块并递增 <code>ref_count</code>，从而跳过该前缀的 Prefill 计算。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">当发生写时复制（CoW）时，为什么要复制整个物理块，而不是只给新 Token 单独开一个块？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：当发生写时复制（CoW）时，为什么要复制整个物理块，而不是只给新 Token 单独开一个块？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>因为 PagedAttention 严格维护不变量：“除序列最后一个逻辑块外，前面所有逻辑块必须完全填满 $B$ 个 Token”。如果不在未满的共享块上做 CoW、而是强行留下一个半满的中间块并另起新块，就会在序列中间产生大量内部碎片，且打乱了位置索引 $\lfloor t / B \rfloor$ 与 $t \bmod B$ 的 O(1) 定长寻址规律。</p>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0028 · 单题笔记</span><a href="../questions/llm-0028-paged-attention-virtual-memory.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0028", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

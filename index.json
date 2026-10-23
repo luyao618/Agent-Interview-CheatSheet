@@ -4222,6 +4222,29 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-09-26",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0028",
+      "title": "PagedAttention 是如何借鉴操作系统虚拟内存解决 KV Cache 显存碎片并实现写时复制（CoW）共享的？",
+      "category": "llm",
+      "tags": [
+        "paged-attention",
+        "vllm",
+        "kv-cache",
+        "memory-fragmentation",
+        "copy-on-write",
+        "prefix-caching"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开大模型系统设计面试整理第 8 章扩展改编；PagedAttention 原论文（SOSP 2023）核实（见参考）",
+      "file": "llm-0028-paged-attention-virtual-memory.md",
+      "language": "zh",
+      "category_label": "大模型基础与原理",
+      "updated": "2026-10-23",
+      "answers_count": 1
     }
   ]
 }
