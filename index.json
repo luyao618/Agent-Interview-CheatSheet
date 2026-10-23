@@ -4222,6 +4222,29 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-09-26",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0029",
+      "title": "MoE（混合专家模型）是如何通过 Top-K 路由与负载均衡机制避免路由坍塌（Routing Collapse）的？",
+      "category": "llm",
+      "tags": [
+        "moe",
+        "mixture-of-experts",
+        "load-balancing",
+        "auxiliary-loss",
+        "loss-free-balancing",
+        "expert-routing"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开 AI 系统设计指南与面试整理扩展改编；Switch Transformer、DeepSeek 无辅助损失负载均衡论文与 Transformers 源码核实（见参考）",
+      "file": "llm-0029-moe-routing-load-balancing.md",
+      "language": "zh",
+      "category_label": "大模型基础与原理",
+      "updated": "2026-10-23",
+      "answers_count": 1
     }
   ]
 }

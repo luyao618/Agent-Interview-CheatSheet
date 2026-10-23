@@ -1444,6 +1444,17 @@
       "images": 0
     },
     {
+      "id": "llm-0029",
+      "file": "llm-0029-moe-routing-load-balancing.html",
+      "source": "questions/llm-0029-moe-routing-load-balancing.md",
+      "source_sha256": "1ed5cfef2966fa8d83dc11ee27ce8bedb0cda125f86b86228bd7150348fc8e18",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 2,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
