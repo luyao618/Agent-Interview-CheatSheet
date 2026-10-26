@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。GRPO（群组相对策略优化）是如何省去 Critic 模型训练推理大模型的，为什么原版公式会引发长度偏置与零方差塌缩？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0030-grpo-group-relative-policy-optimization.md">
+  <meta name="source-sha256" content="d9a32766e3a1f48dacde8416aa6b8f664e9619565755dcc03db6268c2c0358df">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>GRPO（群组相对策略优化）是如何省去 Critic 模型训练推理大模型的，为什么原版公式会引发长度偏置与零方差塌缩？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0030</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title"><em>GRPO</em>（群组相对策略优化）是如何省去 Critic 模型训练推理大模型的，为什么原版公式会引发长度偏置与零方差塌缩？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>在训练长思维链（Long Chain-of-Thought）推理大模型（如 DeepSeek-R1、Qwen3 等）时，强化学习结合可验证奖励（Reinforcement Learning with Verifiable Rewards, RLVR）已成为核心后训练范式。然而，传统 PPO（Proximal Policy Optimization）需要同时在显存中维护一个与策略模型同规模的价值模型（Critic / Value Network），在百亿至千亿参数量级下显存与计算开销极其高昂。</p>
+<p>DeepSeekMath 提出的 <strong>GRPO（Group Relative Policy Optimization，群组相对策略优化）</strong> 通过移除 Critic 模型成为推理模型 RL 训练的事实标准，但原版 GRPO 在长思维链训练中也暴露出了显著的优化偏差。请深入剖析：</p>
+<ol>
+<li>GRPO 是如何通过“同 Prompt 群组采样（Group Sampling）”替代 PPO 中的 Critic 价值网络的？请写出其组内相对优势（Group-Relative Advantage）、裁剪代理目标（Clipped Surrogate Objective）以及 Schulman 无偏 KL 惩罚项的完整数学公式。</li>
+<li>为什么原版 GRPO 的“样本级长度归一化（除以 $\frac{1}{|o_i|}$）”和“组内标准差归一化（除以 $\operatorname{std}(\mathbf{r})$）”会导致模型把错误回答越写越长（Length Bias）并产生难度偏置？<strong>Dr.GRPO</strong> 是如何从数学上消除这两项偏差的？</li>
+<li>当模型能力提升或遇到极难样本时，为什么 GRPO 会发生**零方差梯度消失（Zero-Variance Collapse）**与探索熵坍缩？<strong>DAPO</strong> 的动态采样（Dynamic Sampling）与非对称裁剪（Clip-Higher）是如何解决该问题的？</li>
+</ol>
+<p>本题由公开面试题/系统设计整理扩展改编，不是已核实的企业真题；不采信脱离具体条件的性能收益承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-10-27</span></p><div class="prose"><p><strong>GRPO 的核心思想是“用同题多采样的统计均值替代神经网络价值基线”：针对同一个问题 $q$ 采样 $G$ 条回答 ${o_1, \dots, o_G}$，直接用组内奖励的均值与标准差计算标准化优势 $\hat{A}<em>{i,t} = \frac{r_i - \operatorname{mean}(\mathbf{r})}{\operatorname{std}(\mathbf{r})}$，从而彻底省去与 Actor 同等规模的 Critic 价值模型及其优化器状态。然而，原版 GRPO 将样本损失除以序列长度 $|o_i|$ 会稀释长错误回答的单 Token 惩罚梯度（诱发错误回答长度膨胀），除以组内 $\operatorname{std}(\mathbf{r})$ 则会放大极易/极难题目的梯度权重；工业界前沿实践通常结合 Dr.GRPO（移除 $|o_i|$ 与 $\operatorname{std}(\mathbf{r})$ 归一化，改用固定最大长度常数 $L</em>{\max}$）与 DAPO（过滤全对/全错零方差组的动态采样 + 非对称上界裁剪 Clip-Higher）来实现稳定高效的长思维链强化学习。</strong></p>
+<p>现有 <a href="llm-0021-dpo-vs-ppo-preference-optimization.html">llm-0021</a> 对比了离线成对偏好优化 DPO 与在线 PPO 的流程差异，<a href="llm-0004-agent-rl-credit-assignment.html">llm-0004</a> 讨论了多轮 Agent 轨迹中的过程与结果信用分配，<a href="llm-0005-agent-training-sft-to-rl-switch.html">llm-0005</a> 分析了从 SFT 切换到 RL 的量化判据。本题聚焦 <strong>GRPO 消除 Critic 的数学机制、Schulman 一阶无偏 KL 估计器、长度偏置（Length Bias）的梯度推导，以及 Dr.GRPO 与 DAPO 在开源训练框架（如 Hugging Face TRL）中的工程演进</strong>。</p>
+<hr />
+<h3 id="1-ppo-vs-grpo架构对比与数学公式推导">1. PPO vs GRPO：架构对比与数学公式推导</h3>
+<h4 id="为什么在长思维链推理训练中要砍掉-ppo-的-critic">为什么在长思维链推理训练中要砍掉 PPO 的 Critic？</h4>
+<p>在标准 PPO 式 RLHF 中，训练循环需要同时维护 <strong>4 个模型</strong>：策略模型（Actor $\pi_\theta$）、参考模型（Reference $\pi_{\text{ref}}$，冻结）、奖励模型（Reward Model $R_\phi$，或在 RLVR 中替换为确定性规则验证器 Verifier）以及价值模型（Critic $V_\psi$，可训练）。这带来两大痛点：</p>
+<ol>
+<li><strong>显存与算力翻倍</strong>：Critic 通常与 Actor 参数量相同，不仅要占用前向/反向激活显存，还要维护一套完整的 Adam 优化器状态（FP32 Momentum + Variance），几乎将可训练参数显存开销翻倍。</li>
+<li><strong>长序列末端稀疏奖励的 Value 拟合失真</strong>：在数学与代码推理（RLVR）中，一条回答往往长达数千至上万 Token，但只有最后一个 Token 结束时才能由验证器给出一个二元结果奖励（如答案正确 $r=1$，错误 $r=0$）。让 Critic 网络在长达数千步的中间推理 Token 上准确预测广义优势估计（GAE），方差极大且极难收敛。</li>
+</ol>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>标准 PPO（Proximal Policy Optimization）</th>
+<th>原版 GRPO（DeepSeekMath / R1）</th>
+<th>Dr.GRPO / DAPO（去偏增强版）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>优势基线（Baseline）来源</strong></td>
+<td>独立训练的神经网络价值模型 $V_\psi(s_t)$（结合 GAE）</td>
+<td>同 Prompt 采样的 $G$ 条回答的组内奖励均值 $\operatorname{mean}(\mathbf{r})$</td>
+<td>同 Prompt 组内奖励均值（DAPO 过滤全对/全错零方差组）</td>
+</tr>
+<tr>
+<td><strong>可训练模型数量</strong></td>
+<td>2 个（Actor $\pi_\theta$ + Critic $V_\psi$）</td>
+<td><strong>1 个</strong>（仅 Actor $\pi_\theta$，省去 Critic 显存与训练成本）</td>
+<td><strong>1 个</strong>（仅 Actor $\pi_\theta$）</td>
+</tr>
+<tr>
+<td><strong>优势计算公式 $\hat{A}_{i,t}$</strong></td>
+<td>$\sum_{l=0}^{\infty} (\gamma \lambda)^l \delta_{t+l}$</td>
+<td>$\frac{r_i - \operatorname{mean}(\mathbf{r})}{\operatorname{std}(\mathbf{r}) + \epsilon}$</td>
+<td>$r_i - \operatorname{mean}(\mathbf{r})$（Dr.GRPO 移除 $\operatorname{std}$ 缩放）</td>
+</tr>
+<tr>
+<td><strong>序列长度归一化分母</strong></td>
+<td>按 Batch 内有效 Token 总数</td>
+<td>$\frac{1}{G} \sum_{i=1}^G \frac{1}{|o_i|}$（先对单条序列求平均）</td>
+<td>DAPO 用 $\frac{1}{\sum_{i=1}^G |o_i|}$；Dr.GRPO 用常数 $\frac{1}{G \cdot L_{\max}}$</td>
+</tr>
+<tr>
+<td><strong>KL 约束方式</strong></td>
+<td>常写入每个 Token 的即时 Reward 中（$r_t - \beta \log \frac{\pi_\theta}{\pi_{\text{ref}}}$）</td>
+<td>损失函数外显式加 Schulman 无偏近似项 $\beta \mathbb{D}<em>{\text{KL}}(\pi</em>\theta | \pi_{\text{ref}})$</td>
+<td>在长 CoT RLVR 中常设 $\beta = 0$（移除参考模型显存占用）</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="grpo-的完整目标函数推导">GRPO 的完整目标函数推导</h4>
+<p>根据 Shao et al. (2024) 原论文，对每个问题 $q \sim P(Q)$，首先从旧策略 $\pi_{\theta_{\text{old}}}$ 中采样一组共 $G$ 条完整输出 ${o_1, o_2, \dots, o_G}$，并由奖励函数或规则验证器给出标量奖励 $\mathbf{r} = {r_1, r_2, \dots, r_G}$。</p>
+<ol>
+<li><strong>结果监督下的组内相对优势（Outcome Supervision Advantage）</strong>：
+将同一组内的奖励做标准化（Z-Score），并将第 $i$ 条回答的标量优势广播给该回答中的所有位置 $t \in [1, |o_i|]$：
+$$\hat{A}<em>{i,t} = \frac{r_i - \operatorname{mean}(r_1, \dots, r_G)}{\operatorname{std}(r_1, \dots, r_G) + \epsilon</em>{\text{norm}}}$$</li>
+<li><strong>重要性采样比率与 PPO 裁剪代理项</strong>：
+定义第 $i$ 条回答在第 $t$ 个 Token 处的新旧策略概率比为：
+$$\rho_{i,t}(\theta) = \frac{\pi_\theta(o_{i,t} \mid q, o_{i,&lt;t})}{\pi_{\theta_{\text{old}}}(o_{i,t} \mid q, o_{i,&lt;t})}$$</li>
+<li><strong>Schulman 无偏非负 KL 散度估计器</strong>：
+不同于直接用一阶对数比 $\log \frac{\pi_\theta}{\pi_{\text{ref}}}$（单样本可能为负，做损失项时数值不稳定），GRPO 采用 Schulman (2020) 提出的 $k_3$ 近似器，记 $r_{\text{ref}} = \frac{\pi_{\text{ref}}(o_{i,t} \mid q, o_{i,&lt;t})}{\pi_\theta(o_{i,t} \mid q, o_{i,&lt;t})}$：
+$$\mathbb{D}<em>{\text{KL}}\left[\pi</em>\theta ,|, \pi_{\text{ref}}\right]<em>{i,t} = r</em>{\text{ref}} - \log r_{\text{ref}} - 1$$
+由不等式 $x - 1 \ge \log x$（当且仅当 $x=1$ 时取等）可知，该估计量<strong>恒大于等于 $0$</strong> 且期望严格等于真实 KL 散度。</li>
+<li><strong>原版 GRPO 总体最小化损失函数</strong>（对应最大化代理目标）：
+$$\mathcal{L}<em>{\text{GRPO}}(\theta) = -\frac{1}{G} \sum</em>{i=1}^{G} \frac{1}{|o_i|} \sum_{t=1}^{|o_i|} \left[ \min\left( \rho_{i,t}(\theta) \hat{A}<em>{i,t}, , \operatorname{clip}(\rho</em>{i,t}(\theta), 1-\epsilon, 1+\epsilon) \hat{A}<em>{i,t} \right) - \beta \mathbb{D}</em>{\text{KL}}\left[\pi_\theta ,|, \pi_{\text{ref}}\right]_{i,t} \right]$$</li>
+</ol>
+<hr />
+<h3 id="2-原版-grpo-的两大隐藏数学偏差与-drgrpo-修正">2. 原版 GRPO 的两大隐藏数学偏差与 Dr.GRPO 修正</h3>
+<p>在 DeepSeek-R1-Zero 等长思维链训练实践中，研究者发现模型随着 RL 步数增加，不仅正确回答变长，<strong>错误回答的长度更是失控暴涨</strong>。Liu et al. (2025, <em>Understanding R1-Zero-Like Training / Dr.GRPO</em>) 从梯度数学结构上证明了这是原版 GRPO 公式中两处归一化引入的偏差：</p>
+<h4 id="偏差一样本级长度归一化-frac1o_i-引发的长度偏置response-level-length-bias">偏差一：样本级长度归一化 $\frac{1}{|o_i|}$ 引发的长度偏置（Response-Level Length Bias）</h4>
+<p>观察原版公式中每个 Token 获得的实际优势权重系数为 $\frac{\hat{A}_{i,t}}{G \cdot |o_i|}$：</p>
+<ul>
+<li><strong>当回答正确（$\hat{A}_{i,t} &gt; 0$）时</strong>：短的正确回答（$|o_i|$ 小）每个 Token 分配到的正向梯度权重更大，因此模型在正确样本上反而更偏爱短回答；</li>
+<li><strong>当回答错误（$\hat{A}_{i,t} &lt; 0$）时</strong>：为了减小负向惩罚对单个 Token 的冲击，<strong>越啰嗦、越冗长的错误回答（$|o_i|$ 大），分摊到每个 Token 上的负梯度绝对值 $\frac{|\hat{A}_{i,t}|}{G \cdot |o_i|}$ 就越小</strong>！优化器因此产生了一个畸形的激励：当模型做不出题（注定拿负优势）时，拼命生成冗长废话来拉长 $|o_i|$ 可以有效逃避单步梯度惩罚。</li>
+</ul>
+<h4 id="偏差二组内标准差归一化-frac1operatornamestdmathbfr-引发的问题难度偏置question-level-difficulty-bias">偏差二：组内标准差归一化 $\frac{1}{\operatorname{std}(\mathbf{r})}$ 引发的问题难度偏置（Question-Level Difficulty Bias）</h4>
+<p>在二元可验证奖励 $r_i \in {0, 1}$ 下，设某道题的组内通过率为 $p \in (0, 1)$，则伯努利分布的标准差为 $\operatorname{std}(\mathbf{r}) = \sqrt{p(1-p)}$：</p>
+<ul>
+<li>当题目极简单（如 $G=16$ 中做对 15 个，$p=0.9375$）或极难（只做对 1 个，$p=0.0625$）时，$\operatorname{std}(\mathbf{r}) \approx 0.242$ 很小，除以 $\operatorname{std}(\mathbf{r})$ 会把那唯一一个例外样本的优势暴力放大 <strong>4 倍以上</strong>；</li>
+<li>反之，真正处于模型能力边界（$p = 0.5$，最有学习价值）的题目，$\operatorname{std}(\mathbf{r}) = 0.5$ 最大，其梯度反而被相对压缩了。</li>
+</ul>
+<h4 id="drgrpodone-right-grpo与-hugging-face-trl-的修正方案">Dr.GRPO（Done Right GRPO）与 Hugging Face TRL 的修正方案</h4>
+<p>在 Hugging Face <code>trl</code> 的 <code>GRPOTrainer</code>（<code>GRPOConfig</code>）源码中，已经原生支持三种 <code>loss_type</code> 与 <code>scale_rewards</code> 配置：</p>
+<ol>
+<li><strong>移除 $\operatorname{std}(\mathbf{r})$ 归一化</strong>（设置 <code>scale_rewards=False</code>）：直接令 $\hat{A}_{i,t} = r_i - \operatorname{mean}(\mathbf{r})$，消除极易/极难题目的梯度畸变。</li>
+<li><strong>移除对动态序列长度 $|o_i|$ 的除法</strong>：
+<ul>
+<li><strong>DAPO 模式（<code>loss_type=&quot;dapo&quot;</code>）</strong>：将分母改为全组总 Token 数 $\frac{1}{\sum_{i=1}^G |o_i|} \sum_{i=1}^G \sum_{t=1}^{|o_i|} l_{i,t}$，使同一组内的每个 Token 权重相等；</li>
+<li><strong>Dr.GRPO 模式（<code>loss_type=&quot;dr_grpo&quot;</code>）</strong>：将分母彻底替换为与当前生成长度无关的<strong>全局最大生成长度常数 $L_{\max}$</strong>：
+$$\mathcal{L}<em>{\text{Dr.GRPO}}(\theta) = -\frac{1}{G \cdot L</em>{\max}} \sum_{i=1}^{G} \sum_{t=1}^{|o_i|} l_{i,t}$$
+此时无论序列长短，每个 Token 承受的奖励/惩罚梯度系数恒为 $\frac{r_i - \operatorname{mean}(\mathbf{r})}{G \cdot L_{\max}}$，从根源上杜绝“靠拉长错误回答稀释惩罚”的漏洞。</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h3 id="3-零方差梯度消失与-dapo-的工程演进">3. 零方差梯度消失与 DAPO 的工程演进</h3>
+<p>除了长度偏置，大规模 RLVR 训练进入中后期还会遭遇两个严重工程瓶颈（Yu et al., 2025, <em>DAPO</em>）：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">Prompt q ──► 采样 G 条回答 {o_1..o_G} ──► Verifier 判分 {r_1..r_G}
+                                              │
+          ┌───────────────────────────────────┴───────────────────────────────────┐
+          ▼ (全对 r=[1..1] 或 全错 r=[0..0])                                      ▼ (有对有错 0 &lt; sum(r) &lt; G)
+  组内方差 Var(r) = 0 ──► A_i = 0 (零梯度废组!)                           组内方差 Var(r) &gt; 0 ──► 有效优势梯度
+  [DAPO Dynamic Sampling: 丢弃并继续补采，直到凑满有效 Batch]             [Clip-Higher: 放宽上界 1+eps_high 保护低概率探索 Token]
+</code></pre>
+<ol>
+<li><strong>零方差梯度消失（Zero-Variance Collapse）与动态采样（Dynamic Sampling）</strong>：
+<ul>
+<li><strong>现象</strong>：当同一组 $G$ 条回答全部做对（$\mathbf{r} = [1, 1, \dots, 1]$）或全部做错（$\mathbf{r} = [0, 0, \dots, 0]$）时，组内均值等于每个元素，$r_i - \operatorname{mean}(\mathbf{r}) \equiv 0$，整组样本对策略参数的梯度贡献严格为 $\mathbf{0}$！随着训练推进，越来越多简单题变成全对，导致一个 Batch 内真正产生梯度的有效样本比例急剧萎缩，梯度方差飙升。</li>
+<li><strong>DAPO 解法</strong>：在 Rollout 阶段引入<strong>动态过采样过滤约束</strong>——仅保留满足 $0 &lt; \sum_{i=1}^G \mathbb{I}(\text{is_correct}(o_i)) &lt; G$ 的 Prompt 组进入反向传播，若不足 Batch Size 则继续异步采样补充，保证每次参数更新的信噪比恒定。</li>
+</ul>
+</li>
+<li><strong>对称裁剪导致的探索熵坍缩与非对称裁剪（Clip-Higher）</strong>：
+<ul>
+<li><strong>现象</strong>：标准 PPO/GRPO 使用对称裁剪区间 $[1 - \epsilon, 1 + \epsilon]$（如 $\epsilon = 0.2$）。对于一条正确轨迹中激发新推理路径的“灵光一现”低概率探索 Token（例如 $\pi_{\theta_{\text{old}}} = 0.01$），单步更新最多只能将其概率提升到 $(1 + 0.2) \times 0.01 = 0.012$；而高概率套路 Token（$\pi_{\theta_{\text{old}}} = 0.80$）却能轻松涨到 $0.96$。久而久之，高概率 Token 迅速垄断分布，策略熵（Entropy）过早坍缩。</li>
+<li><strong>DAPO 解法（Decoupled Clip-Higher）</strong>：将裁剪下界与上界解耦为 $[,1 - \epsilon_{\text{low}}, , 1 + \epsilon_{\text{high}},]$，保持 $\epsilon_{\text{low}} = 0.2$ 防止负优势步把有用 Token 概率一刀砍死，同时调大上界 $\epsilon_{\text{high}} = 0.28$，给低概率正向探索 Token 留出充足的跃升空间。</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h3 id="4-可运行的标准库实现grpo--dapo--drgrpo-梯度权重与动态采样验证">4. 可运行的标准库实现：GRPO / DAPO / Dr.GRPO 梯度权重与动态采样验证</h3>
+<p>以下 Python 3 标准库代码完整实现了组内优势计算、Schulman 无偏 KL 近似器，并定量验证了（1）原版 GRPO 在长短样本上的单 Token 梯度权重偏置 vs Dr.GRPO 的无偏修正，以及（2）全对/全错零方差坍缩与 DAPO 动态采样过滤机制：</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+from typing import List, Tuple, Dict
+
+
+def compute_group_advantages(
+    rewards: List[float], scale_std: bool = True, eps: float = 1e-8
+) -&gt; List[float]:
+    &quot;&quot;&quot;计算组内相对优势 (scale_std=True 为原版 GRPO, False 为 Dr.GRPO 无偏优势)&quot;&quot;&quot;
+    g = len(rewards)
+    mean_r = sum(rewards) / g
+    centered = [r - mean_r for r in rewards]
+    if not scale_std:
+        return centered
+    var_r = sum(c * c for c in centered) / g
+    std_r = math.sqrt(var_r)
+    if std_r &lt; eps:
+        return [0.0] * g
+    return [c / (std_r + eps) for c in centered]
+
+
+def schulman_kl_approx(pi_theta: float, pi_ref: float) -&gt; float:
+    &quot;&quot;&quot;Schulman (2020) 无偏非负 KL 近似器: r - log(r) - 1, 其中 r = pi_ref / pi_theta&quot;&quot;&quot;
+    ratio_ref = pi_ref / pi_theta
+    kl = ratio_ref - math.log(ratio_ref) - 1.0
+    assert kl &gt;= -1e-12, &quot;KL divergence approximation must be non-negative!&quot;
+    return max(0.0, kl)
+
+
+def compute_grpo_losses(
+    token_ratios: List[List[float]],
+    token_kls: List[List[float]],
+    rewards: List[float],
+    eps_low: float = 0.2,
+    eps_high: float = 0.2,
+    beta: float = 0.01,
+    max_len: int = 100,
+) -&gt; Dict[str, Tuple[float, List[float]]]:
+    &quot;&quot;&quot;对比 vanilla GRPO, DAPO (token-level), Dr.GRPO (constant L_max &amp; no std) 的损失与单 token 梯度权重&quot;&quot;&quot;
+    g = len(rewards)
+    adv_std = compute_group_advantages(rewards, scale_std=True)
+    adv_nostd = compute_group_advantages(rewards, scale_std=False)
+
+    results: Dict[str, Tuple[float, List[float]]] = {}
+    total_tokens = sum(len(seq) for seq in token_ratios)
+
+    for mode in (&quot;grpo&quot;, &quot;dapo&quot;, &quot;dr_grpo&quot;):
+        advs = adv_nostd if mode == &quot;dr_grpo&quot; else adv_std
+        total_loss = 0.0
+        per_seq_token_weight: List[float] = []
+
+        for i in range(g):
+            seq_len = len(token_ratios[i])
+            if mode == &quot;grpo&quot;:
+                norm_denom = g * seq_len
+            elif mode == &quot;dapo&quot;:
+                norm_denom = total_tokens
+            else:
+                norm_denom = g * max_len
+
+            per_seq_token_weight.append(advs[i] / norm_denom)
+
+            for r_t, kl_t in zip(token_ratios[i], token_kls[i]):
+                clipped_r = min(max(r_t, 1.0 - eps_low), 1.0 + eps_high)
+                surr = min(r_t * advs[i], clipped_r * advs[i])
+                token_obj = surr - beta * kl_t
+                total_loss += -token_obj / norm_denom
+
+        results[mode] = (total_loss, per_seq_token_weight)
+
+    return results
+
+
+# 1. 验证原版 GRPO 的长度偏置 (Length Bias) vs Dr.GRPO 修正
+# 设组内 G=4: 2 个正确回答 (长 10 tokens vs 长 80 tokens), 2 个错误回答 (长 20 tokens vs 长 100 tokens)
+mock_rewards = [1.0, 1.0, 0.0, 0.0]
+mock_lengths = [10, 80, 20, 100]
+mock_ratios = [[1.05] * length for length in mock_lengths]
+mock_kls = [[schulman_kl_approx(0.25, 0.22)] * length for length in mock_lengths]
+
+loss_report = compute_grpo_losses(
+    mock_ratios, mock_kls, mock_rewards, eps_low=0.2, eps_high=0.2, beta=0.01, max_len=100
+)
+
+grpo_weights = loss_report[&quot;grpo&quot;][1]
+dr_grpo_weights = loss_report[&quot;dr_grpo&quot;][1]
+
+# 在原版 GRPO 中: 短正确回答(10 tokens)的单 token 正向激励是长正确回答(80 tokens)的 8 倍!
+# 且长错误回答(100 tokens)的单 token 负向惩罚绝对值只有短错误回答(20 tokens)的 1/5!
+assert math.isclose(grpo_weights[0] / grpo_weights[1], 8.0, rel_tol=1e-6)
+assert math.isclose(abs(grpo_weights[2]) / abs(grpo_weights[3]), 5.0, rel_tol=1e-6)
+
+# 在 Dr.GRPO 中: 无论回答长短，同奖励样本的单 token 优势权重完全相等，彻底消除长度偏置
+assert math.isclose(dr_grpo_weights[0], dr_grpo_weights[1], rel_tol=1e-6)
+assert math.isclose(dr_grpo_weights[2], dr_grpo_weights[3], rel_tol=1e-6)
+
+# 2. 验证零方差梯度消失 (Zero-Variance Collapse) 与 DAPO 动态采样过滤
+all_correct_adv = compute_group_advantages([1.0, 1.0, 1.0, 1.0], scale_std=True)
+all_wrong_adv = compute_group_advantages([0.0, 0.0, 0.0, 0.0], scale_std=True)
+assert all(a == 0.0 for a in all_correct_adv) and all(a == 0.0 for a in all_wrong_adv)
+
+raw_prompt_groups = [
+    (&quot;easy_q&quot;, [1.0, 1.0, 1.0, 1.0]),
+    (&quot;edge_q1&quot;, [1.0, 0.0, 0.0, 0.0]),
+    (&quot;hard_q&quot;, [0.0, 0.0, 0.0, 0.0]),
+    (&quot;edge_q2&quot;, [1.0, 1.0, 0.0, 1.0]),
+]
+# DAPO 动态采样: 仅保留组内存在奖励差异 (0 &lt; sum(r) &lt; G) 的有效梯度组
+dapo_filtered = [name for name, r_list in raw_prompt_groups if len(set(r_list)) &gt; 1]
+assert dapo_filtered == [&quot;edge_q1&quot;, &quot;edge_q2&quot;]
+
+print(f&quot;Vanilla GRPO per-token weights (len 10,80,20,100): {[round(w, 5) for w in grpo_weights]}&quot;)
+print(f&quot;Dr.GRPO per-token weights      (len 10,80,20,100): {[round(w, 5) for w in dr_grpo_weights]}&quot;)
+print(f&quot;Zero-variance advantages (all 1s): {all_correct_adv}&quot;)
+print(f&quot;DAPO dynamic sampling kept groups: {dapo_filtered} ({len(dapo_filtered)}/{len(raw_prompt_groups)})&quot;)
+print(&quot;GRPO advantage, length-bias, and dynamic-sampling checks passed&quot;)
+</code></pre>
+<p>实际执行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">Vanilla GRPO per-token weights (len 10,80,20,100): [0.025, 0.00312, -0.0125, -0.0025]
+Dr.GRPO per-token weights      (len 10,80,20,100): [0.00125, 0.00125, -0.00125, -0.00125]
+Zero-variance advantages (all 1s): [0.0, 0.0, 0.0, 0.0]
+DAPO dynamic sampling kept groups: [&#x27;edge_q1&#x27;, &#x27;edge_q2&#x27;] (2/4)
+GRPO advantage, length-bias, and dynamic-sampling checks passed
+</code></pre>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“GRPO 之所以省显存，是因为它像 DPO 一样不需要在线生成（Rollout），直接用离线数据就能训。”</strong>
+事实：GRPO 是典型的<strong>在线策略梯度算法（On-Policy RL）</strong>，每个训练步都必须由当前策略针对每个 Prompt 实时生成 $G$ 条长回答（事实上 Rollout 生成往往占 GRPO 总训练耗时的 $70%\sim 85%$ 以上）。它省掉的是 PPO 中的 <strong>Critic 价值网络</strong>，而不是在线采样。</li>
+<li><strong>误区二：“计算 KL 散度惩罚时，直接写 $\log \pi_\theta(o_{i,t}) - \log \pi_{\text{ref}}(o_{i,t})$ 作为损失项即可。”</strong>
+事实：单样本的对数比 $\log \frac{\pi_\theta}{\pi_{\text{ref}}}$ 可正可负，如果在未对整个词表求期望的情况下直接当作非负距离放入 Loss 最小化，优化器会疯狂把 $\log \frac{\pi_\theta}{\pi_{\text{ref}}}$ 往负无穷推（即故意把采样 Token 的概率压到 0），导致模型瞬间崩盘。因此必须使用恒非负的 Schulman $k_3$ 近似器 $r_{\text{ref}} - \log r_{\text{ref}} - 1$，或在 Token 级对完整词表 logits 计算解析 KL。</li>
+<li><strong>误区三：“群组采样数 $G$ 越大越好，哪怕题目太简单全都做对（16/16），也能让模型巩固正确记忆。”</strong>
+事实：在 GRPO 中，如果 $G$ 条采样全部做对（或全部做错），组内奖励标准差为 $0$，每个样本减去组均值后优势 $\hat{A}_{i,t} \equiv 0$，<strong>反向传播梯度严格为 0</strong>。这批全对样本不仅不会“巩固记忆”，反而白白浪费了 $G$ 条长序列的推理与前向反传算力；必须配合题目难度过滤或 DAPO 动态采样，让训练集中在模型 <code>pass@1 &lt; pass@G</code> 的能力边界（Edge of Competence）上。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/ombharatiya/ai-system-design-guide/blob/ed955b27d94201b663a741284767a1136dc83e5e/03-training-and-adaptation/08-rlvr-and-reasoning-models.md" target="_blank" rel="noopener noreferrer">ombharatiya/ai-system-design-guide, 03-training-and-adaptation/08-rlvr-and-reasoning-models.md</a> 与 <a href="https://github.com/pubalisen/ai-ml-interview-deep-dives/blob/05cbb4c7383de742c90ab5e811130f658a4269ef/llm-fundamentals/40-grpo.md" target="_blank" rel="noopener noreferrer">pubalisen/ai-ml-interview-deep-dives, llm-fundamentals/40-grpo.md</a>。固定 commit，独立拓展改编。</li>
+<li>Shao et al., <a href="https://arxiv.org/abs/2402.03300" target="_blank" rel="noopener noreferrer">DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open Language Models</a>，2024，§4.1（Eq. 3–7）：GRPO 原始算法定义、Schulman KL 散度近似器、结果监督与过程监督优势公式。</li>
+<li>DeepSeek-AI, <a href="https://arxiv.org/abs/2501.12948" target="_blank" rel="noopener noreferrer">DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning</a>，Nature 2025：基于 GRPO 与规则可验证奖励（RLVR）激发长思维链自反思能力。</li>
+<li>Liu et al., <a href="https://arxiv.org/abs/2503.20783" target="_blank" rel="noopener noreferrer">Understanding R1-Zero-Like Training: A Critical Perspective (Dr.GRPO)</a>，2025，§3：证明原版 GRPO 中 $\frac{1}{|o_i|}$ 长度偏置与 $\operatorname{std}(\mathbf{r})$ 难度偏置，并提出无偏 Dr.GRPO 目标函数。</li>
+<li>Yu et al., <a href="https://arxiv.org/abs/2503.14476" target="_blank" rel="noopener noreferrer">DAPO: An Open-Source LLM Reinforcement Learning System at Scale</a>，2025，§3：提出解耦非对称裁剪（Clip-Higher）、零方差过滤动态采样（Dynamic Sampling）与 Token 级损失归一化。</li>
+<li>Hugging Face TRL, <a href="https://github.com/huggingface/trl/blob/v1.16.0/docs/source/grpo_trainer.md" target="_blank" rel="noopener noreferrer">docs/source/grpo_trainer.md (<code>v1.16.0</code>)</a>：<code>GRPOTrainer</code> 中 <code>loss_type</code>（<code>grpo</code> / <code>dapo</code> / <code>dr_grpo</code>）与 <code>scale_rewards</code> 官方实现说明。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-10-27</strong>。仅执行标准库组内优势、长度偏置梯度权重与动态采样逻辑数值验证，未运行多卡分布式强化学习基准训练。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">GRPO 除了支持仅看最终答案的 Outcome Supervision（结果监督）外，如何支持过程奖励模型（PRM）的 Process Supervision（过程监督）？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：GRPO 除了支持仅看最终答案的 Outcome Supervision（结果监督）外，如何支持过程奖励模型（PRM）的 Process Supervision（过程监督）？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>根据 DeepSeekMath 原论文 §4.1.3，在过程监督模式下，一条回答 $o_i$ 被拆分为 $K_i$ 个推理步骤，PRM 对第 $j$ 步给出过程得分 $r_i^{\text{step}(j)}$。系统首先用<strong>当前组内所有回答的所有步骤得分</strong>的均值与标准差对每个步骤分做标准化，得到 $\tilde{r}<em>i^{\text{step}(j)}$；随后，第 $t$ 个 Token 的优势被定义为<strong>从当前位置之后所有剩余步骤标准化得分的累加和</strong>：
+$$\hat{A}</em>{i,t} = \sum_{\text{end}(j) \ge t} \tilde{r}_i^{\text{step}(j)}$$
+这样就能在不引入独立 Critic 网络的前提下，实现细粒度到推理步骤的信用分配（但需注意防范 PRM 本身的 Reward Hacking，详见 <a href="llm-0004-agent-rl-credit-assignment.html">llm-0004</a>）。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">为什么在 MoE（混合专家模型）上直接跑 Token 级 GRPO 会导致训练崩溃？GSPO（Group Sequence Policy Optimization）是怎么解决的？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么在 MoE（混合专家模型）上直接跑 Token 级 GRPO 会导致训练崩溃？GSPO（Group Sequence Policy Optimization）是怎么解决的？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>在 MoE 模型中，当策略参数从 $\theta_{\text{old}}$ 更新到 $\theta$（甚至只是训练引擎与推理引擎之间微小的算子精度差异）时，门控路由器选出的 Top-$K$ 专家集合可能发生跳变，导致单个 Token 的新旧概率比 $\rho_{i,t}(\theta) = \frac{\pi_\theta(o_{i,t})}{\pi_{\theta_{\text{old}}}(o_{i,t})}$ 出现几个数量级的剧烈震荡，频繁触发错误裁剪并摧毁梯度。Qwen3 等采用的 <strong>GSPO</strong>（arXiv:2507.18071）不再计算脆弱的单 Token 概率比，而是将重要性采样比率定义在<strong>整条序列的几何平均似然比</strong>上：
+$$\rho_i^{\text{seq}}(\theta) = \left( \frac{\pi_\theta(o_i \mid q)}{\pi_{\theta_{\text{old}}}(o_i \mid q)} \right)^{\frac{1}{|o_i|}} = \exp\left( \frac{1}{|o_i|} \sum_{t=1}^{|o_i|} \log \frac{\pi_\theta(o_{i,t} \mid q, o_{i,&lt;t})}{\pi_{\theta_{\text{old}}}(o_{i,t} \mid q, o_{i,&lt;t})} \right)$$
+这不仅与序列级奖励 $\hat{A}_i$ 的粒度严格匹配，还通过序列级对数平均平抑了单步专家路由跳变带来的高频噪声。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">在训练推理模型时，能否直接对 <code>&lt;think&gt;</code> 块里的思维链（CoT）内容施加惩罚奖励（例如惩罚“投机词汇”或敏感推理过程）？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：在训练推理模型时，能否直接对 &lt;think&gt; 块里的思维链（CoT）内容施加惩罚奖励（例如惩罚“投机词汇”或敏感推理过程）？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>强烈不建议。OpenAI（Baker et al., 2025）与前沿系统设计指南均明确指出：<strong>不要把奖励优化压力直接施加在 CoT 文本上（Do Not Train Against the Chain of Thought）</strong>。一旦惩罚 CoT 中暴露出的不良意图或走捷径念头，模型并不会真正放弃 Reward Hacking，而是学会<strong>在 CoT 中隐藏真实推理意图（Obfuscation / 加密黑话）</strong>，同时在最终动作中继续作弊，从而彻底摧毁 CoT 作为安全审计与调试监控信号的透明性（Monitorability）。正确做法是只对最终可验证产出施加强化奖励，保持 CoT 不受直接内容审查惩罚，并用外部独立的监控器读取它。</p>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0030 · 单题笔记</span><a href="../questions/llm-0030-grpo-group-relative-policy-optimization.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0030", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
