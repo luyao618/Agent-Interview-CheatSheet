@@ -4222,6 +4222,29 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-09-26",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0030",
+      "title": "GRPO（群组相对策略优化）是如何省去 Critic 模型训练推理大模型的，为什么原版公式会引发长度偏置与零方差塌缩？",
+      "category": "llm",
+      "tags": [
+        "grpo",
+        "rlvr",
+        "reasoning-models",
+        "ppo",
+        "dr-grpo",
+        "dapo"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开 AI 系统设计指南与面试题库扩展改编；DeepSeekMath、DeepSeek-R1、Dr.GRPO、DAPO 原论文与 Hugging Face TRL 源码核实（见参考）",
+      "file": "llm-0030-grpo-group-relative-policy-optimization.md",
+      "language": "zh",
+      "category_label": "大模型基础与原理",
+      "updated": "2026-10-27",
+      "answers_count": 1
     }
   ]
 }

@@ -1444,6 +1444,17 @@
       "images": 0
     },
     {
+      "id": "llm-0030",
+      "file": "llm-0030-grpo-group-relative-policy-optimization.html",
+      "source": "questions/llm-0030-grpo-group-relative-policy-optimization.md",
+      "source_sha256": "d9a32766e3a1f48dacde8416aa6b8f664e9619565755dcc03db6268c2c0358df",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
