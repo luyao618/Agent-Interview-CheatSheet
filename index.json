@@ -4222,6 +4222,29 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-09-26",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0031",
+      "title": "约束解码（Constrained Decoding）是如何用有限状态机与下推自动机在解码期实现 100% 语法合法的，XGrammar 与 Outlines 如何消除词表掩码扫描开销？",
+      "file": "llm-0031-constrained-decoding-fsm-pda-xgrammar.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "constrained-decoding",
+        "structured-outputs",
+        "fsm",
+        "pda",
+        "xgrammar",
+        "outlines"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-10-28",
+      "answers_count": 1,
+      "source": "公开 AI 系统设计指南与面试题库扩展改编；Outlines、XGrammar 原论文及官方源码核实（见参考）"
     }
   ]
 }
