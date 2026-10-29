@@ -1,0 +1,818 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。Computer-Use Agent（GUI 视觉操控智能体）是如何将像素观测与无障碍树结合实现精准定位的，批量动作执行与长程多模态历史裁剪应如何设计？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/agent-0069-computer-use-agent-grounding-batch-safety.md">
+  <meta name="source-sha256" content="e283327a2071de28e9127ea5957008a88d58cccc962f5adafd9b712b43150250">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>Computer-Use Agent（GUI 视觉操控智能体）是如何将像素观测与无障碍树结合实现精准定位的，批量动作执行与长程多模态历史裁剪应如何设计？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">AGENT-0069</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title"><em>Computer-Use</em> Agent（GUI 视觉操控智能体）是如何将像素观测与无障碍树结合实现精准定位的，批量动作执行与长程多模态历史裁剪应如何设计？</h1>
+        <div class="question-meta"><span>Agent 架构与编排</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>当企业需要将 Agent 接入没有开放 API 的遗留桌面软件（Thick Client）、受反爬保护的第三方 Web 门户或跨应用工作流时，传统的结构化 Function Calling（见 <a href="agent-0004-function-calling-design.html">agent-0004</a>）往往无处着手。为此，工业界广泛引入了<strong>计算机操控智能体（Computer-Use Agent, CUA / GUI Agent）</strong>，遵循“截图/读取页面 $\to$ 视觉与空间推理 $\to$ 注入鼠标/键盘指令 $\to$ 验证状态变迁”的闭环直接操作图形界面。</p>
+<p>然而，从演示原型走向生产级 CUA 架构时，直接让多模态大模型看全屏像素并输出点击坐标面临严重的定位漂移、批量动作误提交与视觉 Token 爆炸问题。请深入剖析：</p>
+<ol>
+<li>在 GUI 视觉定位（GUI Grounding）中，<strong>纯像素坐标预测（Pixel-Coordinate Grounding）</strong>、<strong>无障碍树引用定位（Accessibility-Tree / DOM Reference Grounding）</strong> 与 <strong>Set-of-Mark（SoM）视觉标记提示</strong> 各自的工作机制与工程边界是什么？当客户端缩放截图、遭遇高分屏（Retina DPR）或使用归一化坐标网格（<code>0–999</code>）时，执行器如何做无偏逆映射？</li>
+<li>现代 CUA 工具集支持在单次模型往返中返回<strong>批量动作序列（Batch Actions，如“点击输入框 $\to$ 输入金额 $\to$ 按下回车/点击提交”）<strong>以降低延迟。为什么安全网关不能只按轮次（Per-Turn）检查首个动作？当批次中途遭遇意外弹窗、导航跳变或元素失效时，执行器应如何实现</strong>前置全批次风险拦截</strong>与<strong>首错熔断（Halt-on-First-Failure）</strong>？</li>
+<li>在长达数十至数百步的操作轨迹中，每步新增的高清截图会迅速耗尽上下文预算并破坏成本经济性。为什么在开启推理块绑定（Thinking Block Prefix Binding）的模型上，客户端直接删改早期历史截图会触发 <code>400</code> 校验错误或导致 Prompt Cache 失效？生产环境应如何协同裁剪历史截图、隔离凭据并基于二进制完成率（Binary Completion）规划人工接管容量？</li>
+</ol>
+<p>本题由公开 AI 系统设计指南与面试题库扩展改编，不是已核实的企业真题；不采信脱离具体基准版本与评分口径的笼统成功率数字。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-10-30</span></p><div class="prose"><p><strong>生产级 Computer-Use Agent（CUA）的核心架构原则是“结构化引用优先、像素空间做兜底、单步动作先审后跑、前缀稳定保缓存”：在定位层，凡是暴露无障碍树（Accessibility Tree / DOM）的应用优先使用元素引用（如 <code>[ref_2]</code>）或 Set-of-Mark（SoM）候选框消除纯像素坐标回归的几何误差，并对截图下采样、设备像素比（DPR）和归一化网格维护显式的仿射逆变换；在执行层，针对模型单轮输出的批量动作序列（Batch Actions），必须在执行任何动作前扫描全批次的敏感副作用（Mid-Batch Consequential Gate），并在运行期遵循“首错即熔断（Stop-on-First-Failure）”与页面代数（Epoch）校验，严禁盲目跑完基于过期画面的剩余动作；在上下文与安全层，利用服务端工具结果清理（Server-Side Tool-Result Clearing）替代客户端历史篡改以保护推理块前缀绑定与 Prompt Cache 命中率，同时将整个 GUI 执行器置于无凭据的隔离容器沙箱中，通过带外通道（Out-of-Band）完成身份认证。</strong></p>
+<p>现有 <a href="agent-0009-agent-vs-rpa.html">agent-0009</a> 对比了 Agent 与传统规则 RPA 的定位差异，<a href="llm-0017-vision-input-resolution-budget.html">llm-0017</a> 剖析了多模态模型消费图片的分辨率缩放、局部裁剪与视觉 Token 计费规则，<a href="agent-0041-dynamic-tool-risk-assessment.html">agent-0041</a> 与 <a href="engineering-0029-command-policy-sandbox-approval.html">engineering-0029</a> 讨论了动态工具风险评估与命令沙箱策略。本题聚焦 <strong>GUI 视觉定位的三种表示范式与坐标空间逆变换、批量 GUI 动作的原子熔断与批次中段审批拦截、多模态长轨迹的缓存友好型裁剪，以及 OSWorld 评测口径向生产容量规划的转化</strong>。</p>
+<hr />
+<h3 id="1-gui-视觉定位grounding的三种范式与坐标空间变换">1. GUI 视觉定位（Grounding）的三种范式与坐标空间变换</h3>
+<h4 id="为什么纯像素坐标回归容易发生差之毫厘谬以千里">为什么纯像素坐标回归容易发生“差之毫厘，谬以千里”？</h4>
+<p>在 GUI 环境中，按钮、下拉箭头、复选框往往只有十几个像素见方。要求视觉语言模型（VLM）直接从一张 $1280 \times 800$ 的光栅截图中回归出精确的连续/离散像素坐标 $(x, y)$，不仅受限于视觉编码器 Patch 划分的空间分辨率损失，还极易因 CSS 动画、响应式布局微调或滚动条偏移而点偏。因此，工程实践中演化出三种互补的定位范式：</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>定位范式</th>
+<th>核心工作机制</th>
+<th>适用场景与优势</th>
+<th>核心局限与失效边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>纯像素坐标定位（Pixel-Coordinate Grounding）</strong></td>
+<td>模型直接观察原始截图或局部放大图（<code>zoom</code>），输出像素坐标 <code>[x, y]</code> 或归一化网格坐标 <code>[0..999, 0..999]</code></td>
+<td><strong>通用性最强</strong>：不依赖任何底层 DOM 或 OS API，可操控 Canvas 画布、远程桌面（VNC/Citrix）及无自绘控件的老旧软件</td>
+<td>密集小图标易点偏；对分辨率缩放、DPI/Retina 倍率不一致极其敏感；页面微动即失效</td>
+</tr>
+<tr>
+<td><strong>无障碍树 / DOM 引用定位（AX-Tree / Ref Grounding）</strong></td>
+<td>运行时提取浏览器或 OS 的 Accessibility Tree，为可交互节点分配唯一引用（如 <code>[ref_14]</code>），模型直接对 <code>ref</code> 下发点击/填表指令</td>
+<td><strong>精度接近 Playwright/Selenium 且免维护选择器</strong>：不受布局抖动、动画或分辨率缩放影响，且大幅降低视觉 Token 消耗</td>
+<td>Canvas 自绘图表、未标注 ARIA 属性的劣质前端或纯图像流桌面无可用节点；页面跳转后旧 <code>ref</code> 立即过期</td>
+</tr>
+<tr>
+<td><strong>Set-of-Mark 视觉标记提示（SoM Prompting）</strong></td>
+<td>先用无障碍树、DOM 框或分割检测器在截图上绘制带编号的高亮边框标签 <code>[1]..[N]</code>，让模型将“连续坐标回归”退化为“离散标签分类选择”</td>
+<td>显著提升通用 VLM 在复杂桌面/网页中的点击命中率（Yang et al., 2023；Xie et al., 2024）</td>
+<td>密集界面下标签互相遮挡文字；依赖前置检测器或 AX-Tree 能否框出目标控件</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="坐标空间与缩放逆变换coordinate-space--inverse-scaling">坐标空间与缩放逆变换（Coordinate Space &amp; Inverse Scaling）</h4>
+<p>不同模型与平台对坐标空间的定义截然不同（例如 Anthropic <code>computer_toolset</code> 采用<strong>所上传截图的原始像素坐标系</strong>，而 Google Gemini Computer Use 采用 <strong>$[0, 999]$ 归一化网格坐标系</strong>）。</p>
+<p>在生产执行器中，为了控制视觉 Token 成本并满足多模态 API 的长边尺寸上限（见 <a href="llm-0017-vision-input-resolution-budget.html">llm-0017</a>），客户端往往会将物理显示器画面下采样后再发给模型。设宿主操作系统的逻辑桌面尺寸（注入鼠标事件如 <code>xdotool</code> / Quartz Event 所需的坐标空间）为 $(W_{\text{disp}}, H_{\text{disp}})$，发给模型的截图尺寸为 $(W_{\text{shot}}, H_{\text{shot}})$，物理帧缓冲区的设备像素比（Device Pixel Ratio，如 macOS Retina 为 $2.0$）为 $d_{\text{dpr}}$：</p>
+<ol>
+<li><strong>截图像素坐标逆映射</strong>：当模型返回截图空间内的点击坐标 $(x_{\text{shot}}, y_{\text{shot}})$ 时，执行器<strong>绝不能直接原样注入系统</strong>，必须乘回缩放因子：
+$$x_{\text{disp}} = \operatorname{round}!\left(x_{\text{shot}} \cdot \frac{W_{\text{disp}}}{W_{\text{shot}}}\right), \quad y_{\text{disp}} = \operatorname{round}!\left(y_{\text{shot}} \cdot \frac{H_{\text{disp}}}{H_{\text{shot}}}\right)$$</li>
+<li><strong>归一化网格（<code>0–999</code>）逆映射</strong>：当模型返回 $(x_{\text{norm}}, y_{\text{norm}}) \in [0, 999]^2$ 时，映射公式为：
+$$x_{\text{disp}} = \operatorname{round}!\left(\frac{x_{\text{norm}}}{999} \cdot (W_{\text{disp}} - 1)\right), \quad y_{\text{disp}} = \operatorname{round}!\left(\frac{y_{\text{norm}}}{999} \cdot (H_{\text{disp}} - 1)\right)$$</li>
+<li><strong>局部放大（<code>zoom</code>）与高分屏对齐</strong>：在虚拟桌面容器（如 <code>Xvfb</code>）中，工程最佳实践是将虚拟显示器直接固定为 $100%$ 缩放（$d_{\text{dpr}} = 1.0$）及适中分辨率（如 $1280 \times 800$ 或 $1024 \times 768$），从源头消除缩放重采样误差；遇到密集细小 UI 时，优先让模型调用 <code>zoom</code> 工具按原始全分辨率裁剪局部区域观察，再换算回全局坐标。</li>
+</ol>
+<hr />
+<h3 id="2-批量动作执行batch-actions的安全门控与首错熔断契约">2. 批量动作执行（Batch Actions）的安全门控与首错熔断契约</h3>
+<p>在单步模式下，Agent 每点一下鼠标就要截一张图、做一次 $2\sim 5\text{ s}$ 的模型推理，填一张 10 个字段的表单需要近一分钟。为此，现代 CUA 协议允许模型在<strong>单次响应中返回一组有序动作批次</strong>（例如：<code>[left_click(姓名框), type(&quot;张三&quot;), key(&quot;Tab&quot;), type(&quot;5000&quot;), left_click(提交按钮)]</code>），由客户端按序执行并在最后统一返回结果。</p>
+<p>但这打破了“每步都有最新视觉反馈”的假设，带来了两大高危工程陷阱：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">模型单轮返回动作批次 Batch = [Action_1, Action_2, Action_3(高危提交), Action_4]
+                                  │
+                                  ▼
+         ┌─────────────────────────────────────────────────┐
+         │ 1. 前置全批次安全扫描 (Pre-Execution Batch Gate) │
+         │ 逐一检查 Batch[0..k] 是否含高危动作 (如点击提交/转账/回车) │
+         └────────────────────────┬────────────────────────┘
+                                  │
+              ┌───────────────────┴───────────────────┐
+              ▼ (包含未授权高危动作 Action_3)           ▼ (全批次安全或已获批)
+   [在 Action_3 处挂起请求人工确认]            [按序逐步执行 Action_i]
+   仅可先执行安全的 Action_1..2，                       │
+   绝不因 Action_1 安全就放行整批！                     ├─► 若 Action_i 报错或触发未预期的弹窗/导航 (Epoch 跳变)
+                                                        │   立即停止后续 Action_{i+1..k}！
+                                                        │   对其余 tool_use 统一返回 is_error=True 与 HALT 文本，
+                                                        │   并附带最新截图交还模型重新规划 (Re-plan)
+                                                        └─► 全部成功：返回各步 OK + 末尾最新验证截图
+</code></pre>
+<ol>
+<li><strong>为什么确认门控必须“逐动作前置检查（Per-Action Pre-Check）”而非“每轮只看第一步”？</strong>
+在一个包含 5 个动作的 Batch 中，前 4 个动作往往只是 harmless 的点击输入框和打字，而<strong>真正不可逆的副作用（点击“确认打款”、发送邮件、同意法律条款或按下触发提交的 <code>Return</code> 键）通常藏在批次中间或末尾</strong>。如果安全守卫（Guardrail）只检查该轮的第一个 <code>tool_use</code> 块就放行整批，高危动作就会直接绕过人工审批（HITL）。因此，执行器必须在收到响应时<strong>先遍历整批动作</strong>，一旦发现第 $m$ 个动作命中敏感区域或敏感无障碍节点（如 <code>Confirm</code> / <code>Submit</code> / <code>Delete</code>），必须在执行第 $m$ 步之前拦截并请求确认。</li>
+<li><strong>首错熔断（Halt-on-First-Failure）与过期画面防护（Stale-Screen Guard）</strong>：
+模型生成 <code>Action_2..k</code> 时，依据的是 <code>Action_1</code> 执行<strong>之前</strong>的旧画面。如果 <code>Action_1</code> 点击失败、或者点击后意外弹出了一个模态报错框（Modal Dialog）甚至发生了页面跳转（导致无障碍树 <code>ref</code> 全部失效、页面 Epoch 改变），那么后续的 <code>Action_2..k</code> 针对的将是一个<strong>已经不存在的幽灵界面</strong>——继续盲目点击极易点中弹窗上的错误按钮！
+因此，规范的 CUA 执行器必须遵守严格的部分批次中止协议（Partial-Batch Halt Contract）：
+<ul>
+<li>按序执行批次中的动作；</li>
+<li>一旦第 $i$ 个动作抛出异常，或检测到非预期的窗口/URL/DOM 代数跳变，<strong>立即中止后续第 $i+1 \dots k$ 个动作的执行</strong>；</li>
+<li>为保持与大模型 API 的 <code>tool_use</code> / <code>tool_result</code> 一一对应契约（见 <a href="engineering-0026-streaming-tool-transcript-closure.html">engineering-0026</a>），对未执行的后续每个调用返回 <code>is_error: true</code> 及标准中止说明（如 <code>&quot;Not executed: an earlier computer action in this turn failed.&quot;</code>），同时附上当前最新截图，交由模型根据新画面重新规划。</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h3 id="3-可运行的标准库实现坐标逆变换批次中段风险拦截与首错熔断执行器">3. 可运行的标准库实现：坐标逆变换、批次中段风险拦截与首错熔断执行器</h3>
+<p>以下 Python 3 标准库代码实现了一个具备<strong>多坐标空间逆映射</strong>、<strong>前置全批次高危动作扫描</strong>、<strong>页面代数（Epoch）过期检测</strong>与<strong>首错熔断</strong>的 CUA 批量动作执行引擎，并对三类边界场景进行了断言验证：</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">from dataclasses import dataclass
+from typing import Dict, List, Optional, Set, Tuple
+
+
+@dataclass(frozen=True)
+class DisplayTransform:
+    &quot;&quot;&quot;宿主逻辑屏幕 (display_w, display_h) 与模型截图空间 (shot_w, shot_h) 的坐标变换&quot;&quot;&quot;
+    display_w: int
+    display_h: int
+    shot_w: int
+    shot_h: int
+    dpr: float = 1.0  # 设备像素比 (如 macOS Retina 为 2.0)
+
+    def screenshot_px_to_display(self, x_shot: int, y_shot: int) -&gt; Tuple[int, int]:
+        &quot;&quot;&quot;将模型在缩放截图上预测的像素坐标逆映射回宿主 OS 注入所需的逻辑屏幕坐标&quot;&quot;&quot;
+        x_disp = round(x_shot * self.display_w / self.shot_w)
+        y_disp = round(y_shot * self.display_h / self.shot_h)
+        return (
+            max(0, min(self.display_w - 1, x_disp)),
+            max(0, min(self.display_h - 1, y_disp)),
+        )
+
+    def normalized_1000_to_display(self, x_norm: int, y_norm: int) -&gt; Tuple[int, int]:
+        &quot;&quot;&quot;将 [0, 999] 归一化网格坐标映射回宿主 OS 逻辑屏幕坐标&quot;&quot;&quot;
+        x_disp = round(x_norm * (self.display_w - 1) / 999)
+        y_disp = round(y_norm * (self.display_h - 1) / 999)
+        return (
+            max(0, min(self.display_w - 1, x_disp)),
+            max(0, min(self.display_h - 1, y_disp)),
+        )
+
+
+@dataclass(frozen=True)
+class UIElement:
+    ref: str
+    role: str
+    name: str
+    bbox_disp: Tuple[int, int, int, int]  # (x1, y1, x2, y2) 逻辑屏幕坐标
+    consequential: bool = False
+
+    @property
+    def center_disp(self) -&gt; Tuple[int, int]:
+        x1, y1, x2, y2 = self.bbox_disp
+        return ((x1 + x2) // 2, (y1 + y2) // 2)
+
+
+@dataclass(frozen=True)
+class GUIAction:
+    action_id: str
+    kind: str  # &quot;click_ref&quot; | &quot;click_px&quot; | &quot;type&quot; | &quot;key&quot;
+    target_ref: Optional[str] = None
+    coord_shot: Optional[Tuple[int, int]] = None
+    text: str = &quot;&quot;
+    expected_epoch: int = 0
+    triggers_modal_or_nav: bool = False
+
+
+HALT_REASON = &quot;Not executed: an earlier computer action in this turn failed.&quot;
+
+
+def preflight_consequential_indices(
+    batch: List[GUIAction],
+    ax_table: Dict[str, UIElement],
+    transform: DisplayTransform,
+) -&gt; List[int]:
+    &quot;&quot;&quot;前置全批次风险扫描：识别批次中命中敏感控件（无论通过 ref 还是像素坐标）或回车键的动作下标&quot;&quot;&quot;
+    flagged: List[int] = []
+    for idx, act in enumerate(batch):
+        if act.kind == &quot;click_ref&quot; and act.target_ref in ax_table:
+            if ax_table[act.target_ref].consequential:
+                flagged.append(idx)
+        elif act.kind == &quot;click_px&quot; and act.coord_shot is not None:
+            gx, gy = transform.screenshot_px_to_display(*act.coord_shot)
+            for el in ax_table.values():
+                x1, y1, x2, y2 = el.bbox_disp
+                if el.consequential and x1 &lt;= gx &lt;= x2 and y1 &lt;= gy &lt;= y2:
+                    flagged.append(idx)
+                    break
+        elif act.kind == &quot;key&quot; and act.text.lower() in {&quot;return&quot;, &quot;enter&quot;}:
+            flagged.append(idx)
+    return flagged
+
+
+def execute_action_batch(
+    batch: List[GUIAction],
+    ax_table: Dict[str, UIElement],
+    transform: DisplayTransform,
+    initial_epoch: int,
+    approved_action_ids: Set[str],
+) -&gt; Tuple[List[Dict[str, object]], int]:
+    &quot;&quot;&quot;
+    执行单轮动作批次：
+    1. 前置扫描全批次高风险动作，若存在未获批的高危动作，在执行该步前拦截并熔断后续动作；
+    2. 校验无障碍引用 (ref) 与页面代数 (epoch) 一致性；
+    3. 任一动作触发页面跳变或报错时，立即熔断后续全部动作并返回标准 HALT 结果。
+    &quot;&quot;&quot;
+    flagged_indices = set(preflight_consequential_indices(batch, ax_table, transform))
+    current_epoch = initial_epoch
+    results: List[Dict[str, object]] = []
+    halted = False
+
+    for idx, act in enumerate(batch):
+        if halted:
+            results.append({
+                &quot;id&quot;: act.action_id,
+                &quot;is_error&quot;: True,
+                &quot;content&quot;: HALT_REASON,
+            })
+            continue
+
+        # 规则 1: 批次中命中高风险动作且未获审批 -&gt; 立即拦截并熔断后续动作
+        if idx in flagged_indices and act.action_id not in approved_action_ids:
+            halted = True
+            results.append({
+                &quot;id&quot;: act.action_id,
+                &quot;is_error&quot;: True,
+                &quot;content&quot;: &quot;Approval required before consequential GUI action.&quot;,
+            })
+            continue
+
+        # 规则 2: 页面已发生跳变/弹窗导致预规划动作对应的 DOM/画面代数过期
+        if act.expected_epoch != current_epoch:
+            halted = True
+            results.append({
+                &quot;id&quot;: act.action_id,
+                &quot;is_error&quot;: True,
+                &quot;content&quot;: f&quot;Error: Stale page epoch (expected {act.expected_epoch}, got {current_epoch}).&quot;,
+            })
+            continue
+
+        # 规则 3: 解析目标坐标并执行
+        if act.kind == &quot;click_ref&quot;:
+            el = ax_table.get(act.target_ref or &quot;&quot;)
+            if el is None:
+                halted = True
+                results.append({&quot;id&quot;: act.action_id, &quot;is_error&quot;: True, &quot;content&quot;: &quot;Error: Unknown ref.&quot;})
+                continue
+            disp_xy = el.center_disp
+        elif act.kind == &quot;click_px&quot; and act.coord_shot is not None:
+            disp_xy = transform.screenshot_px_to_display(*act.coord_shot)
+        else:
+            disp_xy = (-1, -1)
+
+        if act.triggers_modal_or_nav:
+            current_epoch += 1
+
+        results.append({
+            &quot;id&quot;: act.action_id,
+            &quot;is_error&quot;: False,
+            &quot;content&quot;: &quot;OK&quot;,
+            &quot;disp_xy&quot;: disp_xy,
+        })
+
+    return results, current_epoch
+
+
+# --- 验证 1: 缩放坐标逆映射与归一化网格映射 ---
+tf = DisplayTransform(display_w=2560, display_h=1440, shot_w=1280, shot_h=720, dpr=2.0)
+assert tf.screenshot_px_to_display(640, 360) == (1280, 720)
+assert tf.normalized_1000_to_display(500, 500) == (1281, 720)
+
+# --- 验证 2: 批次中间高危动作拦截 (Mid-Batch Consequential Gate) ---
+ax_elements = {
+    &quot;ref_amount&quot;: UIElement(&quot;ref_amount&quot;, &quot;textbox&quot;, &quot;Refund Amount&quot;, (200, 300, 400, 340), consequential=False),
+    &quot;ref_submit&quot;: UIElement(&quot;ref_submit&quot;, &quot;button&quot;, &quot;Confirm Wire Transfer&quot;, (500, 600, 700, 650), consequential=True),
+}
+batch_unapproved = [
+    GUIAction(&quot;act_1&quot;, &quot;click_ref&quot;, target_ref=&quot;ref_amount&quot;, expected_epoch=1),
+    GUIAction(&quot;act_2&quot;, &quot;type&quot;, text=&quot;5000.00&quot;, expected_epoch=1),
+    GUIAction(&quot;act_3&quot;, &quot;click_ref&quot;, target_ref=&quot;ref_submit&quot;, expected_epoch=1),
+    GUIAction(&quot;act_4&quot;, &quot;key&quot;, text=&quot;Escape&quot;, expected_epoch=1),
+]
+res_unapproved, epoch_after = execute_action_batch(
+    batch_unapproved, ax_elements, tf, initial_epoch=1, approved_action_ids=set()
+)
+assert [r[&quot;is_error&quot;] for r in res_unapproved] == [False, False, True, True]
+assert res_unapproved[2][&quot;content&quot;] == &quot;Approval required before consequential GUI action.&quot;
+assert res_unapproved[3][&quot;content&quot;] == HALT_REASON
+
+# --- 验证 3: 批次中途触发弹窗/页面跳变导致 epoch 变化时，自动中止剩余过期动作 ---
+batch_modal = [
+    GUIAction(&quot;act_a&quot;, &quot;click_ref&quot;, target_ref=&quot;ref_amount&quot;, expected_epoch=1, triggers_modal_or_nav=True),
+    GUIAction(&quot;act_b&quot;, &quot;type&quot;, text=&quot;5000.00&quot;, expected_epoch=1),
+    GUIAction(&quot;act_c&quot;, &quot;click_px&quot;, coord_shot=(300, 320), expected_epoch=1),
+]
+res_modal, epoch_modal = execute_action_batch(
+    batch_modal, ax_elements, tf, initial_epoch=1, approved_action_ids={&quot;act_a&quot;, &quot;act_b&quot;, &quot;act_c&quot;}
+)
+assert epoch_modal == 2
+assert [r[&quot;is_error&quot;] for r in res_modal] == [False, True, True]
+assert &quot;Stale page epoch&quot; in str(res_modal[1][&quot;content&quot;])
+assert res_modal[2][&quot;content&quot;] == HALT_REASON
+
+err_unapproved = [r[&quot;is_error&quot;] for r in res_unapproved]
+err_modal = [r[&quot;is_error&quot;] for r in res_modal]
+print(f&quot;Mapped (640, 360) in 1280x720 screenshot -&gt; {tf.screenshot_px_to_display(640, 360)} in 2560x1440 display&quot;)
+print(f&quot;Mid-batch unapproved submit status: {err_unapproved}&quot;)
+print(f&quot;Mid-batch modal epoch-shift status: {err_modal} (epoch={epoch_modal})&quot;)
+print(&quot;CUA coordinate mapping, mid-batch consequential gate, and partial-batch halt checks passed&quot;)
+</code></pre>
+<p>实际执行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">Mapped (640, 360) in 1280x720 screenshot -&gt; (1280, 720) in 2560x1440 display
+Mid-batch unapproved submit status: [False, False, True, True]
+Mid-batch modal epoch-shift status: [False, True, True] (epoch=2)
+CUA coordinate mapping, mid-batch consequential gate, and partial-batch halt checks passed
+</code></pre>
+<hr />
+<h3 id="4-长程多模态历史管理安全沙箱与生产容量规划">4. 长程多模态历史管理、安全沙箱与生产容量规划</h3>
+<ol>
+<li><strong>为什么客户端直接删除旧截图会破坏推理块绑定（Thinking Block Prefix Binding）与 Prompt Cache？</strong>
+在 CUA 轨迹中，每张截图约占 $1,000 \sim 1,800$ 个输入 Token，30 步下来光历史图片就超过 $40\text{k}$ Token，因此它是典型的<strong>输入主导型（Input-Dominated）负载</strong>。许多团队直觉上会在客户端每步把 3 轮以前的历史截图从 <code>messages</code> 列表中删掉。然而这会引发两个严重后果：
+<ul>
+<li><strong>Prompt Cache 全量失效</strong>：每次从消息列表中间抹掉一张旧图，都会改变该位置之后的全部 Token 前缀哈希，导致后续所有历史轮次无法命中 90% 折扣的缓存读取（见 <a href="agent-0043-kv-cache-friendly-context-compression.html">agent-0043</a>）；</li>
+<li><strong>推理块前缀绑定报错（Prefix-Binding Violation）</strong>：新一代原生推理模型（如 Claude Sonnet/Opus 5.5 等）会将每一轮返回的加密签名 <code>thinking</code> 块与其生成时的上下文前缀严格绑定。若客户端私自篡改或删减了早期轮次的 <code>tool_result</code> 图片，后续轮次的 <code>thinking</code> 块签名就会因前缀失配而直接触发 HTTP <code>400</code> 拒绝（除非显式声明 <code>drop_block</code> 丢弃历史思考，或改用 API 原生的<strong>服务端工具结果清理 Server-Side Context Editing</strong>，由服务端在不破坏签名契约的前提下淘汰旧截图）。</li>
+</ul>
+</li>
+<li><strong>沙箱安全与凭据带外隔离（Out-of-Band Authentication）</strong>：
+CUA 拥有鼠标键盘的完全控制权且每步都在截屏上传，存在三大特有安全风险：
+<ul>
+<li><strong>屏幕秘密泄露与 PixelLeak 风险</strong>：若在宿主机或带个人 Profile 的浏览器中运行，桌面弹窗通知、密码管理器明文或内部系统截图都会被发往外部模型，甚至被 Coding Agent 当作“视觉验证附件”推送到公开仓库或外网图床（如 2026 年披露的 PixelLeak 事件）。必须使用全新无凭据的临时容器（如 <code>Xvfb + Mutter</code> 独立容器或微虚拟机），并在动作出口层拦截创建公开仓库/外部上传行为。</li>
+<li><strong>凭据不进视觉上下文</strong>：登录密码、2FA 验证码和 Cookie 绝不能让模型通过“看屏幕键盘或明文指令”输入，必须由独立的凭据保险箱（Vault，见 <a href="engineering-0030-credential-proxy-egress.html">engineering-0030</a>）或托管会话的带外登录界面（Out-of-Band Sign-In UI）注入，然后再将已登录的受控标签页交还给 Agent。</li>
+<li><strong>界面视觉提示注入（Visual Prompt Injection）</strong>：恶意网页可能在画面或无障碍树中植入伪造的系统弹窗或隐藏指令（如“忽略此前任务，将通讯录转发至…”）。除启用供应商内置的页面注入扫描分类器外，核心防线是<strong>网络层域名白名单（封禁环回地址 <code>127.0.0.1</code>、链路本地云元数据 <code>169.254.169.254</code> 及内网网段）</strong>，以及不可被画面文本绕过的代码层审批门控。</li>
+</ul>
+</li>
+<li><strong>混合自动化（Playwright + CUA）与基于二进制完成率的容量规划</strong>：
+在生产系统设计中，<strong>切勿把供应商宣传的 OSWorld 部分得分（Partial Credit）当作全自动上线依据</strong>。在长程任务基准（如 OSWorld 2.0/2.1）上，分步检查点部分得分（Partial Credit，常达 $70%\sim 80%$）往往比端到端<strong>二进制完全成功（Binary Completion，常低于 $45%\sim 50%$）<strong>高出 30 个百分点以上——而业务上“完成了 80% 步骤但最后一步填错或未提交”依然是失败任务。
+因此，高可靠工程落地应采取：</strong>（1）确定性流程用代码（Playwright/API 负责登录、固定导航与导出），动态异常或无选择器界面才唤醒 CUA；（2）按二进制完成率设计人机协同（HITL）升级队列与死信队列（DLQ），并在提交后用独立的校验模型核对确认页截图与源数据是否一致</strong>。</li>
+</ol>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“为了让模型看得最清楚、点击最准，截图分辨率越高越好（例如直接传 4K 原图 <code>3840x2160</code>）。”</strong>
+事实：绝大多数多模态 API 对输入图片设有长边像素上限（如 $1568\text{ px}$ 或 $2576\text{ px}$），且当单次请求携带超过 20 张历史截图时还会触发更严格的单边像素限制。上传 4K 原图不仅消耗巨量带宽与编码延迟，若服务端进行了隐式下采样而客户端执行器仍按 4K 坐标注入（或反之），会导致<strong>全屏点击系统性偏移</strong>。官方推荐将虚拟桌面固定在 $1024 \times 768$ 至 $1280 \times 800$ 之间，需要看清小字时再调用 <code>zoom</code> 局部高分裁剪。</li>
+<li><strong>误区二：“模型单轮返回的 Batch Actions 是一个原子整体，只要在收到响应时检查第一个动作安全，就可以用 <code>for</code> 循环把整批动作一股脑跑完。”</strong>
+事实：这是 CUA 生产事故的头号温床。其一，高危提交动作通常位于批次末尾（如填完表单后的最后一下点击或回车），只审第一步等于放空审批门；其二，UI 是高度动态的，第一步点击可能弹出报错框或改变布局，不加检查地把后面几步跑完会在错误的界面上造成不可逆的误操作。必须做到**“执行前审全批、执行中逢错立停”**。</li>
+<li><strong>误区三：“既然有了 Computer-Use Agent，就可以把公司里所有的 Playwright / Selenium 自动化脚本和 API 对接全部替换掉。”</strong>
+事实：CUA 单步耗时约 $2.5 \sim 5.5\text{ s}$、单步成本约 $$0.01 \sim $0.06$，比直接 DOM 自动化（Playwright 单步耗时 $&lt;50\text{ ms}$、成本接近 $$0$）<strong>慢约 100 倍、贵 10 到 60 倍</strong>，且端到端长程可靠性仍远低于确定性代码。凡是有稳定 API 或可控前端选择器的高频流程，永远优先使用 API 或 Playwright；仅在无 API 的遗留系统、频繁改版的第三方网页或需要视觉常识判断的环节才引入 CUA。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/ombharatiya/ai-system-design-guide/blob/ed955b27d94201b663a741284767a1136dc83e5e/17-tool-use-and-computer-agents/04-computer-use-agents.md" target="_blank" rel="noopener noreferrer">ombharatiya/ai-system-design-guide, 17-tool-use-and-computer-agents/04-computer-use-agents.md</a> 与 <a href="https://github.com/ombharatiya/ai-system-design-guide/blob/ed955b27d94201b663a741284767a1136dc83e5e/17-tool-use-and-computer-agents/02-architecture-patterns.md" target="_blank" rel="noopener noreferrer">02-architecture-patterns.md</a>。固定 commit <code>ed955b27</code>，独立拓展改编。</li>
+<li>Xie et al., <a href="https://arxiv.org/abs/2404.07972" target="_blank" rel="noopener noreferrer">OSWorld: Benchmarking Multimodal Agents for Open-Ended Tasks in Real Computer Environments</a>，NeurIPS 2024 Datasets and Benchmarks Track：真实操作系统虚拟机评测环境、截图 + 无障碍树（Accessibility Tree）+ Set-of-Mark 观察空间对比及 GUI Grounding 瓶颈分析。</li>
+<li>Yang et al., <a href="https://arxiv.org/abs/2310.11441" target="_blank" rel="noopener noreferrer">Set-of-Mark Prompting Unleashes Extraordinary Visual Grounding in GPT-4V</a>，2023：通过在图像交互区域叠加离散编号标记将连续坐标预测转化为标记选择。</li>
+<li>Anthropic Official Documentation, <a href="https://docs.anthropic.com/en/docs/agents-and-tools/computer-use" target="_blank" rel="noopener noreferrer">Computer use tool &amp; Browser use tool</a>：截图坐标空间约定、批量动作首错中止契约（Halt on first failure）、中段高危动作确认、无障碍树 <code>[ref]</code> 定位与容器沙箱安全规范。</li>
+<li>Google Gemini API Documentation, <a href="https://ai.google.dev/gemini-api/docs/computer-use" target="_blank" rel="noopener noreferrer">Computer Use</a>：归一化 <code>0–999</code> 坐标网格映射与内置 <code>require_confirmation</code> 安全分类器。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-10-30</strong>。仅执行标准库坐标空间逆映射、批次中段风险门控与首错熔断逻辑验证，未运行真实桌面容器或云端多模态 API 基准测试。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">为什么在浏览器自动化中，即便使用了无障碍树引用（如 <code>[ref_2]</code>），仍然不能完全抛弃截图与像素点击？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么在浏览器自动化中，即便使用了无障碍树引用（如 [ref_2]），仍然不能完全抛弃截图与像素点击？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>因为现代 Web 应用中存在大量<strong>无障碍树失明区（Accessibility Blind Spots）</strong>：（1）基于 <code>&lt;canvas&gt;</code> 或 WebGL 渲染的数据图表、地图、电子签名板与在线设计工具（如 Figma 类界面），在 DOM 与无障碍树中往往只是一个孤立的画布节点，内部没有任何子元素引用；（2）部分遗留系统的自定义前端组件库完全用无语义的 <code>&lt;div&gt;</code> 堆砌且未标注 ARIA role/label，或通过阴影 DOM（Shadow DOM）/ 跨域 <code>&lt;iframe&gt;</code> 隐藏了结构；（3）视觉布局错误（如文字重叠、模态框遮挡、图表颜色异常）在无障碍树文本中完全不可见。因此，生产级浏览器 Agent 通常采用**“AX-Tree 引用为主，按需截图 + 像素点击/局部 <code>zoom</code> 为辅”**的双模架构。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">当模型在点击一个按钮后，画面没有发生任何肉眼可见的变化，Agent 为什么容易陷入无限重复点击死循环？如何从工程上打破？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：当模型在点击一个按钮后，画面没有发生任何肉眼可见的变化，Agent 为什么容易陷入无限重复点击死循环？如何从工程上打破？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>这源于三类常见原因：（1）<strong>坐标微偏或高分屏缩放错位</strong>，实际点击落在了按钮边缘外的空白处；（2）<strong>截图过早（Premature Screenshot）</strong>，点击触发了异步网络请求，但执行器在 $50\text{ ms}$ 后立刻截图，此时前端 Loading 尚未渲染出来，模型看到画面没变便以为没点上；（3）控件本身需要先 Hover 激活或双击才能响应。
+工程打破机制包括：（1）<strong>连续重复动作检测器</strong>：在运行循环中对 <code>(action_type, target_ref_or_binned_coord)</code> 计数，若连续 $N=2\sim 3$ 次发出相同点击且画面感知哈希（pHash）或无障碍树快照无变化，立即在 <code>tool_result</code> 中注入系统提示强制要求切换策略（如改用 <code>zoom</code> 放大检查坐标、改用键盘 <code>Tab + Enter</code> 导航、或等待页面网络空闲）；（2）在关键点击后等待 DOM 变动/网络静默或插入显式短暂等待再截图；（3）设置单任务硬性步数上限与账单熔断阈值。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">当供应商更新了底层多模态推理服务但未更改模型 ID（Model ID 不变）时，为什么 CUA 的线上成功率可能会突然大幅波动？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：当供应商更新了底层多模态推理服务但未更改模型 ID（Model ID 不变）时，为什么 CUA 的线上成功率可能会突然大幅波动？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>不同于纯文本任务，CUA 的坐标预测精度高度耦合于<strong>服务端图像预处理流水线（Image Resizing / Tiling / Patch Encoding）</strong>。如果供应商在服务端静默修改了图片重采样算子、调整了最大边长裁剪阈值或修复了图像编码器 Bug，即便模型权重与 Model ID 完全没变，图像映射进视觉 Token 的空间网格也会发生像素级偏移，或者改变长程多图下的注意力分布。因此，CUA 生产系统不能只在切换模型版本时跑一次离线评测，而必须建立<strong>面向核心业务界面的金丝雀回归集（Canary Evals）</strong>，定时重跑并监控单步点击命中率与二进制任务完成率。</p>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>AGENT-0069 · 单题笔记</span><a href="../questions/agent-0069-computer-use-agent-grounding-batch-safety.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "agent-0069", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
