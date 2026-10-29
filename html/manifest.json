@@ -729,6 +729,17 @@
       "images": 0
     },
     {
+      "id": "agent-0069",
+      "file": "agent-0069-computer-use-agent-grounding-batch-safety.html",
+      "source": "questions/agent-0069-computer-use-agent-grounding-batch-safety.md",
+      "source_sha256": "e283327a2071de28e9127ea5957008a88d58cccc962f5adafd9b712b43150250",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "engineering-0001",
       "file": "engineering-0001-redis-distributed-lock-failover.html",
       "source": "questions/engineering-0001-redis-distributed-lock-failover.md",

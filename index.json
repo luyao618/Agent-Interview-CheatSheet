@@ -4245,6 +4245,29 @@
       "updated": "2026-10-28",
       "answers_count": 1,
       "source": "公开 AI 系统设计指南与面试题库扩展改编；Outlines、XGrammar 原论文及官方源码核实（见参考）"
+    },
+    {
+      "id": "agent-0069",
+      "title": "Computer-Use Agent（GUI 视觉操控智能体）是如何将像素观测与无障碍树结合实现精准定位的，批量动作执行与长程多模态历史裁剪应如何设计？",
+      "file": "agent-0069-computer-use-agent-grounding-batch-safety.md",
+      "language": "zh",
+      "category": "agent",
+      "category_label": "Agent 架构与编排",
+      "tags": [
+        "computer-use-agent",
+        "gui-grounding",
+        "accessibility-tree",
+        "set-of-mark",
+        "batch-actions",
+        "sandboxing"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-10-30",
+      "answers_count": 1,
+      "source": "公开 AI 系统设计指南与面试题库扩展改编；OSWorld、Set-of-Mark 原论文及主流 CUA 官方规范核实（见参考）"
     }
   ]
 }
