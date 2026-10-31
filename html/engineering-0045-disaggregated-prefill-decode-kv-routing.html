@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。为什么大规模 LLM 推理集群要做 Prefill 与 Decode 分离部署（P/D Disaggregation），跨节点 KV Cache 传输预算与 KV-Aware 路由应如何设计？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/engineering-0045-disaggregated-prefill-decode-kv-routing.md">
+  <meta name="source-sha256" content="4bed27f7b0ba864c2369c56999291c276dd181f3254ac948563d295bdefb9d16">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>为什么大规模 LLM 推理集群要做 Prefill 与 Decode 分离部署（P/D Disaggregation），跨节点 KV Cache 传输预算与 KV-Aware 路由应如何设计？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">ENGINEERING-0045</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title">为什么大规模 LLM 推理集群要做 Prefill 与 Decode 分离部署（P/D Disaggregation），跨节点 KV Cache 传输预算与 KV-Aware 路由应如何设计？</h1>
+        <div class="question-meta"><span>工程化、部署、性能、成本</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>在生产级大模型推理集群（特别是承载数万 Token 上下文的多轮 Agent 与 RAG 流量）中，线上服务必须同时满足两项严苛的服务等级目标（SLO）：既要保证**首 Token 延迟（TTFT, Time-to-First-Token）<strong>足够低，又要保证流式生成阶段的</strong>每 Token 间隔延迟（TPOT / ITL, Time-Per-Output-Token / Inter-Token Latency）**平滑无卡顿。</p>
+<p>然而，在传统的单池共置（Colocated Continuous Batching）架构中，突发到达的长 Prompt 预填充（Prefill）会频繁打断正在生成的解码（Decode）批次。为此，现代推理基础设施（如 DistServe、vLLM Disaggregated Serving、SGLang、NVIDIA Dynamo）普遍演进向 <strong>Prefill 与 Decode 分离部署（P/D Disaggregation）</strong> 与 <strong>KV 感知路由（KV-Aware Routing）</strong>。请深入剖析：</p>
+<ol>
+<li>为什么即便开启了分块预填充（Chunked Prefill / Sarathi-Serve），单实例共置架构在长上下文流量下仍然难以最大化<strong>有效吞吐（Goodput，即同时满足 TTFT 与 TPOT SLO 的最大请求率）</strong>？Prefill 与 Decode 在硬件算术强度（Arithmetic Intensity）、批大小扩展规律及最优模型并行策略（TP vs PP/EP）上有何本质冲突？</li>
+<li>当把 Prefill 池与 Decode 池物理拆开后，如何定量计算跨节点传输 KV Cache 的体积与网络延迟预算（以 Llama-3-70B BF16 在 $400\text{ Gbps}$ RDMA 下传输 $10\text{k}$ Token 为例）？为什么工程上必须引入<strong>逐层流水线式 KV 传输（Layer-by-Layer Pipelined Transfer）<strong>与</strong>短请求条件旁路（Conditional Disaggregation Bypass）</strong>？</li>
+<li>在多副本集群前端，<strong>KV-Aware 路由器</strong>是如何综合评估“前缀缓存命中量”与“副本队列负载”来替代传统轮询/粘性会话的？为什么共享前缀缓存在多租户环境下会构成<strong>跨租户计时侧信道（Timing Side-Channel）</strong>，应如何通过链式块哈希加盐（<code>cache_salt</code>）实现安全隔离？</li>
+</ol>
+<p>本题由公开 AI 系统设计指南与面试题库扩展改编，不是已核实的企业真题；不采信脱离具体模型架构、互连带宽与 SLO 阈值的固定收益倍数。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-10-30</span></p><div class="prose"><p><strong>Prefill 与 Decode 分离部署（P/D Disaggregation）的核心动机是“消除两类异构计算阶段的相互干扰，按各自硬件瓶颈独立寻优并行度与扩缩容比例，从而最大化集群的 SLO 有效吞吐（Goodput）”：Prefill 是强算力受限（Compute-Bound）的矩阵-矩阵乘法，而 Decode 是强显存带宽受限（Memory-Bandwidth-Bound）的矩阵-向量乘法；共置架构（即便开启 Chunked Prefill）不仅会在尾延迟上产生互相拖累，还迫使两个阶段被迫共享同一套次优的 GPU 配比与张量/流水线并行度。分离架构将长请求路由至高算力 Prefill 池完成首 Token 计算，再通过 RDMA/NVLink 逐层异步传输 KV Cache 至高并发 Decode 池持续生成，并对短未命中请求启用条件旁路（Conditional Bypass）直连 Decode 池以规避传输税；同时在网关层利用带租户盐值（<code>cache_salt</code>）的 KV-Aware 路由器权衡前缀命中率与队列排队代价，兼顾高缓存命中、低尾延迟与多租户安全隔离。</strong></p>
+<p>现有 <a href="llm-0018-kv-cache-prefill-decode.html">llm-0018</a> 阐述了 KV Cache 在 Prefill 与 Decode 阶段的基础缓存原理，<a href="llm-0016-quantization-local-memory-budget.html">llm-0016</a> 介绍了单卡量化与模型权重显存估算，<a href="engineering-0021-llm-queue-backpressure.html">engineering-0021</a> 讨论了队列背压控制。本题聚焦<strong>集群级推理架构中的 P/D 解耦设计、Goodput 优化目标、跨节点 KV Cache 传输带宽数学核算、分层 KV 卸载（Tiered KV Offloading）以及多租户 KV-Aware 路由算法</strong>。</p>
+<hr />
+<h3 id="1-为什么-chunked-prefill-仍不够prefill-与-decode-的三大结构性冲突">1. 为什么 Chunked Prefill 仍不够？Prefill 与 Decode 的三大结构性冲突</h3>
+<p>在单池共置（Colocated）连续批处理引擎中，同一个 GPU 实例既要接纳新到达请求的 Prefill，又要推进存量请求的 Decode。Agrawal et al. (2024, <em>Sarathi-Serve</em>) 提出的 <strong>分块预填充（Chunked Prefill）</strong> 将一个长 Prompt（如 $32\text{k}$ Token）切分为若干小块（如每步最多拼入 $2,048$ 个 Prefill Token），并将存量 Decode 请求“捎带（Piggyback）”在同一个混合 Batch 中执行，从而缓解了动辄数秒的世代卡死（Generation Stall）。</p>
+<p>然而，Zhong et al. (2024, <em>DistServe</em>, OSDI 2024) 与 Patel et al. (2024, <em>Splitwise</em>, ISCA 2024) 证明，当线上对 <strong>TTFT（首字延迟）</strong> 和 <strong>TPOT（吐字间隔）</strong> 同时设有严格 P95/P99 SLO 时，Chunked Prefill 仍存在三大无法在单池内消除的物理矛盾：</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>冲突维度</th>
+<th>Prefill 阶段（首 Token 生成）</th>
+<th>Decode 阶段（自回归逐字生成）</th>
+<th>单池共置（含 Chunked Prefill）的固有代价</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>硬件瓶颈与算术强度</strong></td>
+<td><strong>Compute-Bound（算力受限）</strong>：数千输入 Token 并行计算，算术强度（FLOPs/Byte）轻松超过 GPU 屋脊线拐点（如 H100 的 $\sim 295\text{ FLOPs/Byte}$）</td>
+<td><strong>Memory-Bandwidth-Bound（访存受限）</strong>：每请求仅输入 1 个 Token，每生成一个词都要将整份模型权重与历史 KV 从 HBM 读入寄存器</td>
+<td>混合 Batch 中，Prefill 块越大，Decode 步耗时越长（拉高 TPOT 抖动）；Prefill 块越小，长 Prompt 被迫拆成几十轮迭代且反复重读历史 KV（拉高 TTFT）</td>
+</tr>
+<tr>
+<td><strong>最优批处理策略</strong></td>
+<td>单条或极小 Batch（$B=1\sim 2$）即可打满 Tensor Core，增大 Batch 只会线性增加排队与 TTFT</td>
+<td>必须凑出**大 Batch（$B=32\sim 256$）**分摊一次权重读取的 HBM 带宽开销，才能提升每秒吐字吞吐</td>
+<td>Prefill 渴望低并发快进快出，Decode 渴望高并发长驻驻留，同一实例无法同时处于两个工作点</td>
+</tr>
+<tr>
+<td><strong>最优模型并行与硬件配比</strong></td>
+<td>高算力负载在中等张量并行（TP）结合流水线并行（PP）下扩展良好；更偏爱高 FLOPs 芯片</td>
+<td>极度依赖低延迟 All-Reduce 以压低单步 TPOT，或在大规模 MoE 下采用宽专家并行（EP）+ 窄注意力并行；更偏爱高 HBM 容量/带宽芯片</td>
+<td>共置实例被迫为两个阶段绑定完全相同的 TP/PP 拓扑与相同的硬件型号，造成严重的资源过配（Over-Provisioning）</td>
+</tr>
+</tbody>
+</table></div>
+<p>因此，工业界将核心衡量指标从单纯的“峰值 Token 吞吐”转向 <strong>有效吞吐（Goodput）</strong>——即<strong>在满足给定 $(SLO_{\text{TTFT}}, SLO_{\text{TPOT}})$ 约束（如 $&gt;95%$ 请求达标）前提下，每张 GPU 每秒能承载的最大有效请求数</strong>。P/D 分离通过将集群拆分为独立的 <strong>Prefill 实例池</strong> 与 <strong>Decode 实例池</strong>（例如按业务读写比配成 $3\text{ Prefill} : 1\text{ Decode}$ 或相反），彻底切断了 Prefill 突发对 Decode TPOT 的干扰。</p>
+<hr />
+<h3 id="2-跨节点-kv-cache-传输预算核算与流水线隐藏机制">2. 跨节点 KV Cache 传输预算核算与流水线隐藏机制</h3>
+<p>当 Prefill 实例算完输入序列的最后一层并吐出第 1 个 Token 后，必须将该请求在所有 Transformer 层产生的 KV Cache 移交给选定的 Decode 实例。<strong>如果不精心设计传输链路，KV 搬运耗时本身就会吃掉解耦带来的全部收益。</strong></p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">                       [ KV-Aware 网关路由器 (Endpoint Picker) ]
+                        │ (1. 计算加盐前缀哈希, 评估未命中 Token 数与队列负载)
+          ┌─────────────┴───────────────────────────────────────────┐
+          ▼ (短未命中请求: uncached &lt;= 512 tok)                      ▼ (长 Prompt 请求: uncached &gt; 512 tok)
+ [ 条件旁路 (Conditional Bypass) ]                         [ Prefill 实例池 (Compute-Optimized) ]
+   跳过 Prefill 池与跨网传输，                                 逐层前向计算 Layer 1 .. Layer L
+   直接由目标 Decode 节点原地完成 Prefill + Decode               │
+          │                                                     │ (2. Layer-by-Layer 异步 RDMA/NVLink 推送:
+          │                                                     │     算完第 l 层立即用 NIXL/Mooncake 传第 l 层 KV，
+          │                                                     │     与第 l+1..L 层前向计算完全重叠)
+          ▼                                                     ▼
+                       [ Decode 实例池 (Memory-Bandwidth-Optimized) ]
+                        接收完最后一层 KV 后立即无缝接管第 2..N 个 Token 的低抖动生成
+</code></pre>
+<h4 id="定量核算传一个-10textk-token-的请求到底要移多少数据花多少毫秒">定量核算：传一个 $10\text{k}$ Token 的请求到底要移多少数据、花多少毫秒？</h4>
+<p>对于任意采用标准多头或分组查询注意力（MHA / GQA）的模型，设层数为 $L$，KV 注意力头数为 $H_{\text{kv}}$，单头维度为 $d_h$，数值精度字节数为 $b$（BF16/FP16 取 $b=2$，FP8 取 $b=1$），则<strong>每个 Token 的 KV Cache 字节数</strong>为：</p>
+<p>$$\text{Bytes}<em>{\text{KV/tok}} = 2 \times L \times H</em>{\text{kv}} \times d_h \times b$$</p>
+<p>以主流开源大模型 <strong>Llama-3.1/3.3-70B（BF16）</strong> 为例：$L = 80$，$H_{\text{kv}} = 8$，$d_h = 128$，$b = 2$：</p>
+<ol>
+<li><strong>单 Token KV 体积</strong>：$\text{Bytes}_{\text{KV/tok}} = 2 \times 80 \times 8 \times 128 \times 2 = 327,680\text{ Bytes} = \mathbf{320\text{ KiB/token}}$；</li>
+<li><strong>$10,240$（$10\text{k}$）Token Prompt 的总 KV 体积</strong>：$10,240 \times 320\text{ KiB} = 3,276,800\text{ KiB} = \mathbf{3.125\text{ GiB}}$（约 $3.36\text{ GB}$）；</li>
+<li><strong>在 $400\text{ Gbps}$（理论峰值 $50\text{ GB/s}$，按 $85%$ 实际有效带宽即 $42.5\text{ GB/s}$ 计）RDMA 网卡下的阻塞传输耗时</strong>：
+$$T_{\text{transfer}} = \frac{3.125 \times 1024^3\text{ Bytes}}{42.5 \times 10^9\text{ Bytes/s}} \approx \mathbf{78.95\text{ ms}}$$
+而在没有高速 RDMA、仅有 $25\text{ Gbps}$ 普通以太网的环境下，传输同样 $3.125\text{ GiB}$ 需要超过 <strong>$1.2\text{ s}$</strong>，此时跨机 P/D 分离会彻底劣化！</li>
+</ol>
+<h4 id="三大工程加速与防退化机制">三大工程加速与防退化机制</h4>
+<ol>
+<li><strong>逐层异步流水线传输（Layer-by-Layer Pipelined KV Transfer）</strong>：
+Prefill 节点绝不等到全部 $L=80$ 层都算完才开始发网络包。当 GPU 刚算完第 $l$ 层的 Attention 并将 $K^{(l)}, V^{(l)}$ 写入显存页时，底层通信库（如 NIXL、Mooncake、MSCCL++）立即通过 GPUDirect RDMA 在独立 CUDA Stream 上将第 $l$ 层的 KV 异步推送给 Decode 节点，而 GPU 同时继续计算第 $l+1$ 层。这样，<strong>前 $L-1$ 层的网络传输耗时被完全隐藏在 Prefill 前向计算内部</strong>，只有最后一层（仅占总体积的 $1/80 \approx 40\text{ MiB}$，耗时 $&lt;1\text{ ms}$）暴露在关键路径上。</li>
+<li><strong>短请求条件解耦旁路（Conditional Disaggregation Bypass）</strong>：
+对于只有两三百个未缓存 Token 的短请求（如简短日常对话，或多轮 Agent 中前 $20\text{k}$ Token 已全部命中 Decode 节点本地前缀缓存、仅新增 $150\text{ Token}$ 工具结果的续跑轮次），跨池握手与元数据调度开销反而大于原地计算。因此，现代编排层（如 NVIDIA Dynamo）设置了动态阈值：当请求的<strong>未缓存 Prefill Token 数 $\le \tau_{\text{bypass}}$</strong> 且目标 Decode 节点算力有余量时，<strong>直接旁路 Prefill 池</strong>，将请求发给 Decode 节点原地完成。</li>
+<li><strong>紧凑注意力架构（MLA / FP8 KV / 混合线性注意力）对 P/D 传输的天然加成</strong>：
+千万不要用同一套 <code>320 KiB/token</code> 公式生搬硬套所有模型！采用 <strong>多头潜在注意力（MLA，如 DeepSeek-V2/V3/R1）</strong>、<strong>FP8/FP4 KV 量化</strong> 或 <strong>滑动窗口 + 线性注意力混合架构（如 Qwen3-Next / MiMo 等）</strong> 的模型，其单 Token 需传输的全局 KV 状态可缩小至数十分之一甚至百字节级，使得跨节点 P/D 分离在普通高速网络上也极度轻快。</li>
+</ol>
+<hr />
+<h3 id="3-kv-aware-路由分层卸载与可运行标准库实现">3. KV-Aware 路由、分层卸载与可运行标准库实现</h3>
+<p>在多副本推理集群中，如果网关仍使用传统的轮询（Round-Robin）或最小连接数负载均衡，同一多轮 Agent 会话的连续请求会被随机打散到不同副本，导致昂贵的系统提示词、工具 Schema 与长文档前缀在每台机器上重复计算。</p>
+<h4 id="kv-aware-路由代价函数与多租户侧信道防护">KV-Aware 路由代价函数与多租户侧信道防护</h4>
+<p>现代推理网关（如 Kubernetes Gateway API Inference Extension <code>llm-d</code>、SGLang Router、Dynamo Router）通过维护前缀块哈希树（Radix Tree / Block Hash Table），为每个请求计算路由到候选副本 $w$ 的综合预测延迟代价：</p>
+<p>$$\text{Cost}(w) = \frac{N_{\text{total}} - N_{\text{cached}}(w, \text{tenant})}{R_{\text{prefill}}} + \alpha \cdot Q_{\text{load}}(w)$$</p>
+<p>其中 $N_{\text{cached}}(w, \text{tenant})$ 是副本 $w$ 上已缓存的连续前缀 Token 数（涵盖 GPU HBM 与通过 <strong>SGLang HiCache / vLLM Tiered Offloading</strong> 下沉到 Host Pinned DRAM 甚至 NVMe 磁盘的二级缓存），$R_{\text{prefill}}$ 为预填充速率，$Q_{\text{load}}(w)$ 为副本当前排队等待的 Token 负载。当持有完整缓存的副本 $w_0$ 发生严重排队拥塞时，路由器会自动权衡，将请求切向缓存部分命中但队列空闲的副本 $w_1$。</p>
+<p><strong>安全红线——跨租户前缀缓存侧信道（Prefix Cache Timing Side-Channel）</strong>：
+如果多个租户共享同一个无隔离的前缀缓存池，攻击者可以构造包含目标机密文档或特定系统提示词前缀的请求，通过观测返回的首字延迟（TTFT 是 $80\text{ ms}$ 还是 $1,500\text{ ms}$）或 Usage 中的 <code>cached_tokens</code> 字段，精确探测其他租户是否刚刚访问过该敏感文本！因此，在计算前缀块哈希时，<strong>必须在根块混入租户唯一盐值 <code>cache_salt</code>（即 $h_k = \operatorname{Hash}(\text{tenant_id} ,|, h_{k-1} ,|, \text{tokens}_k)$）</strong>，并在包括工具续跑（Tool Continuation）在内的所有 API 路径上强制执行。</p>
+<h4 id="可运行的标准库实现kv-传输预算核算加盐链式前缀哈希与条件旁路路由">可运行的标准库实现：KV 传输预算核算、加盐链式前缀哈希与条件旁路路由</h4>
+<p>以下 Python 3 标准库代码完整实现了（1）GQA 模型的跨节点 KV Cache 传输体积与耗时计算，（2）带 <code>tenant_id</code> 盐值隔离的链式前缀块哈希，（3）综合缓存命中率与队列拥塞惩罚的 KV-Aware 路由决策，以及（4）短增量请求的条件解耦旁路（Conditional Bypass）：</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import hashlib
+from dataclasses import dataclass, field
+from typing import List, Set, Tuple
+
+
+def compute_kv_bytes_per_token(
+    num_layers: int,
+    num_kv_heads: int,
+    head_dim: int,
+    bytes_per_elem: int = 2,
+) -&gt; int:
+    &quot;&quot;&quot;标准 MHA/GQA 模型单 Token 的 KV Cache 字节数: 2 (K+V) * L * H_kv * d_h * bytes&quot;&quot;&quot;
+    return 2 * num_layers * num_kv_heads * head_dim * bytes_per_elem
+
+
+def estimate_kv_transfer_ms(
+    seq_len: int,
+    kv_bytes_per_token: int,
+    link_gbps: float,
+    efficiency: float = 0.85,
+) -&gt; Tuple[float, float]:
+    &quot;&quot;&quot;
+    计算跨节点传输 seq_len 个 Token 的 KV Cache 体积 (GiB) 与全量阻塞传输耗时 (ms)
+    link_gbps: 物理链路带宽 (如 400 Gbps RDMA RoCEv2 / InfiniBand)
+    &quot;&quot;&quot;
+    total_bytes = seq_len * kv_bytes_per_token
+    total_gib = total_bytes / (1024 ** 3)
+    effective_bytes_per_sec = (link_gbps * 1e9 / 8.0) * efficiency
+    transfer_ms = (total_bytes / effective_bytes_per_sec) * 1000.0
+    return round(total_gib, 4), round(transfer_ms, 2)
+
+
+def salted_prefix_block_hash(tenant_id: str, token_block: Tuple[int, ...], parent_hash: str = &quot;0&quot;) -&gt; str:
+    &quot;&quot;&quot;
+    带租户隔离盐值 (cache_salt) 的链式前缀块哈希:
+    只有当 tenant_id、父块哈希与当前块 Token 完全一致时才产生相同哈希，杜绝跨租户缓存探测侧信道
+    &quot;&quot;&quot;
+    payload = f&quot;{tenant_id}|{parent_hash}|{token_block}&quot;.encode(&quot;utf-8&quot;)
+    return hashlib.sha256(payload).hexdigest()[:16]
+
+
+@dataclass
+class EngineWorker:
+    worker_id: str
+    queued_tokens: int
+    cached_block_hashes: Set[str] = field(default_factory=set)
+
+
+def select_worker_and_mode(
+    tenant_id: str,
+    prompt_blocks: List[Tuple[int, ...]],
+    workers: List[EngineWorker],
+    prefill_rate_tok_per_ms: float = 40.0,
+    bypass_threshold_tokens: int = 512,
+    load_penalty_ms_per_ktok: float = 35.0,
+) -&gt; Tuple[str, str, int, float]:
+    &quot;&quot;&quot;
+    KV-Aware 路由与条件解耦旁路 (Conditional Disaggregation Bypass):
+    1. 计算带 tenant_id 盐值的链式块哈希，统计各 Worker 连续命中的前缀 Token 数；
+    2. 评估各 Worker 的预计等待与计算代价: Cost = uncached_tokens / prefill_rate + queue_penalty；
+    3. 若未命中缓存的剩余 Prefill Token 数 &lt;= bypass_threshold_tokens，直接旁路发往 Decode 池原地计算，
+       避免为短增量请求付出跨池调度与 KV 传输开销。
+    &quot;&quot;&quot;
+    block_hashes: List[str] = []
+    parent = &quot;0&quot;
+    for blk in prompt_blocks:
+        h = salted_prefix_block_hash(tenant_id, blk, parent)
+        block_hashes.append(h)
+        parent = h
+
+    total_tokens = sum(len(b) for b in prompt_blocks)
+    best_worker = &quot;&quot;
+    best_cost_ms = float(&quot;inf&quot;)
+    best_uncached = total_tokens
+
+    for w in workers:
+        matched_tokens = 0
+        for blk, h in zip(prompt_blocks, block_hashes):
+            if h in w.cached_block_hashes:
+                matched_tokens += len(blk)
+            else:
+                break
+        uncached_tokens = total_tokens - matched_tokens
+        compute_ms = uncached_tokens / prefill_rate_tok_per_ms
+        queue_ms = (w.queued_tokens / 1000.0) * load_penalty_ms_per_ktok
+        total_cost_ms = compute_ms + queue_ms
+        if total_cost_ms &lt; best_cost_ms:
+            best_cost_ms = total_cost_ms
+            best_worker = w.worker_id
+            best_uncached = uncached_tokens
+
+    mode = &quot;DIRECT_DECODE_BYPASS&quot; if best_uncached &lt;= bypass_threshold_tokens else &quot;DISAGGREGATED_PREFILL&quot;
+    return best_worker, mode, best_uncached, round(best_cost_ms, 2)
+
+
+# --- 验证 1: Llama-3-70B (BF16, GQA 80层 8头 128维) 10,240 Tokens KV 传输核算 ---
+kv_per_tok = compute_kv_bytes_per_token(num_layers=80, num_kv_heads=8, head_dim=128, bytes_per_elem=2)
+assert kv_per_tok == 327680  # 320 KiB / token
+gib_10k, ms_10k = estimate_kv_transfer_ms(seq_len=10240, kv_bytes_per_token=kv_per_tok, link_gbps=400.0, efficiency=0.85)
+assert gib_10k == 3.125 and 75.0 &lt;= ms_10k &lt;= 80.0
+
+# --- 验证 2: KV-Aware 路由综合权衡缓存命中与队列排队负载 ---
+shared_sys_block = tuple(range(1, 2049))    # 2048 tokens 系统提示词
+user_turn_block = tuple(range(2049, 4097))  # 2048 tokens 用户文档
+h1 = salted_prefix_block_hash(&quot;tenant_A&quot;, shared_sys_block, &quot;0&quot;)
+h2 = salted_prefix_block_hash(&quot;tenant_A&quot;, user_turn_block, h1)
+
+# Worker-0 虽缓存了全部 4096 tokens，但队列积压严重 (12,000 tokens)；Worker-1 缓存了前 2048 tokens 且队列空闲
+w0 = EngineWorker(&quot;worker-0&quot;, queued_tokens=12000, cached_block_hashes={h1, h2})
+w1 = EngineWorker(&quot;worker-1&quot;, queued_tokens=500, cached_block_hashes={h1})
+
+chosen_w, mode_A, uncached_A, cost_A = select_worker_and_mode(&quot;tenant_A&quot;, [shared_sys_block, user_turn_block], [w0, w1])
+assert chosen_w == &quot;worker-1&quot; and mode_A == &quot;DISAGGREGATED_PREFILL&quot; and uncached_A == 2048
+
+# --- 验证 3: 跨租户 cache_salt 隔离防侧信道 + 短增量请求触发 Conditional Bypass ---
+# Tenant_B 发送完全相同的 token 序列，但因 tenant_id 不同，无法命中 Tenant_A 的缓存块
+_, _, uncached_B, _ = select_worker_and_mode(&quot;tenant_B&quot;, [shared_sys_block, user_turn_block], [w0, w1])
+assert uncached_B == 4096
+
+# 当 Worker-1 已缓存前 4096 tokens，本轮仅新增 128 tokens 工具结果追问时，触发短请求旁路直连 Decode
+short_followup = tuple(range(4097, 4225))
+w1.cached_block_hashes.add(h2)
+_, mode_short, uncached_short, _ = select_worker_and_mode(
+    &quot;tenant_A&quot;, [shared_sys_block, user_turn_block, short_followup], [w0, w1]
+)
+assert uncached_short == 128 and mode_short == &quot;DIRECT_DECODE_BYPASS&quot;
+
+print(f&quot;70B BF16 KV/tok: {kv_per_tok // 1024} KiB; 10k prompt KV: {gib_10k} GiB, transfer @400Gbps: {ms_10k} ms&quot;)
+print(f&quot;KV-Aware Route (tenant_A): {chosen_w}, mode={mode_A}, uncached={uncached_A}, est_cost={cost_A} ms&quot;)
+print(f&quot;Cross-tenant (tenant_B) uncached tokens: {uncached_B}; Short follow-up mode: {mode_short}&quot;)
+print(&quot;P/D disaggregation KV transfer, salted KV-aware routing, and bypass checks passed&quot;)
+</code></pre>
+<p>实际执行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">70B BF16 KV/tok: 320 KiB; 10k prompt KV: 3.125 GiB, transfer @400Gbps: 78.95 ms
+KV-Aware Route (tenant_A): worker-1, mode=DISAGGREGATED_PREFILL, uncached=2048, est_cost=68.7 ms
+Cross-tenant (tenant_B) uncached tokens: 4096; Short follow-up mode: DIRECT_DECODE_BYPASS
+P/D disaggregation KV transfer, salted KV-aware routing, and bypass checks passed
+</code></pre>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“任何规模的 LLM 服务只要上了 P/D 分离（Disaggregated Serving），吞吐和延迟就一定比单池共置（Colocated）好。”</strong>
+事实：P/D 分离引入了额外的跨机网络传输、独立池容量碎片以及复杂的分布式故障域。如果业务流量主要是<strong>短 Prompt（如几百 Token 的日常聊天）</strong>、集群规模较小（只有几张卡），或者节点间没有高速 RDMA/NVLink 互连，那么单池开启 <strong>Chunked Prefill + Prefix Caching</strong> 不仅架构简单得多，端到端延迟反而更低。P/D 分离真正大放异彩的是<strong>长上下文（如 Agent / RAG）、高并发且对 TTFT 与 TPOT 双重尾延迟有严苛 SLO 的中大型集群</strong>。</li>
+<li><strong>误区二：“在做 KV-Aware 路由时，永远应该把请求强制发给前缀缓存命中率最高的那台机器（100% Sticky Routing）。”</strong>
+事实：如果某个热门公共知识库或 Agent 模板的请求全部涌向已经缓存了该前缀的唯一一台机器 <code>Worker-0</code>，这台机器的排队延迟（Queueing Delay）会呈指数级飙升，远超在其他空闲机器上重新计算一次 Prefill 的耗时（即形成<strong>缓存热点雪崩 Hot-Spot Stampede</strong>）。因此 KV-Aware 路由必须将“省下的 Prefill 计算时间”与“目标机器的实时队列等待时间”放在同一个代价函数中动态权衡，必要时主动将流量溢出到次优机器实现缓存预热与分流。</li>
+<li><strong>误区三：“推算集群能跑多少并发长文本会话时，所有模型都可以套用 <code>2 * layers * kv_heads * head_dim * bytes</code> 这个标准公式。”</strong>
+事实：该公式仅适用于标准 MHA/GQA 架构。现代旗舰模型普遍采用 <strong>多头潜在注意力（MLA）</strong>、<strong>局部滑动窗口层 + 少量全局注意力层（Sliding-Window Hybrid）</strong> 或 <strong>线性注意力（Linear Attention / Gated DeltaNet）+ 稀疏注意力混合架构</strong>，其每 Token 的 KV 显存占用可能比同参数量的标准 GQA 模型小一到两个数量级，且混合滑动窗口架构需要推理引擎具备专门的分支点状态缓存支持（如 SGLang 的 Sliding-Window-Aware Radix Cache）才能正确命中前缀缓存。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/ombharatiya/ai-system-design-guide/blob/ed955b27d94201b663a741284767a1136dc83e5e/04-inference-optimization/04-batching-strategies.md" target="_blank" rel="noopener noreferrer">ombharatiya/ai-system-design-guide, 04-inference-optimization/04-batching-strategies.md</a>、<a href="https://github.com/ombharatiya/ai-system-design-guide/blob/ed955b27d94201b663a741284767a1136dc83e5e/04-inference-optimization/02-kv-cache-and-context-caching.md" target="_blank" rel="noopener noreferrer">02-kv-cache-and-context-caching.md</a> 与 <a href="https://github.com/ombharatiya/ai-system-design-guide/blob/ed955b27d94201b663a741284767a1136dc83e5e/04-inference-optimization/06-serving-infrastructure.md" target="_blank" rel="noopener noreferrer">06-serving-infrastructure.md</a>。固定 commit <code>ed955b27</code>，独立拓展改编。</li>
+<li>Zhong et al., <a href="https://arxiv.org/abs/2401.09670" target="_blank" rel="noopener noreferrer">DistServe: Disaggregating Prefill and Decoding for Goodput-optimized Large Language Model Serving</a>，OSDI 2024：Prefill-Decode 干扰分析、Goodput 优化建模、异构并行策略解耦与带宽感知实例放置。</li>
+<li>Patel et al., <a href="https://arxiv.org/abs/2311.18677" target="_blank" rel="noopener noreferrer">Splitwise: Efficient Generative LLM Inference Using Phase Splitting</a>，ISCA 2024：基于阶段算术强度差异的异构硬件池化与逐层流水线 KV 传输。</li>
+<li>Agrawal et al., <a href="https://arxiv.org/abs/2403.02310" target="_blank" rel="noopener noreferrer">Taming Throughput-Latency Tradeoff in LLM Inference with Sarathi-Serve</a>，OSDI 2024：分块预填充（Chunked Prefill）与无停顿捎带解码（Stall-Free Piggybacking）机制及边界。</li>
+<li>vLLM、SGLang 与 NVIDIA Dynamo 官方文档：Disaggregated Serving KV Connectors（NIXL / LMCache / Mooncake）、分层 KV 卸载（HiCache / Tiered KV Offloading）、跨租户 <code>cache_salt</code> 隔离与 KV-Aware 路由器设计。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-10-30</strong>。仅执行标准库 KV Cache 传输带宽核算、加盐前缀块哈希与 KV-Aware 路由旁路决策验证，未运行多节点 GPU RDMA 集群实测基准。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">如果 Prefill 池使用 <code>TP=4</code>（4 卡张量并行），而 Decode 池使用 <code>TP=8</code>（8 卡张量并行）以容纳更大的并发 KV Cache，两池之间的 KV Cache 传输会遇到什么张量布局问题？如何解决？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：如果 Prefill 池使用 TP=4（4 卡张量并行），而 Decode 池使用 TP=8（8 卡张量并行）以容纳更大的并发 KV Cache，两池之间的 KV Cache 传输会遇到什么张量布局问题？如何解决？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>在张量并行（TP）下，每一层的注意力头 $H_{\text{kv}}$ 是按列切分（Column-Parallel）散落在各个 TP Rank 上的。当 <code>TP_prefill = 4</code>（每张卡持有 $8 / 4 = 2$ 个 KV 头）向 <code>TP_decode = 8</code>（每张卡持有 $8 / 8 = 1$ 个 KV 头）传输时，源卡与目标卡的显存页布局（Page Layout）不再是一对一镜像，而是需要将每个 Prefill Rank 的 KV 切片拆开分别发往两个对应的 Decode Rank。
+工程解决方案有两种：（1）<strong>点对点子块直传（Sub-Block Peer-to-Peer Scatter）</strong>：通信连接器（如 NIXL / Mooncake）将内存页索引精确到 <code>head</code> 或 <code>sub-group</code> 粒度，由每个 Prefill GPU 通过 RDMA Write 直接把对应头切片写入目标 Decode GPU 的物理页偏移；（2）<strong>主机端规范化中转（Canonical Host Layout）</strong>：如 vLLM 的多级卸载架构，先将 GPU 显存中的 KV 页异步汇聚到 Host Pinned DRAM 中与 TP 无关的规范化内存布局（Canonical Layout），再由任意不同 TP 拓扑的实例按需拉取。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">当 Prefill 池的生产速度瞬间高于 Decode 池的消化速度（例如突发涌入大量长文本总结且输出也很长的请求）时，如果在 Prefill 节点显存里排队等待传输，会发生什么故障？如何设计跨池背压（Backpressure）？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：当 Prefill 池的生产速度瞬间高于 Decode 池的消化速度（例如突发涌入大量长文本总结且输出也很长的请求）时，如果在 Prefill 节点显存里排队等待传输，会发生什么故障？如何设计跨池背压（Backpressure）？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>如果 Prefill 节点算完一个 $32\text{k}$ 请求（占约 $10\text{ GiB}$ KV 显存）后，Decode 池全满无法接收，这份已算好的 KV Cache 就会滞留在 Prefill 节点的 HBM 中。短短几个并发请求滞留就会把 Prefill 节点的显存彻底撑爆（死锁或 OOM），导致整个 Prefill 池瘫痪！
+正确的跨池背压与流控契约是：</p>
+<ol>
+<li><strong>先预留后拉取（Pre-Allocate &amp; Pull Mode）或主机内存卸载缓冲</strong>：在 Prefill 启动前（或刚完成时），协调器先向目标 Decode 节点申请锁定对应数量的物理 KV 页槽位；若 Decode 池显存水位超限，Prefill 节点算完后立即将 KV 异步卸载（Offload）到本机大容量的 Pinned Host DRAM 缓冲池中并释放 GPU HBM，等 Decode 空出槽位再从 DRAM 经 RDMA 拉取；</li>
+<li><strong>网关级早期准入控制（Early Admission Control）</strong>：结合 <a href="engineering-0021-llm-queue-backpressure.html">engineering-0021</a>，当监测到 Decode 池 KV 利用率超过水位（如 $85%$）或等待队列突破 <code>--max-num-queued-reqs</code> 时，直接在网关层挂起新 Prefill 分发或触发弹性扩容，绝不让未消化状态堆积在昂贵的 Prefill HBM 上。</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">在长连接流式输出（SSE / gRPC）中，网关层做故障转移（Failover）为什么必须区分“首 Token 到达前”和“首 Token 到达后”？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：在长连接流式输出（SSE / gRPC）中，网关层做故障转移（Failover）为什么必须区分“首 Token 到达前”和“首 Token 到达后”？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>因为一旦网关已经向客户端流式推出了哪怕 1 个 Token，这次 HTTP/SSE 响应的状态码就已经锁死为 <code>200 OK</code> 且部分正文字节已落入客户端解析器。如果此时后端 Decode 节点崩溃，网关若在底层悄悄重连另一个副本从头重算并继续往同一个流里灌数据，客户端就会收到一段<strong>前半截与新开头拼接在一起的畸形重复文本</strong>，甚至导致工具调用被触发两次（见 <a href="engineering-0017-model-routing-failover.html">engineering-0017</a>）。
+因此，生产级 AI 网关（如 Envoy AI Gateway）严守<strong>首字分界线</strong>：在首个 Token 产生之前（如触发 <code>streamIdleTimeout</code> 或预检返回 <code>503</code>），网关可对客户端完全透明地切换到备用副本或跨云供应商；一旦首个 Token 已经发出，后端断流必须立即显式终止流并向客户端上报流错误，由上层 Agent 循环根据已收到的完整记录与工具幂等键决定如何安全续跑。</p>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>ENGINEERING-0045 · 单题笔记</span><a href="../questions/engineering-0045-disaggregated-prefill-decode-kv-routing.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "engineering-0045", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
