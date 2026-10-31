@@ -729,6 +729,17 @@
       "images": 0
     },
     {
+      "id": "agent-0070",
+      "file": "agent-0070-realtime-voice-agent-turn-taking-barge-in.html",
+      "source": "questions/agent-0070-realtime-voice-agent-turn-taking-barge-in.md",
+      "source_sha256": "530ab67f9ce28dea7b86179d86b2140a48fe71a3bb55fb7bd5e6786c965e48c0",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "engineering-0001",
       "file": "engineering-0001-redis-distributed-lock-failover.html",
       "source": "questions/engineering-0001-redis-distributed-lock-failover.md",
