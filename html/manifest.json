@@ -1213,6 +1213,17 @@
       "images": 0
     },
     {
+      "id": "engineering-0045",
+      "file": "engineering-0045-disaggregated-prefill-decode-kv-routing.html",
+      "source": "questions/engineering-0045-disaggregated-prefill-decode-kv-routing.md",
+      "source_sha256": "4bed27f7b0ba864c2369c56999291c276dd181f3254ac948563d295bdefb9d16",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "llm-0001",
       "file": "llm-0001-lora-fine-tuning.html",
       "source": "questions/llm-0001-lora-fine-tuning.md",

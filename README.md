@@ -16,14 +16,14 @@
 
 ## 在这里练什么
 
-目前收录 **191 道题，覆盖 5 个方向**，从模型基础、AI 应用构建到工程化与产品落地。题目支持按入门 / 进阶 / 困难，以及工程师 / 产品经理筛选。
+目前收录 **192 道题，覆盖 5 个方向**，从模型基础、AI 应用构建到工程化与产品落地。题目支持按入门 / 进阶 / 困难，以及工程师 / 产品经理筛选。
 
 | 方向 | 题数 | 主要内容 |
 | :--- | ---: | :--- |
 | [模型基础](https://luyao.blog/ai-interview/#questions?category=llm) | 22 | 模型原理、推理、微调、模型选择与能力边界 |
 | [Agent 架构](https://luyao.blog/ai-interview/#questions?category=agent) | 66 | 工具调用、MCP、记忆、Context、Workflow 与编排 |
 | [RAG 检索](https://luyao.blog/ai-interview/#questions?category=rag) | 44 | 文档处理、向量检索、Rerank、知识更新与生成质量 |
-| [工程化](https://luyao.blog/ai-interview/#questions?category=engineering) | 44 | 评测、监控、可靠性、安全、部署、性能与成本 |
+| [工程化](https://luyao.blog/ai-interview/#questions?category=engineering) | 45 | 评测、监控、可靠性、安全、部署、性能与成本 |
 | [AI 产品](https://luyao.blog/ai-interview/#questions?category=product) | 15 | 场景判断、需求拆解、体验、指标、商业化与落地 |
 
 题目由 AI 从公开网络收集，或基于项目总结设计；参考答案由 AI 生成，再由 AI Review。答案保留署名，题目中的参考资料可供延伸阅读，欢迎结合实践纠错、补充不同解法。

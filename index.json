@@ -4245,6 +4245,29 @@
       "updated": "2026-10-28",
       "answers_count": 1,
       "source": "公开 AI 系统设计指南与面试题库扩展改编；Outlines、XGrammar 原论文及官方源码核实（见参考）"
+    },
+    {
+      "id": "engineering-0045",
+      "title": "为什么大规模 LLM 推理集群要做 Prefill 与 Decode 分离部署（P/D Disaggregation），跨节点 KV Cache 传输预算与 KV-Aware 路由应如何设计？",
+      "file": "engineering-0045-disaggregated-prefill-decode-kv-routing.md",
+      "language": "zh",
+      "category": "engineering",
+      "category_label": "工程化、部署、性能、成本",
+      "tags": [
+        "pd-disaggregation",
+        "distserve",
+        "kv-cache-transfer",
+        "kv-aware-routing",
+        "goodput",
+        "chunked-prefill"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-10-30",
+      "answers_count": 1,
+      "source": "公开 AI 系统设计指南与面试题库扩展改编；DistServe、Sarathi-Serve 原论文及 vLLM/SGLang/Dynamo 官方架构核实（见参考）"
     }
   ]
 }

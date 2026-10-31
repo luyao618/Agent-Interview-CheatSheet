@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：191** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：192** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -46,7 +46,7 @@
 | 🧠 大模型基础与原理 | 22 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 44 | [查看 ↓](#-检索增强生成) |
-| ⚙️ 工程化、部署、性能、成本 | 44 | [查看 ↓](#-工程化部署性能成本) |
+| ⚙️ 工程化、部署、性能、成本 | 45 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 15 | [查看 ↓](#-ai-产品与落地) |
 
 ---
@@ -212,7 +212,7 @@
 
 ## ⚙️ 工程化、部署、性能、成本
 
-<sub>分类 ID：`engineering` ｜ 共 44 题</sub>
+<sub>分类 ID：`engineering` ｜ 共 45 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -260,6 +260,7 @@
 | 42 | [AI 生成的代码功能正确但数据量一大就变慢，如何验收复杂度并选择更合适的数据结构？](questions/engineering-0042-ai-code-complexity-validation.md) | 🟡 进阶 |
 | 43 | [AI 产品承诺删除用户数据时，怎样覆盖原文、日志、缓存、向量、备份及训练用途？](questions/engineering-0043-ai-data-deletion-lineage.md) | 🟡 进阶 |
 | 44 | [AI 文本检测器的分数能否证明作者身份，如何评估误报并设计合理使用边界？](questions/engineering-0044-ai-text-detector-reliability.md) | 🟡 进阶 |
+| 45 | [为什么大规模 LLM 推理集群要做 Prefill 与 Decode 分离部署（P/D Disaggregation），跨节点 KV Cache 传输预算与 KV-Aware 路由应如何设计？](questions/engineering-0045-disaggregated-prefill-decode-kv-routing.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 
