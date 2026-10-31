@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。实时语音 Agent（Realtime Voice Agent）的三类架构应如何选型，话轮检测（Endpointing）、投机生成与用户打断（Barge-In）协议应如何设计？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/agent-0070-realtime-voice-agent-turn-taking-barge-in.md">
+  <meta name="source-sha256" content="530ab67f9ce28dea7b86179d86b2140a48fe71a3bb55fb7bd5e6786c965e48c0">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>实时语音 Agent（Realtime Voice Agent）的三类架构应如何选型，话轮检测（Endpointing）、投机生成与用户打断（Barge-In）协议应如何设计？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">AGENT-0070</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title">实时语音 Agent（Realtime Voice Agent）的三类架构应如何选型，话轮检测（Endpointing）、投机生成与用户打断（Barge-In）协议应如何设计？</h1>
+        <div class="question-meta"><span>Agent 架构与编排</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>将基于文本的大模型改造为**实时语音智能体（Realtime Voice Agent）**绝不是简单地在前面加一个语音转文字（STT）、后面接一个文字转语音（TTS）。人类自然对话的话轮转换间隙（Turn-Taking Gap）平均仅有 $\sim 200\text{ ms}$，而在电话客服、实时陪练或车载语音场景中，只要端到端首音延迟（Time-to-First-Audio, TTFA）超过 $1.2\text{ s}$ 或频繁被用户的思考停顿、“嗯嗯”附和声误打断，对话体验就会迅速崩溃。</p>
+<p>围绕生产级实时语音 Agent 的架构选型与时序控制，请深入剖析：</p>
+<ol>
+<li>当前主流的<strong>三类实时语音架构</strong>——<strong>级联流水线（Chained Cascade：STT $\to$ Text LLM $\to$ TTS）</strong>、<strong>端到端单一语音大模型（Single Speech-to-Speech, S2S）</strong> 与 <strong>全双工语音前端 + 委托推理后端（Full-Duplex Front-End + Delegated Thinker Backend，Talker-Thinker 架构）</strong>，在延迟分解、推理与工具调用能力、可审计性、逐字合规话术播报以及分钟级成本模型上各有何本质取舍？</li>
+<li>为什么全链路流式化（Streaming）只能消除“整段持续时间项”，却消不掉用户停口后的<strong>首块串行税（Serial First-Chunk Tax）</strong>？为什么基于原生音频特征的**话轮结束检测（Audio Endpointing / Turn Detection）<strong>与</strong>投机生成（Speculative / Preemptive Generation）**是压降延迟的最大杠杆？在投机生成期间，为什么必须将只读工具与有副作用的工具（<code>defer_until_eot</code>）严格隔离？</li>
+<li>当用户在 Agent 说话中途开口时，为什么“用户打断（Barge-In）”是一个跨层状态机协议而非单纯的 VAD 静音/人声事件？系统应如何区分<strong>附和词（Backchannel）<strong>与</strong>真实打断</strong>、清空电话/WebRTC 传输缓冲区、按用户**实际听到的文本前缀（<code>text_spoken</code>）**裁剪 LLM 历史上下文，并通过上下文版本号（<code>context_revision</code>）丢弃改口前的过期后台任务结果？</li>
+</ol>
+<p>本题由公开 AI 系统设计指南与面试题库扩展改编，不是已核实的企业真题；不采信脱离具体并发度、网络链路与推理档位的笼统延迟数字。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-10-30</span></p><div class="prose"><p><strong>实时语音 Agent 的工程核心不是“让模型会说话”，而是“在毫秒级时序预算内管理话轮所有权与状态一致性”：在架构选型上，级联流水线以全边界文本化换取最高可审计性与逐字合规话术控制，单一 S2S 模型以原生音频理解换取副语言自然度，而“全双工语音前端（Talker）+ 委托文本推理后端（Thinker）”则通过将毫秒级韵律时序与慢速工具/逻辑推理解耦，成为复杂业务 Agent 的主流范式；在延迟优化上，由于流式传输无法消除停口后的串行首包累加（$\text{TTFA} = T_{\text{eot}} + T_{\text{stt_final}} + T_{\text{llm_ttft}} + T_{\text{tts_ttfb}}$），最大杠杆是用原生音频话轮检测器替代固定静音阈值，并配合提前触发的投机生成（同时严禁在话轮确认前执行写操作工具 <code>defer_until_eot</code>）；在打断（Barge-In）与长会话状态管理上，必须通过自适应打断分类器过滤“嗯嗯”等附和词，并在真实打断时同步执行“清空远端媒体缓冲 + 将上下文截断至用户实际听到的字符偏移 <code>text_spoken</code> + 递增 <code>context_revision</code> 作废在途脏委托”，同时将关键业务槽位与身份状态保存在模型上下文之外的后端权威数据库中。</strong></p>
+<p>现有 <a href="agent-0055-turn-loop-input-semantics.html">agent-0055</a> 讨论了文本 Agent 运行中收到用户插话时的续问、转向与输入语义，<a href="engineering-0024-cancellation-stale-callbacks.html">engineering-0024</a> 与 <a href="engineering-0026-streaming-tool-transcript-closure.html">engineering-0026</a> 剖析了取消传播、过期回调隔离与流式工具记录闭合，<a href="product-0008-perceived-latency-experiments.html">product-0008</a> 分析了感知等待与真实延迟的区别。本题聚焦<strong>实时语音通道特有的三类架构范式对比、串行首音延迟预算方程、音频话轮检测与投机副作用门控，以及全双工打断（Barge-In）下的声学缓冲清空与 <code>text_spoken</code> 上下文对齐协议</strong>。</p>
+<hr />
+<h3 id="1-实时语音-agent-的三类核心架构与选型矩阵">1. 实时语音 Agent 的三类核心架构与选型矩阵</h3>
+<p>随着端到端语音大模型与全双工（Full-Duplex）委托协议的成熟，生产级语音 Agent 已从早期的“二分法”演进为三种明确的技术形态：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">[架构 1: 级联流水线 (Chained Cascade)]
+用户音频 ──► VAD + 音频话轮检测 ──► 流式 STT ──(文本)──► 文本 LLM &amp; 工具 ──(文本)──► 流式 TTS ──► 播报音频
+
+[架构 2: 单一端到端语音模型 (Single Speech-to-Speech, S2S)]
+用户音频 ──► [ 单一 S2S 模型 (听取音频 + 内部推理 + 调用工具 + 直接生成音频 Token) ] ──► 播报音频
+                                      └──(旁路异步转录文本，仅供日志记录)
+
+[架构 3: 全双工语音前端 + 委托推理后端 (Full-Duplex Talker + Delegated Thinker)]
+用户音频 ──► [ 全双工语音前端 (边说边听、自主控制附和/停顿/礼让) ] ──► 播报音频
+                         │                               ▲
+       委托任务 + context_revision (文本)         返回结果 / 进度更新 (文本)
+                         ▼                               │
+               [ 委托文本后端 Agent (深度推理、工具调用、权威业务状态库) ]
+</code></pre>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th>评估维度</th>
+<th>1. 级联流水线（Chained Cascade）</th>
+<th>2. 单一语音大模型（Single S2S）</th>
+<th>3. 全双工前端 + 委托后端（Talker-Thinker）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>代表技术栈</strong></td>
+<td>LiveKit / Pipecat + 流式 STT + 任意文本 LLM + 流式 TTS</td>
+<td>OpenAI <code>gpt-realtime</code>、Gemini Live、Nova Sonic</td>
+<td>OpenAI <code>gpt-live</code> + 推理后端、LiveKit <code>DuplexModel</code>、Moshi 类双工模型</td>
+</tr>
+<tr>
+<td><strong>话轮转换控制</strong></td>
+<td>运行时显式控制（VAD + 音频 Turn 模型 + 打断分类器仲裁）</td>
+<td>半双工轮次制（内置 <code>server_vad</code> 或 <code>semantic_vad</code> 切分轮次）</td>
+<td><strong>模型原生全双工</strong>：边说边听，自主决定何时插话、附和（Backchannel）或礼让</td>
+</tr>
+<tr>
+<td><strong>复杂推理与工具能力</strong></td>
+<td><strong>极强</strong>：可直接复用任何顶尖文本推理模型与现有工具链</td>
+<td>受限于语音模型自身推理容量；调高思考力度会直接拉长首音延迟</td>
+<td><strong>极强</strong>：语音层先自然应答拖延时间，复杂推理与工具在文本后端并行运行</td>
+</tr>
+<tr>
+<td><strong>合规逐字播报与可控性</strong></td>
+<td><strong>最高</strong>：每一跳边界均为纯文本，可精确脱敏，TTS 可一字不差朗读法律免责条款</td>
+<td>语音与逻辑耦合在同一黑盒 Prompt 中，难以保证逐字不改写</td>
+<td>说话风格与业务规则解耦；但双工前端默认会口语化改写，<strong>法定逐字声明需旁路切回 TTS</strong></td>
+</tr>
+<tr>
+<td><strong>计费与长通话成本特征</strong></td>
+<td>按各组件分钟数/字符数线性累加（约 $$0.05\sim$0.14/\text{min}$）</td>
+<td>按音频 Token 计费；若每轮重发全量历史且未命中缓存，长通话单分钟成本随轮次递增</td>
+<td>按会话时长计费（如 $$0.05/\text{min}$ 含静音期）+ 后端文本 Token，需及时关闭空闲会话</td>
+</tr>
+<tr>
+<td><strong>核心工程风险</strong></td>
+<td>端点检测（Endpointing）延迟税；STT 边界丢失情绪重音与语码转换</td>
+<td>会话时长硬上限（如 $10\sim 60\text{ min}$）；音频提示词注入（Audio Injection）直达工具层</td>
+<td>用户改口后<strong>后台异步返回过期脏结果</strong>；语音层自动压缩上下文丢失早期槽位</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="架构选型决策准则">架构选型决策准则</h4>
+<ol>
+<li><strong>何时选级联流水线（Cascade）</strong>：金融/医疗/政务等强监管场景，要求对每一跳做 PII 文本脱敏审计、必须**一字不差（Verbatim）**播报合规告知书或支付条款、需要使用垂直领域微调的专用 STT（含专有名词热词增强 Keyterm Biasing），或在高并发自建 GPU 集群上压降单位成本。</li>
+<li><strong>何时选单一 S2S 模型</strong>：任务逻辑较浅（闲聊陪伴、口语对练、实时翻译、简单 FAQ 查询），核心痛点是情绪感知、笑声/语气词还原以及中英夹杂（Code-Switching）的自然度。</li>
+<li><strong>何时选全双工前端 + 委托后端（Talker-Thinker）</strong>：企业已经有成熟的文本 Agent（含复杂业务规则与多步工具调用），且任务需要深度推理。基准测试（如 Sierra $\tau\text{-Voice}$）表明，纯语音模型在复杂多步工具任务上的成功率显著低于同系文本模型，只有将双工语音前端与强推理后端解耦绑定，才能在不牺牲响应自然度的前提下恢复复杂任务成功率。</li>
+</ol>
+<hr />
+<h3 id="2-端到端延迟预算方程音频话轮检测与投机副作用门控">2. 端到端延迟预算方程、音频话轮检测与投机副作用门控</h3>
+<h4 id="为什么全链路流式化之后端到端延迟依然有-08-sim-12text-s">为什么全链路流式化之后，端到端延迟依然有 $0.8 \sim 1.2\text{ s}$？</h4>
+<p>初学者常误以为“只要 STT、LLM、TTS 都开启 Streaming，延迟就只剩网络传输时间”。事实上，<strong>流式传输只消除了每个阶段的“整句持续时间项（Whole-Duration Terms）”，却无法消除用户停口之后的“首块串行累加项（Serial First-Chunk Terms）”</strong>。</p>
+<p>当用户说完最后一个字（$t = 0$）到用户耳中听到 Agent 第一个声音样本，系统的期望首音延迟 $\text{TTFA}$ 严格遵循以下串行相加方程：</p>
+<p>$$\text{TTFA} = T_{\text{net_in}} + T_{\text{endpointing}} + T_{\text{stt_final}} + T_{\text{llm_ttft}} + T_{\text{tts_ttfb}} + T_{\text{net_out}}$$</p>
+<p>以一个经过调优的生产级流式级联链路（参考 Pipecat 实测分解）为例，不含双程网络传输（WebRTC/UDP 约 $60\sim 120\text{ ms}$）的典型服务端耗时分布为：</p>
+<ul>
+<li><strong>话轮结束判定 $T_{\text{endpointing}} \approx 200\sim 300\text{ ms}$</strong>（若用传统静音阈值则高达 $600\sim 800\text{ ms}$）；</li>
+<li><strong>STT 尾字确认 $T_{\text{stt_final}} \approx 50\sim 125\text{ ms}$</strong>（因流式 Partial 已在说话期间并行完成）；</li>
+<li><strong>LLM 首 Token 延迟 $T_{\text{llm_ttft}} \approx 150\sim 350\text{ ms}$</strong>（若开启高强度 Reasoning 则暴涨至 $&gt;1\text{ s}$）；</li>
+<li><strong>TTS 首包音频合成 $T_{\text{tts_ttfb}} \approx 75\sim 360\text{ ms}$</strong>（等待首个语义分句 Clause 完成并合成首帧音频）。
+四项相加即达 <strong>$1.0\text{ s}$ 左右</strong>。由此可见，在开启流式之后，压降延迟最大的工程杠杆依次是：</li>
+</ul>
+<ol>
+<li><strong>从“固定静音超时”升级为“原生音频话轮检测（Audio-Native Turn Detection）”</strong>：
+单纯的 VAD（如 Silero VAD）只能以 $10\sim 30\text{ ms}$ 帧率区分“当前帧有无人声”，无法区分用户是“说到一半喘气思考”还是“整句话说完了”。如果设 $800\text{ ms}$ 静音超时，每次正常问答都要白白空等近一秒；如果设 $300\text{ ms}$，用户报身份证号稍一停顿就会被粗暴抢话。现代语音框架（如 LiveKit Audio <code>TurnDetector</code>、Pipecat <code>Smart Turn v3</code>、Deepgram Flux）直接将尾音的<strong>声学语调下降（Intonation / Pitch Contour）、语速拖长与语义完整性</strong>输入轻量音频编码器（约 $12\text{ ms}$ CPU 推理），将话轮判定延迟从 $800\text{ ms}$ 压至 $200\sim 300\text{ ms}$，同时必须在运行时设立**单一话轮仲裁器（Single Turn Arbiter）**统一裁决 VAD、STT 与音频 Turn 模型的信号。</li>
+<li><strong>激进话轮触发与投机生成（Eager EoT &amp; Speculative Generation）——严守副作用红线</strong>：
+为了进一步抹平 $T_{\text{endpointing}}$ 与 $T_{\text{llm_ttft}}$，系统可以设置两级阈值：当音频话轮模型给出中等置信度（如 $p_{\text{eot}} \ge 0.40$，记为 <code>eager_eot</code>）时，<strong>提前投机启动 LLM 推理与只读查询</strong>；
+<ul>
+<li>若随后 $200\text{ ms}$ 内用户没再开口，升级为确认结束（<code>confirmed_eot</code>），此时 LLM 首包甚至 TTS 首帧已准备就绪，可立即播报；</li>
+<li>若用户继续说话（<code>turn_resumed</code>），则直接丢弃刚才投机生成的文本（以额外 $50%\sim 70%$ 的 LLM Token 消耗换取百毫秒级极速响应）。</li>
+<li><strong>铁律（No Speculative Side Effects）</strong>：<strong>投机生成期间绝对禁止执行任何有外部副作用的工具调用（如扣款、改签、发短信、写数据库）！</strong> 所有写操作工具必须标记为 <code>defer_until_eot</code>，在运行时门控队列中挂起，直到收到最终 <code>confirmed_eot</code> 且上下文版本未变时才真正放行。</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h3 id="3-用户打断barge-in四步协议与可运行标准库实现">3. 用户打断（Barge-In）四步协议与可运行标准库实现</h3>
+<p>当 Agent 正在播报长句时，麦克风突然检测到用户声音，如果简单粗暴地“一检测到 VAD 人声就立刻杀掉 TTS”，不仅会被用户的礼貌附和（“嗯”、“好的”、“uh-huh”）或背景杂音频繁误杀，还会在大模型上下文里留下严重的**“精神分裂（Context Hallucination）”**——模型以为自己把整段话全说完了，但用户其实只听到了前三个字！</p>
+<p>生产级 <strong>Barge-In 协议</strong>必须按序完成以下四个原子步骤：</p>
+<ol>
+<li><strong>重叠语音分类（Overlap Classification）</strong>：由自适应打断模型结合前 $300\sim 500\text{ ms}$ 的重叠音频特征与语义判断是<strong>附和词（Backchannel）<strong>还是</strong>真实打断（True Interruption）</strong>。若是附和词，继续保持音频输出（或先轻微压低音量 Ducking，确认误判后无缝恢复播放）。</li>
+<li><strong>全链路播放缓冲清空（Playout &amp; Carrier Buffer Flush）</strong>：一旦确认为真实打断，不仅要取消本地 TTS 生成流，<strong>还必须向底层传输网发送显式清空指令（如 Twilio Media Streams 的 <code>clear</code> 消息或 WebRTC 轨道重置）</strong>——否则电话局端或客户端 jitter buffer 里已缓存的数秒音频仍会继续对着用户播放。</li>
+<li><strong>按实际已播报进度裁剪上下文（Trim Context to <code>text_spoken</code>）</strong>：LLM 单次流式生成了 100 个字并推给了 TTS，但用户在第 17 个字处打断了它。此时必须根据 TTS 引擎汇报的已播放音频采样偏移（或 <code>text_spoken</code> 回执），将写入 <code>messages</code> 历史的 <code>assistant</code> 回复<strong>截断为前 17 个字</strong>（必要时加 <code>...</code> 标记被中断），确保模型清楚知道后面 83 个字用户根本没听到。</li>
+<li><strong>在途异步任务版本化与过期丢弃（Context Revision Stamping）</strong>：在全双工或异步工具架构下，用户常常在后台工具还在搜索“周三航班”时改口说“算了，帮我查周五的”。每次发生打断或用户补充更正时，会话控制器必须递增<strong>上下文版本号 <code>context_revision</code></strong>；任何携带旧版本号返回的后台推理或工具结果一律在网关层静默丢弃（或根据策略触发取消，见 <a href="engineering-0024-cancellation-stale-callbacks.html">engineering-0024</a>）。</li>
+</ol>
+<h4 id="可运行的标准库实现话轮投机门控barge-in-历史裁剪与过期委托拦截">可运行的标准库实现：话轮投机门控、Barge-In 历史裁剪与过期委托拦截</h4>
+<p>以下 Python 3 标准库代码完整实现了上述实时语音会话状态机，验证了（1）<code>eager_eot</code> 下只读工具先行、副作用工具挂起与用户续说回滚，（2）附和词过滤与真实打断下的线路缓冲清空及 <code>text_spoken</code> 历史截断，以及（3）基于 <code>context_revision</code> 的双工后台过期结果拦截：</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">from dataclasses import dataclass, field
+from typing import List, Tuple
+
+
+@dataclass
+class SpeculativeToolCall:
+    call_id: str
+    tool_name: str
+    side_effecting: bool
+    context_revision: int
+
+
+@dataclass
+class VoiceTurnRuntime:
+    &quot;&quot;&quot;实时语音 Agent 的话轮仲裁、投机副作用门控、打断历史裁剪与版本化后台委托控制器&quot;&quot;&quot;
+    context_revision: int = 1
+    turn_confirmed: bool = False
+    carrier_buffer_cleared: bool = False
+    conversation_history: List[Tuple[str, str]] = field(default_factory=list)
+    deferred_side_effects: List[SpeculativeToolCall] = field(default_factory=list)
+    executed_tool_calls: List[str] = field(default_factory=list)
+    accepted_backend_results: List[Tuple[int, str]] = field(default_factory=list)
+
+    def on_eager_eot(self, partial_user_text: str, proposed_calls: List[SpeculativeToolCall]) -&gt; List[str]:
+        &quot;&quot;&quot;
+        收到 Eager End-of-Turn (如音频话轮模型预测 p_eot &gt;= 0.45):
+        允许只读查询立即投机执行以隐藏延迟，但强行挂起所有带副作用的工具调用 (defer_until_eot)
+        &quot;&quot;&quot;
+        self.turn_confirmed = False
+        ran_immediately: List[str] = []
+        for call in proposed_calls:
+            if call.side_effecting:
+                self.deferred_side_effects.append(call)
+            else:
+                self.executed_tool_calls.append(call.call_id)
+                ran_immediately.append(call.call_id)
+        return ran_immediately
+
+    def on_user_resumed_speaking(self, updated_user_text: str) -&gt; int:
+        &quot;&quot;&quot;
+        用户在 Eager EoT 后继续说话 (假停顿) 或开口更正:
+        递增 context_revision，作废并清空所有投机挂起的副作用工具调用
+        &quot;&quot;&quot;
+        self.context_revision += 1
+        cancelled_count = len(self.deferred_side_effects)
+        self.deferred_side_effects.clear()
+        return cancelled_count
+
+    def on_confirmed_eot(self, final_user_text: str) -&gt; List[str]:
+        &quot;&quot;&quot;
+        音频 Turn Detector 确认话轮真正结束 (Confirmed EoT):
+        将最终用户话语写入历史，并释放执行当前有效版本的挂起副作用工具
+        &quot;&quot;&quot;
+        self.turn_confirmed = True
+        self.conversation_history.append((&quot;user&quot;, final_user_text))
+        flushed: List[str] = []
+        for call in self.deferred_side_effects:
+            if call.context_revision == self.context_revision:
+                self.executed_tool_calls.append(call.call_id)
+                flushed.append(call.call_id)
+        self.deferred_side_effects.clear()
+        return flushed
+
+    def on_caller_overlap(
+        self,
+        planned_agent_utterance: str,
+        spoken_char_offset: int,
+        overlap_text: str,
+        is_backchannel: bool,
+    ) -&gt; str:
+        &quot;&quot;&quot;
+        处理用户重叠发音:
+        - 若分类器判定为附和词 (Backchannel, 如 &quot;嗯嗯&quot;/&quot;uh-huh&quot;)，保持播报不断流；
+        - 若判定为真实打断 (True Barge-In)，发送线路缓冲清空信号，并将上下文严格裁剪至用户实际听到的前缀 text_spoken。
+        &quot;&quot;&quot;
+        if is_backchannel:
+            return &quot;CONTINUE_PLAYOUT&quot;
+
+        self.carrier_buffer_cleared = True
+        self.context_revision += 1
+        text_spoken = planned_agent_utterance[:spoken_char_offset].rstrip()
+        self.conversation_history.append((&quot;assistant&quot;, text_spoken))
+        return text_spoken
+
+    def receive_delegated_backend_result(self, req_revision: int, payload: str) -&gt; bool:
+        &quot;&quot;&quot;
+        接收双工后端异步返回的推理/工具结果:
+        若请求发出时的 context_revision 落后于当前最新版本号，作为过期脏结果直接丢弃
+        &quot;&quot;&quot;
+        if req_revision != self.context_revision:
+            return False
+        self.accepted_backend_results.append((req_revision, payload))
+        return True
+
+
+# --- 验证 1: 投机生成期间拦截写操作，用户继续说话时安全回滚 ---
+rt = VoiceTurnRuntime()
+imm = rt.on_eager_eot(
+    &quot;帮我把周三的机票改签&quot;,
+    [
+        SpeculativeToolCall(&quot;call_lookup&quot;, &quot;lookup_flight&quot;, side_effecting=False, context_revision=1),
+        SpeculativeToolCall(&quot;call_charge&quot;, &quot;confirm_rebook_and_charge&quot;, side_effecting=True, context_revision=1),
+    ],
+)
+assert imm == [&quot;call_lookup&quot;] and rt.executed_tool_calls == [&quot;call_lookup&quot;]
+assert len(rt.deferred_side_effects) == 1  # 扣款改签被挂起
+
+# 用户停顿 300ms 后继续补充：&quot;不对，改成周五下午&quot;，触发投机取消与版本递增
+cancelled = rt.on_user_resumed_speaking(&quot;帮我把周三的机票改签，不对，改成周五下午&quot;)
+assert cancelled == 1 and rt.context_revision == 2
+assert &quot;call_charge&quot; not in rt.executed_tool_calls
+
+# --- 验证 2: 话轮正式确认后，当前版本的副作用工具才获准执行 ---
+rt.on_eager_eot(
+    &quot;帮我把周三的机票改签，不对，改成周五下午&quot;,
+    [SpeculativeToolCall(&quot;call_charge_fri&quot;, &quot;confirm_rebook_and_charge&quot;, side_effecting=True, context_revision=2)],
+)
+flushed_calls = rt.on_confirmed_eot(&quot;帮我把周三的机票改签，不对，改成周五下午&quot;)
+assert flushed_calls == [&quot;call_charge_fri&quot;]
+
+# --- 验证 3: 附和词免误触 vs 真实打断下的 text_spoken 上下文裁剪与过期后端结果丢弃 ---
+planned_reply = &quot;已为您查到周五下午两点起飞的航班，票价为八百六十元，退改签规则是起飞前两小时免费。&quot;
+assert rt.on_caller_overlap(planned_reply, 16, &quot;嗯嗯&quot;, is_backchannel=True) == &quot;CONTINUE_PLAYOUT&quot;
+assert not rt.carrier_buffer_cleared
+
+# 用户在第 17 个字符处打断 (&quot;等一下，换早班机&quot;)
+spoken_prefix = rt.on_caller_overlap(planned_reply, 17, &quot;等一下，换早班机&quot;, is_backchannel=False)
+assert rt.carrier_buffer_cleared is True
+assert spoken_prefix == &quot;已为您查到周五下午两点起飞的航班，&quot;
+assert rt.conversation_history[-1] == (&quot;assistant&quot;, &quot;已为您查到周五下午两点起飞的航班，&quot;)
+assert rt.context_revision == 3
+
+# 此前基于 revision=2 发起的慢速后台推荐结果返回，因版本过期被拒绝；revision=3 的新结果被接受
+assert rt.receive_delegated_backend_result(2, &quot;stale_friday_afternoon_options&quot;) is False
+assert rt.receive_delegated_backend_result(3, &quot;fresh_friday_morning_options&quot;) is True
+
+accepted_revs = [rev for rev, _ in rt.accepted_backend_results]
+print(f&quot;Speculative immediate calls: {imm}, cancelled side-effect count on resume: {cancelled}&quot;)
+print(f&quot;Confirmed EoT flushed calls: {flushed_calls}&quot;)
+print(f&quot;Trimmed assistant history on barge-in: {rt.conversation_history[-1][1]}&quot;)
+print(f&quot;Accepted backend revisions: {accepted_revs}&quot;)
+print(&quot;Voice turn endpointing, speculative side-effect gate, barge-in trimming, and revision checks passed&quot;)
+</code></pre>
+<p>实际执行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">Speculative immediate calls: [&#x27;call_lookup&#x27;], cancelled side-effect count on resume: 1
+Confirmed EoT flushed calls: [&#x27;call_charge_fri&#x27;]
+Trimmed assistant history on barge-in: 已为您查到周五下午两点起飞的航班，
+Accepted backend revisions: [3]
+Voice turn endpointing, speculative side-effect gate, barge-in trimming, and revision checks passed
+</code></pre>
+<hr />
+<h3 id="4-生产环境的声学工程陷阱与可靠性防线">4. 生产环境的声学工程陷阱与可靠性防线</h3>
+<ol>
+<li><strong>电话网窄带重采样陷阱（$8\text{ kHz }\mu\text{-law}$ vs $16\text{ kHz}$ 模型特征）</strong>：
+传统 PSTN / SIP 电话网（如 Twilio Media Streams）传输的是 $8\text{ kHz}$ 采样率的 G.711 $\mu\text{-law}$ 窄带音频（最高频率仅 $4\text{ kHz}$，高频清辅音如 <code>s</code> / <code>f</code> 严重受损），而绝大多数开源音频话轮检测器（如基于 Whisper 编码器的 <code>Smart Turn</code>）和 VAD 是在 $16\text{ kHz}$ 线性 PCM 上训练的。如果直接把 $8\text{ kHz}$ 音频喂给 $16\text{ kHz}$ 模型而不做显式上采样与编解码对齐，话轮检测和打断分类的准确率会断崖式下跌。</li>
+<li><strong>精确实体捕获（Entity Elicitation）——语音 Agent 的头号失败源</strong>：
+在姓名、邮箱、订单号、日期与确认码的采集中，同音字、口音与环境底噪极易导致语音识别错一个字符，进而令下游工具调用全盘失败（$\tau\text{-Elicitation}$ 基准显示纯语音次均精确捕获率远低于文本交互）。工程上必须建立三道防线：
+<ul>
+<li><strong>拼写确认与复述脚手架（Spell, Read-Back &amp; Confirm Scaffold）</strong>：对高价值槽位强制执行逐字复述确认；</li>
+<li><strong>DTMF 按键双模兜底</strong>：在电话通道中，允许用户直接在拨号盘按键输入身份证号、银行卡号或验证码，通过独立信令通道接收 DTMF 事件；</li>
+<li><strong>上下文热词偏置（Keyterm Biasing &amp; Prompt Context）</strong>：将业务 SKU 词表及 Agent 上一句刚问出的问题作为上下文传给流式 STT，显著降低专有名词词错率（WER）。</li>
+</ul>
+</li>
+<li><strong>把语音模型上下文当缓存，把权威业务状态放在后端（Context as Cache, Backend as Record）</strong>：
+长语音会话必然遭遇平台连接时长上限（如 $8\sim 60\text{ min}$ 断连重连）或自动上下文压缩（如超过阈值后替换为摘要语音引擎）。因此，用户的身份核验结果、已确认的订单槽位和业务状态机<strong>绝不能只留在语音模型的对话历史里</strong>，必须实时持久化在应用层状态存储中，以便在重连或引擎切换时无损恢复。</li>
+<li><strong>防范音频提示词注入（Audio Prompt Injection）与声纹伪造</strong>：
+攻击者可通过背景并发语音或近似不可闻的声学扰动（如 AudioHijack / DuplexJail）劫持端到端语音模型执行未授权工具，且仅需数秒音频即可低成本克隆特定人声。因此：（1）<strong>切勿把说话人声音（声纹）当作唯一高危身份认证手段</strong>，必须结合带外验证码或业务鉴权；（2）<strong>工具授权策略必须在确定性的后端代码中强制执行</strong>（见 <a href="agent-0041-dynamic-tool-risk-assessment.html">agent-0041</a>），绝不能仅靠语音模型的 System Prompt 约束。</li>
+</ol>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“端到端 Speech-to-Speech（S2S）模型省去了 STT 和 TTS，所以它的首音延迟（TTFA）一定比级联流水线（Cascade）低得多。”</strong>
+事实：当任务需要复杂逻辑推理或工具调用时，S2S 模型的首音延迟往往落在 $0.70 \sim 1.34\text{ s}$，与调优良好的全流式级联流水线（约 $0.80 \sim 1.05\text{ s}$）处于同一水平甚至更慢。因为决定延迟长板的往往是<strong>话轮结束检测（Endpointing）<strong>与</strong>模型的思考计算耗时（Reasoning Effort）</strong>；此外，单流基准测试的 TTS 延迟（如 $75\text{ ms}$）在高并发（如 32 路并发）下可能退化数倍，不能脱离并发度谈架构快慢。</li>
+<li><strong>误区二：“处理用户打断（Barge-In）很简单，只要麦克风 VAD 检测到人声，立刻停止本地 TTS 协程即可。”</strong>
+事实：这会导致三个严重事故：（1）用户说“嗯嗯”表示在听时，Agent 突然闭嘴，体验极其僵硬；（2）本地停了 TTS，但电话网关（如 Twilio）缓冲区里还有 $3\text{ s}$ 音频在继续往外播，用户感觉 Agent 根本听不见自己打断；（3）未根据实际已播放偏移裁剪 <code>messages</code> 历史，导致模型误以为未播出的后半句重要信息用户已经听到了。</li>
+<li><strong>误区三：“为了让语音回复越快越好，可以在流式 STT 还没完全结束时就投机触发 LLM 和工具调用，先把订单改了再说。”</strong>
+事实：<strong>投机生成只允许用于无副作用的计算与只读预取（Read-Only Prefetch），绝不能用于写操作工具。</strong> 人类说话经常有倒装和自我修正（例如：“帮我把明天的订单取消……哦不，保留明天的，取消后天的”），如果在前半句停顿时就投机执行了取消操作，会直接造成无法挽回的业务故障。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/ombharatiya/ai-system-design-guide/blob/ed955b27d94201b663a741284767a1136dc83e5e/18-voice-and-audio-agents/01-realtime-voice-agents.md" target="_blank" rel="noopener noreferrer">ombharatiya/ai-system-design-guide, 18-voice-and-audio-agents/01-realtime-voice-agents.md</a>。固定 commit <code>ed955b27</code>，独立拓展改编。</li>
+<li>Sierra Research, <a href="https://sierra.ai/blog/tau-voice-benchmarking-real-time-voice-agents-on-real-world-tasks" target="_blank" rel="noopener noreferrer">$\tau$-Voice: Benchmarking Full-Duplex Voice Agents on Real-World Domains</a>：全双工语音场景下背景噪声、打断、情绪与多步工具调用的评测基准及文本-语音能力差距分析。</li>
+<li>OpenAI Official Documentation, <a href="https://platform.openai.com/docs/guides/voice-agents" target="_blank" rel="noopener noreferrer">Voice Agents Architecture &amp; Realtime API Guide</a>：级联、S2S 与双工委托架构选型、话轮检测、打断上下文截断与版本化委托规范。</li>
+<li>LiveKit Official Documentation, <a href="https://docs.livekit.io/agents/build/turns/turn-detector/" target="_blank" rel="noopener noreferrer">End-of-Turn Detection &amp; Adaptive Interruption Handling</a>：原生音频话轮检测器、附和词（Backchannel）抗误触分类与预生成调度。</li>
+<li>Pipecat AI, <a href="https://github.com/pipecat-ai/pipecat" target="_blank" rel="noopener noreferrer">Smart Turn v3 &amp; Voice Agent Latency Breakdown</a>：基于 Whisper Tiny 编码器的轻量音频话轮检测、多信号话轮仲裁器及级联流水线各阶段毫秒级延迟分解。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-10-30</strong>。仅执行标准库话轮投机门控、Barge-In <code>text_spoken</code> 历史裁剪与 <code>context_revision</code> 过期结果丢弃逻辑验证，未运行真实 WebRTC/SIP 媒体流或云端语音 API 基准测试。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">为什么在实时语音传输中，客户端到服务端（Client-to-Server）普遍强制使用 WebRTC（基于 UDP），而服务端到模型/STT（Server-to-Model）却可以使用 WebSocket（基于 TCP）？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么在实时语音传输中，客户端到服务端（Client-to-Server）普遍强制使用 WebRTC（基于 UDP），而服务端到模型/STT（Server-to-Model）却可以使用 WebSocket（基于 TCP）？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>因为两段链路的网络物理特性截然不同：客户端（手机 4G/5G、车载移动网络、弱 Wi-Fi）处于高抖动、易丢包的最后一公里无线网。如果使用基于 TCP 的 WebSocket，一旦丢掉一个音频包，TCP 内核会强制阻塞后续所有已到达的音频包等待重传（<strong>队头阻塞 Head-of-Line Blocking</strong>），导致语音瞬间卡顿数百毫秒甚至数秒，随后积压的音频又像快进一样集中爆发。而 WebRTC 采用 <strong>UDP + Opus 编解码器（支持前向纠错 FEC 与丢包隐藏 PLC）</strong>，丢掉一两个 $20\text{ ms}$ 帧时直接由解码器平滑插值跳过，优先保证绝对实时性；反观服务端到模型 API 通常位于数据中心高速骨干网内（甚至同可用区专线），丢包率极低且延迟稳定在数毫秒内，用 WebSocket 即可兼顾开发简便与流式帧控制。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">当语音 Agent 需要调用一个耗时 $4\text{ s}$ 的外部查询工具时，怎样避免用户在电话那头听到长达 $4\text{ s}$ 的死寂（Dead Air）并误以为电话断了？如果工具跑到第 $2\text{ s}$ 用户突然开口改了查询条件，怎么处理？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：当语音 Agent 需要调用一个耗时 $4\text{ s}$ 的外部查询工具时，怎样避免用户在电话那头听到长达 $4\text{ s}$ 的死寂（Dead Air）并误以为电话断了？如果工具跑到第 $2\text{ s}$ 用户突然开口改了查询条件，怎么处理？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>消灭死寂（Async Tools + Spoken Preambles / Filler）</strong>：将工具调用设为非阻塞异步模式（Asynchronous Tool Scheduling）。在触发工具的同一时刻，让语音前端立即播报一句自然的过渡语（Preamble，如“好的，我帮您查一下周五的余票，请稍等……”），或者叠加轻柔的键盘敲击/翻页环境反馈音（见 <a href="product-0008-perceived-latency-experiments.html">product-0008</a>），如果超过 $2.5\text{ s}$ 仍未返回，再由定时器触发二次进度安抚；</li>
+<li><strong>中途改口处理</strong>：如前文代码所示，当用户在第 $2\text{ s}$ 开口把“周五”改成“周六”时，立即递增 <code>context_revision</code> 并向旧工具任务发送 <code>cancel</code> 信号；即便旧工具不可取消并在第 $4\text{ s}$ 返回了周五的票务数据，网关比对发现其携带的 <code>req_revision &lt; current_revision</code>，也会直接将其丢弃，防止语音前端把过期的周五航班播报出来造成错乱。</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">如何评测一个实时语音 Agent 的线上真实表现？为什么不能只把语音转成文本跑传统文本 Benchmark？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：如何评测一个实时语音 Agent 的线上真实表现？为什么不能只把语音转成文本跑传统文本 Benchmark？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>因为只跑文本转录评测会完全漏掉<strong>声学层与时序层的致命故障</strong>（在 $\tau\text{-Voice}$ 评测中，同一套逻辑在真实语音下的成功率比纯文本低数十个百分点）。完整的语音评测需覆盖两套指标体系：</p>
+<ol>
+<li><strong>会话动力学与时序指标（Conversational Dynamics &amp; Timing）</strong>：P50 / P95 <strong>有效回答首音延迟</strong>（必须将“稍等我查一下”这类填充词的延迟与真正业务答案的延迟分开统计！）、P95 话轮判定延迟（Endpointing Delay）、<strong>误打断率（False Barge-In Rate，因杂音或附和词中断播报的比例）</strong> 与 <strong>漏打断率（Missed Barge-In Rate）</strong>；</li>
+<li><strong>声学压力下的端到端业务状态验证</strong>：采用“合成语音 $\to$ 真实录音回放 $\to$ 叠加背景噪声、口音、中途打断及 $8\text{ kHz}$ 窄带压缩的模拟对练用户（Audio User Simulator）”三阶段递进测试，且最终评判标准必须是<strong>检查后端数据库状态是否真正按正确槽位完成了业务操作</strong>，而非仅看对话转录文本是否通顺。</li>
+</ol>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>AGENT-0070 · 单题笔记</span><a href="../questions/agent-0070-realtime-voice-agent-turn-taking-barge-in.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "agent-0070", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
