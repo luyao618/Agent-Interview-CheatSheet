@@ -1455,6 +1455,17 @@
       "images": 0
     },
     {
+      "id": "llm-0032",
+      "file": "llm-0032-diffusion-llm-masked-block-kv-cache.html",
+      "source": "questions/llm-0032-diffusion-llm-masked-block-kv-cache.md",
+      "source_sha256": "1e785a08116185d170461309e4a4768573487cff8f08c5f3808de8493c6baa00",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",

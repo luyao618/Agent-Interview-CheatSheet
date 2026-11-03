@@ -4245,6 +4245,29 @@
       "updated": "2026-10-28",
       "answers_count": 1,
       "source": "公开 AI 系统设计指南与面试题库扩展改编；Outlines、XGrammar 原论文及官方源码核实（见参考）"
+    },
+    {
+      "id": "llm-0032",
+      "title": "掩码扩散语言模型（Masked Diffusion LLM）是如何通过双向迭代去噪并行生成文本的，Block Diffusion 与 Fast-dLLM 如何解决 KV Cache 复用与并行解码联合分布失配？",
+      "file": "llm-0032-diffusion-llm-masked-block-kv-cache.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "diffusion-llm",
+        "masked-diffusion",
+        "llada",
+        "block-diffusion",
+        "kv-cache",
+        "parallel-decoding"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-11-03",
+      "answers_count": 1,
+      "source": "公开 AI 系统设计指南与面试题库扩展改编；MDLM、LLaDA、BD3-LMs、Fast-dLLM 原论文及官方源码核实（见参考）"
     }
   ]
 }
