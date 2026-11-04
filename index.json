@@ -4268,6 +4268,29 @@
       "updated": "2026-11-03",
       "answers_count": 1,
       "source": "公开 AI 系统设计指南与面试题库扩展改编；MDLM、LLaDA、BD3-LMs、Fast-dLLM 原论文及官方源码核实（见参考）"
+    },
+    {
+      "id": "rag-0048",
+      "title": "俄罗斯套娃嵌入（Matryoshka Embeddings, MRL）与二值量化（Binary Quantization）是如何协同实现百倍检索内存压缩与两阶段漏斗加速的？",
+      "category": "rag",
+      "tags": [
+        "matryoshka",
+        "mrl",
+        "binary-quantization",
+        "embedding",
+        "rescoring",
+        "vector-search"
+      ],
+      "difficulty": "medium",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开 Hugging Face 嵌入技术指南与 RAG 系统面试题扩展改编；MRL 原论文（NeurIPS 2022）与 Sentence Transformers 源码核实（见参考）",
+      "file": "rag-0048-matryoshka-binary-quantization-funnel.md",
+      "language": "zh",
+      "category_label": "检索增强生成",
+      "updated": "2026-11-04",
+      "answers_count": 1
     }
   ]
 }

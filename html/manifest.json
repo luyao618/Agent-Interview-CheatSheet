@@ -2113,6 +2113,17 @@
       "missing_followup_answers": 0,
       "code_blocks": 1,
       "images": 0
+    },
+    {
+      "id": "rag-0048",
+      "file": "rag-0048-matryoshka-binary-quantization-funnel.html",
+      "source": "questions/rag-0048-matryoshka-binary-quantization-funnel.md",
+      "source_sha256": "643712bd5b7962f3d8eafe6ed42853fd5c39378743e721383d61c160bcd2bf80",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
     }
   ]
 }
