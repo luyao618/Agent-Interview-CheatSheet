@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：193** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：194** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -43,7 +43,7 @@
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
-| 🧠 大模型基础与原理 | 23 | [查看 ↓](#-大模型基础与原理) |
+| 🧠 大模型基础与原理 | 24 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 45 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 44 | [查看 ↓](#-工程化部署性能成本) |
@@ -53,7 +53,7 @@
 
 ## 🧠 大模型基础与原理
 
-<sub>分类 ID：`llm` ｜ 共 23 题</sub>
+<sub>分类 ID：`llm` ｜ 共 24 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -80,6 +80,7 @@
 | 21 | [DPO 如何直接学习回答偏好，与 PPO 式 RLHF 的训练流程和适用边界有何不同？](questions/llm-0021-dpo-vs-ppo-preference-optimization.md) | 🟡 进阶 |
 | 22 | [约束解码（Constrained Decoding）是如何用有限状态机与下推自动机在解码期实现 100% 语法合法的，XGrammar 与 Outlines 如何消除词表掩码扫描开销？](questions/llm-0031-constrained-decoding-fsm-pda-xgrammar.md) | 🔴 困难 |
 | 23 | [掩码扩散语言模型（Masked Diffusion LLM）是如何通过双向迭代去噪并行生成文本的，Block Diffusion 与 Fast-dLLM 如何解决 KV Cache 复用与并行解码联合分布失配？](questions/llm-0032-diffusion-llm-masked-block-kv-cache.md) | 🔴 困难 |
+| 24 | [超长上下文序列并行（Sequence Parallelism）中，Ring Attention 与 DeepSpeed-Ulysses 是如何切分注意力计算的，为什么需要 Zigzag 负载均衡与 2D 混合并行（USP）？](questions/llm-0033-ring-attention-ulysses-sequence-parallelism.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 
