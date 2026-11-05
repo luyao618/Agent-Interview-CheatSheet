@@ -4314,6 +4314,29 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-11-05",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0034",
+      "title": "多头潜在注意力（MLA, Multi-head Latent Attention）是如何通过低秩联合压缩、解耦 RoPE 与矩阵吸收（Matrix Absorption）大幅削减 KV Cache 并重塑推理算术强度的？",
+      "category": "llm",
+      "tags": [
+        "mla",
+        "multi-head-latent-attention",
+        "deepseek",
+        "decoupled-rope",
+        "matrix-absorption",
+        "kv-cache"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开 AI 系统设计指南与面试题库扩展改编；DeepSeek-V2/V3 原论文、官方推理源码与 FlashMLA 技术报告核实（见参考）",
+      "file": "llm-0034-mla-multi-head-latent-attention-rope-absorption.md",
+      "language": "zh",
+      "category_label": "大模型基础与原理",
+      "updated": "2026-11-06",
+      "answers_count": 1
     }
   ]
 }
