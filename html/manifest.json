@@ -1477,6 +1477,17 @@
       "images": 0
     },
     {
+      "id": "llm-0034",
+      "file": "llm-0034-mla-multi-head-latent-attention-rope-absorption.html",
+      "source": "questions/llm-0034-mla-multi-head-latent-attention-rope-absorption.md",
+      "source_sha256": "e43a52674f7e7b96ad085bf0a8a617de857907430f389dad7f2be476cb88b5ae",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
