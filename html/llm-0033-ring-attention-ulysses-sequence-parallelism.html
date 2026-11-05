@@ -1,0 +1,852 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。超长上下文序列并行（Sequence Parallelism）中，Ring Attention 与 DeepSpeed-Ulysses 是如何切分注意力计算的，为什么需要 Zigzag 负载均衡与 2D 混合并行（USP）？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0033-ring-attention-ulysses-sequence-parallelism.md">
+  <meta name="source-sha256" content="071abb9441a24145eec48e0990dfc0c858744c6a660bf9551ea81378f2d4ec2a">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>超长上下文序列并行（Sequence Parallelism）中，Ring Attention 与 DeepSpeed-Ulysses 是如何切分注意力计算的，为什么需要 Zigzag 负载均衡与 2D 混合并行（USP）？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0033</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title">超长上下文序列并行（Sequence Parallelism）中，Ring Attention 与 DeepSpeed-Ulysses 是如何切分注意力计算的，为什么需要 Zigzag 负载均衡与 2D 混合并行（USP）？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>当大语言模型（LLM）的训练或预填充（Prefill）上下文长度从 $8\text{K}$ 扩展到 $128\text{K} \sim 1\text{M}$ Token 时，即便使用 FlashAttention 消除了 $O(L^2)$ 的显存占用，单卡仍会被随序列长度 $L$ 线性增长的激活值（Activations）和 KV 状态撑爆；同时，传统的张量并行（Tensor Parallelism, TP）受限于注意力头数与高频 All-Reduce 通信，无法独立横向扩展到数十张 GPU。为此，工业界引入了专门沿序列维度 $L$ 切分的<strong>序列并行 / 上下文并行（Sequence Parallelism / Context Parallelism）</strong>，其中以 <strong>Ring Attention</strong> 和 <strong>DeepSpeed-Ulysses</strong> 最具代表性。</p>
+<p>请深入剖析以下三个核心问题：</p>
+<ol>
+<li><strong>Ring Attention</strong> 与 <strong>DeepSpeed-Ulysses</strong> 分别在哪个维度上切分注意力计算？Ring Attention 是如何利用环状点对点（P2P）通信与在线对数配分函数（Log-Sum-Exp, LSE）递推实现精确全局 Softmax 的？</li>
+<li>在自回归因果掩码（Causal Mask）下，为什么朴素连续分块的 Ring Attention 会出现严重的<strong>计算空泡与负载失衡</strong>（部分 GPU 算力利用率不足一半）？<strong>Zigzag Ring Attention</strong>（对称折返分块）与 <strong>Striped Attention</strong> 是如何将各卡计算量严格拉平的？</li>
+<li>DeepSpeed-Ulysses 为什么会受到 <strong>GQA/MQA 注意力头数上限</strong> 的硬约束？在跨多机多卡（节点内高带宽 NVLink + 节点间低带宽 RoCE/IB）集群上，<strong>USP（Unified Sequence Parallelism）2D 混合序列并行</strong>是如何结合两者优势突破通信与头数瓶颈的？</li>
+</ol>
+<p>本题由公开面试题/系统设计整理扩展改编，不是已核实的企业真题；不采信脱离具体条件的性能收益承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-11-05</span></p><div class="prose"><p><strong>Ring Attention 与 DeepSpeed-Ulysses 代表了超长序列并行的两种正交切分范式：Ring Attention 始终保持序列维度分片（每卡持有 $L/N$ 个 Token 的全部注意力头），通过 $N-1$ 步环状 P2P 传递 $K, V$ 分块，并借由在线 Log-Sum-Exp（LSE）递推精确合并跨卡注意力输出，其并行度不受注意力头数限制，但因果掩码下连续分块会导致高达 $(2N-1):1$ 的各卡负载失衡，必须依赖 Zigzag 对称分块（每卡持有首尾对称的 $b_r$ 与 $b_{2N-1-r}$ 两个子块）消除计算空泡；DeepSpeed-Ulysses 则在注意力前通过 <code>All-to-All</code> 集合通信将“序列分片、全头完整”重排为“全序列完整、注意力头分片（每卡 $H/N$ 个头）”，单次通信量比 Ring Attention 低 $4\times$ 以上且天然无因果负载不均，但并行度被 GQA 的 KV 头数 $H_{kv}$ 死死卡住。工程落地上，多机集群普遍采用 USP（2D 混合序列并行）：在节点内 NVLink 高带宽域内跑 Ulysses 切分注意力头，在跨节点 RoCE/IB 网络上跑 Zigzag Ring Attention 切分序列块。</strong></p>
+<p>在展开数学推导与通信账本前，建议结合仓内相关题目建立完整知识坐标系：关于因果注意力掩码、GQA/MQA 头分组结构与 RoPE 位置编码的底层机制，请参阅 <a href="llm-0010-causal-attention-architecture.html">llm-0010</a>；关于预填充（Prefill）计算受限与解码（Decode）显存带宽受限及 KV Cache 显存公式，请参阅 <a href="llm-0018-kv-cache-prefill-decode.html">llm-0018</a>；关于分布式训练/推理的显存预算拆解，请参阅 <a href="llm-0016-quantization-local-memory-budget.html">llm-0016</a>。</p>
+<hr />
+<h3 id="1-ring-attention-与-deepspeed-ulysses-的切分范式及在线-lse-递推">1. Ring Attention 与 DeepSpeed-Ulysses 的切分范式及在线 LSE 递推</h3>
+<p>设输入序列长度为 $L$，隐藏层维度为 $d = H_q \cdot d_h$（$H_q$ 为 Query 头数，$H_{kv}$ 为 KV 头数，$d_h$ 为单头维度），序列并行组共有 $N$ 张 GPU，每张 GPU 初始均持有长度为 $C = L/N$ 的本地序列分片 $X_r \in \mathbb{R}^{C \times d}$（$r \in {0, 1, \dots, N-1}$）。</p>
+<h4 id="1两种切分范式的核心对比">（1）两种切分范式的核心对比</h4>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align:left">对比维度</th>
+<th style="text-align:left">Megatron-SP（传统序列并行）</th>
+<th style="text-align:left">Ring Attention（环状注意力）</th>
+<th style="text-align:left">DeepSpeed-Ulysses（全对全头切分）</th>
+<th style="text-align:left">USP（2D 混合序列并行）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Attention 期间张量切分</strong></td>
+<td style="text-align:left">仅 LayerNorm / Dropout 切序列；Attention 靠 TP 切头，<strong>序列不切分</strong></td>
+<td style="text-align:left"><strong>保持序列分片</strong> $(C, H, d_h)$，全部头驻留本地</td>
+<td style="text-align:left"><code>All-to-All</code> 转置为<strong>全序列、头分片</strong> $(L, H/N, d_h)$</td>
+<td style="text-align:left">2D 网格 $(N_u \times N_r)$：序列长 $L/N_r$，头数 $H/N_u$</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>核心通信原语</strong></td>
+<td style="text-align:left"><code>All-Gather</code> + <code>Reduce-Scatter</code></td>
+<td style="text-align:left">环状异步 P2P <code>Send/Recv</code> $(K_j, V_j)$</td>
+<td style="text-align:left">前后各 1 次 <code>All-to-All</code>（共 2 次，反向 4 次）</td>
+<td style="text-align:left">节点内 <code>All-to-All</code> + 节点间 P2P Ring</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>前向单卡通信量（MHA，$H_q=H_{kv}$）</strong></td>
+<td style="text-align:left">$2 L d$（随 TP 组广播全序列）</td>
+<td style="text-align:left">$2 \frac{N-1}{N} L d \approx 2 L d$（传递 $K, V$）</td>
+<td style="text-align:left">$4 \frac{N-1}{N} \frac{L d}{N} \approx \frac{4 L d}{N}$（随 $N$ 增大反而下降）</td>
+<td style="text-align:left">节点间仅 $\frac{2(N_r-1)Ld}{N_r N_u}$，跨机流量锐减 $N_u$ 倍</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>最大并行度上限</strong></td>
+<td style="text-align:left">$N \le H_{kv}$</td>
+<td style="text-align:left"><strong>无头数限制</strong>（仅受最小分块长度 $C$ 限制）</td>
+<td style="text-align:left"><strong>$N \le H_{kv}$</strong>（超出会迫使 KV 头跨卡冗余复制）</td>
+<td style="text-align:left"><strong>$N \le H_{kv} \times (L / C_{\min})$</strong>，彻底解耦头数限制</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>因果掩码负载均衡</strong></td>
+<td style="text-align:left">天然均衡</td>
+<td style="text-align:left"><strong>连续分块严重失衡</strong>，需配合 Zigzag / Striped</td>
+<td style="text-align:left">天然均衡（每卡独立算完整序列的 $H/N$ 个头）</td>
+<td style="text-align:left">依靠内层 Zigzag Ring 保持严格均衡</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="2ring-attention-的在线-log-sum-explse无溢出合并公式">（2）Ring Attention 的在线 Log-Sum-Exp（LSE）无溢出合并公式</h4>
+<p>在 Ring Attention 中，第 $r$ 张卡固定持有本地 Query 块 $Q_r \in \mathbb{R}^{C \times d_h}$。在 $N$ 个时间步中，各卡一边计算当前持有的 $(K_j, V_j)$ 分块对 $Q_r$ 的局部注意力，一边通过非阻塞 P2P 通信向下一张卡 <code>(r + 1) % N</code> 发送当前 $(K_j, V_j)$，并从上一张卡 <code>(r - 1) % N</code> 接收下一块。</p>
+<p>只要单块计算时间 $T_{\text{comp}}(C^2 d) \ge T_{\text{comm}}(2 C d)$，即分块长度满足：</p>
+<p>$$C = \frac{L}{N} \ge \frac{\text{显卡算力 (FLOPS)}}{\text{互联带宽 (Bytes/s)}} \times \text{数据类型字节数}$$</p>
+<p>通信耗时会完全隐藏在 FlashAttention 计算背后。</p>
+<p>为了在不保存全序列注意力矩阵的前提下精确合并第 $j$ 个分块的局部输出 $\tilde{O}^{(j)} \in \mathbb{R}^{C \times d_h}$ 与局部对数配分函数（Log-Sum-Exp）：</p>
+<p>$$l^{(j)} = \operatorname{LSE}\left(\frac{Q_r K_j^\top}{\sqrt{d_h}}\right) = m^{(j)} + \log \sum_{t=1}^{C} \exp\left(S_{r,j}[:, t] - m^{(j)}\right)$$</p>
+<p>主干工业实现（如 <code>zhuzilin/ring-flash-attention</code>）不分别维护 $(m, \sum \exp)$ 两个状态，而是仅维护累积输出 $O$ 与累积对数配分函数 $l$，利用 Sigmoid 函数 $\sigma(x) = \frac{1}{1 + e^{-x}}$ 与 $\operatorname{logsigmoid}(x) = -\log(1 + e^{-x})$ 执行无指数溢出的增量更新：</p>
+<p>$$l_{\text{new}} = \log\left(e^{l} + e^{l^{(j)}}\right) = l - \operatorname{logsigmoid}\left(l - l^{(j)}\right)$$</p>
+<p>$$O_{\text{new}} = \frac{e^{l} O + e^{l^{(j)}} \tilde{O}^{(j)}}{e^{l} + e^{l^{(j)}}} = O - \sigma\left(l^{(j)} - l\right) \odot \left(O - \tilde{O}^{(j)}\right)$$</p>
+<p>这一递推式在数学上与单卡全序列 Softmax 完全等价（浮点误差在 $10^{-16}$ 量级），且全程只需驻留大小为 $O(C \times d)$ 的状态张量。</p>
+<hr />
+<h3 id="2-因果掩码下的计算空泡与-zigzag--striped-负载均衡">2. 因果掩码下的计算空泡与 Zigzag / Striped 负载均衡</h3>
+<p>在自回归训练与 Prefill 阶段，注意力矩阵受下三角因果掩码（$p_k \le p_q$）约束，全局有一半的元素被掩码跳过。如果直接按连续区间将序列切分为 $N$ 个块 $b_0, b_1, \dots, b_{N-1}$（Rank $r$ 持有 $b_r$），会导致灾难性的<strong>木桶效应</strong>：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">朴素连续分块 (N=4, 每块长度 C=L/4):
+           K_b0   K_b1   K_b2   K_b3
+Rank 0(b0) [ ◢ ]  [ 0 ]  [ 0 ]  [ 0 ]   --&gt; 仅算 1 个下三角块 (有效工作量 0.5 C^2)
+Rank 1(b1) [ █ ]  [ ◢ ]  [ 0 ]  [ 0 ]   --&gt; 算 1 个满块 + 1 个三角块 (1.5 C^2)
+Rank 2(b2) [ █ ]  [ █ ]  [ ◢ ]  [ 0 ]   --&gt; 算 2 个满块 + 1 个三角块 (2.5 C^2)
+Rank 3(b3) [ █ ]  [ █ ]  [ █ ]  [ ◢ ]   --&gt; 算 3 个满块 + 1 个三角块 (3.5 C^2)
+(注: █ 表示无掩码满块计算 C^2, ◢ 表示因果下三角块 C^2/2, 0 表示全掩码空泡)
+</code></pre>
+<p>可以看到：</p>
+<ul>
+<li>在第 $s \in {1, \dots, N-1}$ 步环状迭代中，所有满足 $j &gt; r$ 的 $(Q_r, K_j)$ 分块对完全落在上三角掩码区，无需任何计算（计算空泡）。</li>
+<li>Rank $N-1$ 的总有效计算量是 $(N - 0.5) C^2$，而 Rank $0$ 只有 $0.5 C^2$，<strong>最大与最小负载比高达 $(2N-1):1$</strong>！由于每一步环状通信都需要全体 GPU 同步，所有显卡每一轮都必须干等最慢的 Rank $N-1$ 算完，整个集群在 Attention 层的理论最高算力利用率被锁死在 $\frac{N+1}{2N} \approx 50%$。</li>
+</ul>
+<h4 id="1zigzag-ring-attention对称折返分块">（1）Zigzag Ring Attention（对称折返分块）</h4>
+<p>为了彻底消灭空泡，<strong>Zigzag Ring Attention</strong> 将序列均匀切分为 <strong>$2N$ 个子块</strong> $b_0, b_1, \dots, b_{2N-1}$（每个子块长度为 $c = \frac{L}{2N}$），并按<strong>首尾中心对称</strong>规则分配给各张显卡：</p>
+<p>$$\text{Rank } r \text{ 持有子块对：}\left(b_r,; b_{2N - 1 - r}\right), \quad r \in {0, 1, \dots, N-1}$$</p>
+<p>例如当 $N=4$ 时（共 $8$ 个子块 $b_0 \dots b_7$）：</p>
+<ul>
+<li>Rank 0 持有 $(b_0, b_7)$，Rank 1 持有 $(b_1, b_6)$，Rank 2 持有 $(b_2, b_5)$，Rank 3 持有 $(b_3, b_4)$。</li>
+</ul>
+<p>在 $N$ 步环状迭代的第 $s$ 步中，Rank $r$ 接收到来自 Rank $j = (r - s) \bmod N$ 的 KV 子块对 $(K_{j,0}, K_{j,1}) = (b_j, b_{2N-1-j})$，其位置关系严格分为三种对称情形：</p>
+<ol>
+<li><strong>当 $s = 0$（即 $j = r$，本地步）</strong>：本地 Query $(b_r, b_{2N-1-r})$ 与本地 KV $(b_r, b_{2N-1-r})$ 的下标完全对齐，直接调用一次因果掩码 FlashAttention（内部包含 $b_r \times b_r$、$b_{2N-1-r} \times b_{2N-1-r}$ 两个三角块，以及 $b_{2N-1-r} \times b_r$ 一个完整块，有效计算面积为 $2 c^2 + c \text{ 项对角线}$）。</li>
+<li><strong>当 $1 \le s \le r$（即 $j &lt; r$）</strong>：此时 Rank $r$ 的两个 Query 子块索引满足 $r &gt; j$ 且 $2N - 1 - r &gt; j$，但 $r &lt; 2N - 1 - j$。因此，<strong>全部本地 Query $(b_r, b_{2N-1-r})$ 的位置都严格大于前半个 KV 子块 $b_j$</strong>，而与后半个 KV 子块 $b_{2N-1-j}$ 完全无交集。故让全部本地 Query（长度 $2c$）与 $K_{j,0}$（长度 $c$）做一次<strong>无掩码全注意力（<code>causal=False</code>）</strong>，有效计算面积恒为 $2 c^2$。</li>
+<li><strong>当 $s &gt; r$（即 $j &gt; r$）</strong>：此时 Rank $r$ 的前半个 Query $b_r$ 位置小于 $(b_j, b_{2N-1-j})$，全被掩码；而<strong>后半个 Query $b_{2N-1-r}$ 的位置严格大于全部两个 KV 子块 $(b_j, b_{2N-1-j})$</strong>（因为 $2N-1-r &gt; 2N-1-j &gt; j$）。故仅取后半个 Query $Q_{r,1}$（长度 $c$）与完整 KV 对（长度 $2c$）做一次<strong>无掩码全注意力（<code>causal=False</code>）</strong>，有效计算面积同样恒为 $2 c^2$！</li>
+</ol>
+<p><strong>结论</strong>：在每一步 $s$ 中，<strong>每一张显卡的计算面积都严格相等</strong>（本地步均为 $2c^2$，其余 $N-1$ 个外环步也均为 $2c^2$，且全部走满块 <code>causal=False</code> 高效无分支内核），各卡负载比恒为 <strong>$1.00\times$</strong>！</p>
+<h4 id="2striped-attention-与-zigzag-的工程取舍">（2）Striped Attention 与 Zigzag 的工程取舍</h4>
+<ul>
+<li><strong>Striped Attention（条纹切分）</strong>：将第 $i$ 个 Token 分配给 Rank $(i \bmod N)$（即步长为 $N$ 的交错采样）。虽然也能在统计上拉平因果负载，但在变长序列拼接（Varlen / Sample Packing）场景下会打碎连续内存布局，且当子块粒度为 1 时无法直接利用 FlashAttention 的连续分块访存优势。</li>
+<li><strong>Zigzag Ring Attention</strong>：每个子块 $b_r$ 内部依然是长度为 $\frac{L}{2N}$ 的连续 Token 区间，只需在 DataLoader 喂入模型前（以及 Position IDs / RoPE 索引处）按 $[b_r, b_{2N-1-r}]$ 重排即可直接复用原版 FlashAttention 内核，因此成为 Megatron-LM Context Parallelism 与 <code>ring-flash-attention</code> 的工业界默认方案。</li>
+</ul>
+<hr />
+<h3 id="3-deepspeed-ulysses-的-gqa-头数瓶颈与-usp-2d-混合序列并行">3. DeepSpeed-Ulysses 的 GQA 头数瓶颈与 USP 2D 混合序列并行</h3>
+<h4 id="1为什么-deepspeed-ulysses-受制于-n-le-h_kv">（1）为什么 DeepSpeed-Ulysses 受制于 $N \le H_{kv}$？</h4>
+<p>DeepSpeed-Ulysses 的核心思想是：在进入 FlashAttention 前，对分片的 $Q, K, V \in \mathbb{R}^{(L/N) \times H \times d_h}$ 执行一次跨 $N$ 卡的 <code>All-to-All</code> 集合通信，将其重排为 $\mathbb{R}^{L \times (H/N) \times d_h}$；算完本地完整序列的 $H/N$ 个注意力头后，再通过一次 <code>All-to-All</code> 还原为 $\mathbb{R}^{(L/N) \times H \times d_h}$。</p>
+<ul>
+<li><strong>通信优势</strong>：单卡前向只需发送/接收 $Q, K, V, O$ 四个张量，总通信量为 $4 \frac{N-1}{N} \frac{L d}{N} \approx \frac{4 L d}{N}$，比 Ring Attention 的 $2 L d$ 小了整整 <strong>$N/2$ 倍</strong>。</li>
+<li><strong>GQA/MQA 硬上限</strong>：现代主流大模型普遍采用分组查询注意力（GQA，例如 Llama-3-8B/70B 的 KV 头数仅为 $H_{kv} = 8$，Qwen2.5-7B 甚至只有 $H_{kv} = 4$）。当序列并行度 $N &gt; H_{kv}$（例如用 $N = 64$ 张卡训 $1\text{M}$ 长文本）时，$H_{kv} = 8$ 个 KV 头根本不够分给 $64$ 张卡！此时若强行使用纯 Ulysses，必须在 <code>All-to-All</code> 阶段将每个 KV 头冗余复制 $N / H_{kv} = 8$ 份，导致 KV 通信量与显存开销随并行度线性反弹。</li>
+</ul>
+<h4 id="2uspunified-sequence-parallelism2d-混合拓扑">（2）USP（Unified Sequence Parallelism）2D 混合拓扑</h4>
+<p><strong>USP（arXiv:2405.07719，开源库 <code>feifeibear/long-context-attention</code> 及 NVIDIA TransformerEngine <code>AttnFuncWithCPAndKVP2P</code>）</strong> 将 $N$ 张 GPU 组织为 $N_{\text{ulysses}} \times N_{\text{ring}}$ 的二维正交进程组：</p>
+<ol>
+<li><strong>内层（节点内 NVLink 域，规模 $N_u \le H_{kv}$）</strong>：例如单机 8 卡 H100/A800 内部设置 $N_u = 8$，正好匹配 $H_{kv} = 8$，利用高达 $400 \sim 900\text{ GB/s}$ 的 NVLink 全互联带宽执行 <code>All-to-All</code> 头切分。此时每张卡只需负责 $H_q / N_u$ 个 Query 头和 $H_{kv} / N_u = 1$ 个 KV 头，序列维度在节点内汇聚为 $L / N_r$。</li>
+<li><strong>外层（跨节点 RoCE / InfiniBand 域，规模 $N_r = N / N_u$）</strong>：在跨机网络上组成长度为 $N_r$ 的环，按 <strong>Zigzag Ring Attention</strong> 传递经过内层 Ulysses 切头后的 $K, V$ 子块。由于每张卡在环上传输的 KV 仅包含 $H_{kv} / N_u$ 个头（隐藏维度缩小了 $N_u$ 倍），<strong>跨机 P2P 通信流量直接锐减为纯 Ring Attention 的 $\frac{1}{N_u}$</strong>，轻松被计算完全掩盖！</li>
+</ol>
+<hr />
+<h3 id="4-python-3-标准库实现在线-lse-递推zigzag-负载均衡与-usp-通信账本核验">4. Python 3 标准库实现：在线 LSE 递推、Zigzag 负载均衡与 USP 通信账本核验</h3>
+<p>下面的零依赖 Python 3 标准库代码完整复现了：</p>
+<ol>
+<li><code>ring-flash-attention</code> 的 <code>sigmoid / logsigmoid</code> 在线 LSE 增量合并算子；</li>
+<li>朴素连续分块 Ring Attention 与 Zigzag Ring Attention 在 $N=4$ 卡因果掩码下的逐卡有效交互对统计及与单卡全序列真值的数值等价性校验；</li>
+<li>64 卡集群（$L=128\text{K}, H_{kv}=8$）下纯 Ring Attention 与 USP $(8 \times 8)$ 跨节点通信流量的定量对比。</li>
+</ol>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+from typing import Dict, List, Tuple
+
+
+def sigmoid(x: float) -&gt; float:
+    return 1.0 / (1.0 + math.exp(-x))
+
+
+def logsigmoid(x: float) -&gt; float:
+    # log(1 / (1 + exp(-x))) = -log(1 + exp(-x))
+    return -math.log1p(math.exp(-x)) if x &gt;= 0 else x - math.log1p(math.exp(x))
+
+
+def flash_block_forward(
+    q_rows: List[List[float]],
+    q_pos: List[int],
+    k_rows: List[List[float]],
+    k_pos: List[int],
+    v_rows: List[List[float]],
+    scale: float,
+    causal: bool,
+) -&gt; Tuple[List[List[float]], List[float], int]:
+    &quot;&quot;&quot;
+    计算单个分块 (Q_sub, K_sub, V_sub) 的局部注意力输出 block_out 与对数配分函数 block_lse (log-sum-exp)，
+    并统计有效 (未掩码) 的 (q, k) 交互对数量。
+    &quot;&quot;&quot;
+    d = len(q_rows[0])
+    block_out: List[List[float]] = []
+    block_lse: List[float] = []
+    valid_pairs = 0
+
+    for qi, p_q in zip(q_rows, q_pos):
+        scores: List[float] = []
+        valid_vs: List[List[float]] = []
+        for kj, vj, p_k in zip(k_rows, v_rows, k_pos):
+            if causal and p_k &gt; p_q:
+                continue
+            valid_pairs += 1
+            dot = sum(qi[idx] * kj[idx] for idx in range(d)) * scale
+            scores.append(dot)
+            valid_vs.append(vj)
+
+        assert len(scores) &gt; 0, &quot;Block invoked with all positions masked&quot;
+        m = max(scores)
+        exps = [math.exp(s - m) for s in scores]
+        denom = sum(exps)
+        lse_val = m + math.log(denom)
+        out_row = [
+            sum(exps[t] * valid_vs[t][idx] for t in range(len(scores))) / denom
+            for idx in range(d)
+        ]
+        block_out.append(out_row)
+        block_lse.append(lse_val)
+
+    return block_out, block_lse, valid_pairs
+
+
+def update_out_and_lse(
+    out: List[List[float]],
+    lse: List[float],
+    block_out: List[List[float]],
+    block_lse: List[float],
+    row_indices: List[int],
+) -&gt; None:
+    &quot;&quot;&quot;
+    复现 ring-flash-attention (zhuzilin) 的无溢出增量合并公式:
+    out_new = out - sigmoid(block_lse - lse) * (out - block_out)
+    lse_new = lse - logsigmoid(lse - block_lse)
+    &quot;&quot;&quot;
+    d = len(block_out[0])
+    for local_i, target_i in enumerate(row_indices):
+        if math.isinf(lse[target_i]):
+            out[target_i] = list(block_out[local_i])
+            lse[target_i] = block_lse[local_i]
+        else:
+            w = sigmoid(block_lse[local_i] - lse[target_i])
+            out[target_i] = [
+                out[target_i][idx] - w * (out[target_i][idx] - block_out[local_i][idx])
+                for idx in range(d)
+            ]
+            lse[target_i] = lse[target_i] - logsigmoid(lse[target_i] - block_lse[local_i])
+
+
+def simulate_naive_vs_zigzag_ring(
+    Q: List[List[float]], K: List[List[float]], V: List[List[float]], num_gpus: int
+) -&gt; Dict[str, object]:
+    seq_len = len(Q)
+    d = len(Q[0])
+    scale = 1.0 / math.sqrt(d)
+    positions = list(range(seq_len))
+
+    # 1. 单卡全量因果注意力参考真值
+    ref_out, ref_lse, total_valid = flash_block_forward(
+        Q, positions, K, positions, V, scale, causal=True
+    )
+
+    # 2. 朴素连续分块 Ring Attention: Rank r 持有连续块 [r*C : (r+1)*C]
+    chunk_size = seq_len // num_gpus
+    naive_rank_loads = [0] * num_gpus
+    for step in range(num_gpus):
+        for r in range(num_gpus):
+            kv_r = (r - step) % num_gpus
+            if kv_r &lt;= r:  # 仅当 KV 块索引 &lt;= Q 块索引时才存在非空因果交互
+                q_pos = positions[r * chunk_size : (r + 1) * chunk_size]
+                k_pos = positions[kv_r * chunk_size : (kv_r + 1) * chunk_size]
+                _, _, pairs = flash_block_forward(
+                    Q[r * chunk_size : (r + 1) * chunk_size],
+                    q_pos,
+                    K[kv_r * chunk_size : (kv_r + 1) * chunk_size],
+                    k_pos,
+                    V[kv_r * chunk_size : (kv_r + 1) * chunk_size],
+                    scale,
+                    causal=(step == 0),
+                )
+                naive_rank_loads[r] += pairs
+
+    # 3. Zigzag Ring Attention: 切分为 2*N 个子块，Rank r 持有对称块 (b_r, b_{2N-1-r})
+    sub_len = seq_len // (2 * num_gpus)
+    zigzag_rank_loads = [0] * num_gpus
+    zigzag_out = [[0.0] * d for _ in range(seq_len)]
+
+    for r in range(num_gpus):
+        idx0 = list(range(r * sub_len, (r + 1) * sub_len))
+        idx1 = list(range((2 * num_gpus - 1 - r) * sub_len, (2 * num_gpus - r) * sub_len))
+        q_idx = idx0 + idx1
+        q_local = [Q[i] for i in q_idx]
+        q1_local = [Q[i] for i in idx1]
+
+        out_r = [[0.0] * d for _ in range(len(q_idx))]
+        lse_r = [-math.inf] * len(q_idx)
+
+        for step in range(num_gpus):
+            kv_r = (r - step) % num_gpus
+            kv_idx0 = list(range(kv_r * sub_len, (kv_r + 1) * sub_len))
+            kv_idx1 = list(range((2 * num_gpus - 1 - kv_r) * sub_len, (2 * num_gpus - kv_r) * sub_len))
+            kv_idx = kv_idx0 + kv_idx1
+
+            if step == 0:
+                # 全部 (q0, q1) 对本地 (k0, k1) 做因果注意力
+                b_out, b_lse, pairs = flash_block_forward(
+                    q_local, q_idx, [K[i] for i in kv_idx], kv_idx, [V[i] for i in kv_idx], scale, causal=True
+                )
+                update_out_and_lse(out_r, lse_r, b_out, b_lse, list(range(len(q_idx))))
+            elif step &lt;= r:
+                # kv_r &lt; r: (q0, q1) 的位置均严格大于 k0，故全部 q_local 对 k0 做无掩码全注意力
+                b_out, b_lse, pairs = flash_block_forward(
+                    q_local, q_idx, [K[i] for i in kv_idx0], kv_idx0, [V[i] for i in kv_idx0], scale, causal=False
+                )
+                update_out_and_lse(out_r, lse_r, b_out, b_lse, list(range(len(q_idx))))
+            else:
+                # kv_r &gt; r: 仅后半块 q1 的位置严格大于 (k0, k1)，故仅 q1 对完整 (k0, k1) 做无掩码全注意力
+                b_out, b_lse, pairs = flash_block_forward(
+                    q1_local, idx1, [K[i] for i in kv_idx], kv_idx, [V[i] for i in kv_idx], scale, causal=False
+                )
+                update_out_and_lse(out_r, lse_r, b_out, b_lse, list(range(sub_len, 2 * sub_len)))
+
+            zigzag_rank_loads[r] += pairs
+
+        for local_i, global_i in enumerate(q_idx):
+            zigzag_out[global_i] = out_r[local_i]
+
+    max_err = max(
+        abs(ref_out[i][j] - zigzag_out[i][j])
+        for i in range(seq_len)
+        for j in range(d)
+    )
+    return {
+        &quot;total_valid&quot;: total_valid,
+        &quot;naive_loads&quot;: naive_rank_loads,
+        &quot;zigzag_loads&quot;: zigzag_rank_loads,
+        &quot;max_err&quot;: max_err,
+    }
+
+
+# 构造长度为 L=16、维度 d=4、GPU 数 N=4 的测试序列
+Q_test = [[math.sin(i * 0.7 + j * 0.3) for j in range(4)] for i in range(16)]
+K_test = [[math.cos(i * 0.5 - j * 0.2) for j in range(4)] for i in range(16)]
+V_test = [[(i + 1) * 0.1 + j * 0.05 for j in range(4)] for i in range(16)]
+
+stats = simulate_naive_vs_zigzag_ring(Q_test, K_test, V_test, num_gpus=4)
+
+# 1. 验证朴素连续分块存在严重负载不均，而 Zigzag 各卡负载完全相等!
+assert stats[&quot;naive_loads&quot;] == [10, 26, 42, 58]
+assert stats[&quot;zigzag_loads&quot;] == [34, 34, 34, 34]
+assert sum(stats[&quot;zigzag_loads&quot;]) == stats[&quot;total_valid&quot;] == 136
+assert stats[&quot;max_err&quot;] &lt; 1e-12
+
+# 2. 验证 2D 混合序列并行 (USP) 通信量与 GQA 头数约束:
+# 设总卡数 N=64, 序列长 L=131072, d=4096, GQA KV 头数 H_kv=8, bf16 (2 Bytes)
+L, d, N, H_kv, b_bytes = 131072, 4096, 64, 8, 2
+# 纯 Ulysses 要求 N &lt;= H_kv，在 N=64 &gt; H_kv=8 时不满足免复制切分条件;
+# USP 取 N_ulysses=8 (节点内 NVLink) x N_ring=8 (跨节点 RoCE)
+N_u, N_r = 8, 8
+assert N_u &lt;= H_kv and N_u * N_r == N
+pure_ring_comm_mb = 2 * (N - 1) * (L // N) * d * b_bytes / (1024 * 1024)
+usp_inter_node_ring_mb = 2 * (N_r - 1) * (L // N) * (d // N_u) * b_bytes / (1024 * 1024)
+assert usp_inter_node_ring_mb &lt; pure_ring_comm_mb / 60
+
+print(f&quot;Naive Ring valid (q,k) pairs per GPU:  {stats[&#x27;naive_loads&#x27;]} (max/min={58/10:.2f}x)&quot;)
+print(f&quot;Zigzag Ring valid (q,k) pairs per GPU: {stats[&#x27;zigzag_loads&#x27;]} (max/min=1.00x)&quot;)
+print(f&quot;Zigzag vs Single-GPU Reference max abs error: {stats[&#x27;max_err&#x27;]:.2e}&quot;)
+print(f&quot;Inter-node P2P KV volume per GPU: Pure Ring(N=64)={pure_ring_comm_mb:.1f} MiB vs USP(8x8)={usp_inter_node_ring_mb:.1f} MiB&quot;)
+print(&quot;Ring Attention online LSE merge, Zigzag load balance, and USP checks passed&quot;)
+</code></pre>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">Naive Ring valid (q,k) pairs per GPU:  [10, 26, 42, 58] (max/min=5.80x)
+Zigzag Ring valid (q,k) pairs per GPU: [34, 34, 34, 34] (max/min=1.00x)
+Zigzag vs Single-GPU Reference max abs error: 2.22e-16
+Inter-node P2P KV volume per GPU: Pure Ring(N=64)=2016.0 MiB vs USP(8x8)=28.0 MiB
+Ring Attention online LSE merge, Zigzag load balance, and USP checks passed
+</code></pre>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“Megatron-LM 传统的 Sequence Parallelism（SP）已经能把超长上下文的 Attention 切到多卡上了。”</strong>
+事实：Megatron 早期提出的传统 SP（Korthikanti et al., 2022）<strong>只在 LayerNorm、Dropout 和残差连接处沿序列维度切分激活值</strong>；一进入 Self-Attention 和 MLP 层，它就通过 <code>All-Gather</code> 把全长序列拼回来了，Attention 内部依然依赖 Tensor Parallelism（TP）切头。只有 Ring Attention、DeepSpeed-Ulysses 和 Megatron Context Parallelism（CP）才真正把 Attention 内部的序列长度 $L$ 切分到了多卡上。</li>
+<li><strong>误区二：“Ring Attention 既然没有头数限制，在单机 8 卡 NVLink 内也应该无脑用 Ring Attention 代替 DeepSpeed-Ulysses。”</strong>
+事实：Ring Attention 每层需要拆成 $N$ 次小分块 FlashAttention Kernel Launch，不仅增加了内核启动开销、降低了 GPU Tensor Core 饱和度，而且前向通信量（$\approx 2Ld$）在 $N=8$ 时是 Ulysses（$\approx 4Ld/8 = 0.5Ld$）的 <strong>4 倍</strong>。在 $N \le H_{kv}$ 且具备高带宽全互联（如单机 8 卡 NVLink）时，DeepSpeed-Ulysses 的单次全序列大 Kernel + 低通信量吞吐显著优于纯 Ring Attention。</li>
+<li><strong>误区三：“只要把序列分成 $N$ 块做 Ring Attention，因果掩码下通过跳过上三角空块就能把总训练时间缩短一半。”</strong>
+事实：跳过上三角空块只能省掉 Rank $0, 1, \dots, N-2$ 的计算，但 <strong>Rank $N-1$ 在每一步都必须实打实计算完整的非空块</strong>（没有任何一块是全掩码）。因为环状通信每一步都是同步栅栏（Barrier），前 $N-1$ 张卡跳过了计算也只能原地空转等待 Rank $N-1$，如果不改用 Zigzag 或 Striped 分块，端到端耗时一秒都不会减少。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/Infrasys-AI/AIInfra/blob/b97c0385ba07a62a717d82a0e7aed2927f12fc35/05Infer/04LongInfer/02RingAttention.md" target="_blank" rel="noopener noreferrer">Infrasys-AI/AIInfra, 05Infer/04LongInfer/02RingAttention.md</a>（固定 commit <code>b97c0385</code>）与 <a href="https://github.com/zhuzilin/ring-flash-attention/issues/2" target="_blank" rel="noopener noreferrer">zhuzilin/ring-flash-attention Issue #2</a> 及官方实现 <a href="https://github.com/zhuzilin/ring-flash-attention/blob/786677930bce4f6022166899c88ce2c00c814ee2/ring_flash_attn/zigzag_ring_flash_attn.py" target="_blank" rel="noopener noreferrer">zigzag_ring_flash_attn.py</a>（固定 commit <code>78667793</code>）。</li>
+<li>Liu et al., <a href="https://arxiv.org/abs/2310.01889" target="_blank" rel="noopener noreferrer">Ring Attention with Blockwise Transformers for Near-Infinite Context</a>，ICLR 2024：分块环状注意力与通信计算重叠条件。</li>
+<li>Brandon et al., <a href="https://arxiv.org/abs/2311.09431" target="_blank" rel="noopener noreferrer">Striped Attention: Faster Ring Attention for Causal Transformers</a>，2023：因果掩码下连续分块的负载失衡与交错/对称分块优化。</li>
+<li>Jacobs et al., <a href="https://arxiv.org/abs/2309.14509" target="_blank" rel="noopener noreferrer">DeepSpeed Ulysses: System Optimizations for Enabling Training of Extreme Long Sequence Transformer Models</a>，2023：基于 All-to-All 的注意力头切分与通信复杂度分析。</li>
+<li>Fang &amp; Zhao, <a href="https://arxiv.org/abs/2405.07719" target="_blank" rel="noopener noreferrer">USP: A Unified Sequence Parallelism Approach for Long Context Generative AI</a>，2024（开源实现 <a href="https://github.com/feifeibear/long-context-attention/tree/a5f8f600d435ced180a97c91c68e87ff3cfb8f89" target="_blank" rel="noopener noreferrer">feifeibear/long-context-attention</a> commit <code>a5f8f600</code>）：Ulysses + Ring 2D 混合序列并行架构。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-11-05</strong>。仅执行标准库在线 LSE 递推、Zigzag 因果负载均衡与 USP 通信账本数值验证，未运行多机 GPU 集群训练压测。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">在多文档拼接（Sample Packing / Varlen）训练中，一条长序列内部包含多个互不可见的短文档，Zigzag Ring Attention 为什么会再次出现负载失衡？Llama-3 技术报告是如何解决的？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：在多文档拼接（Sample Packing / Varlen）训练中，一条长序列内部包含多个互不可见的短文档，Zigzag Ring Attention 为什么会再次出现负载失衡？Llama-3 技术报告是如何解决的？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>Zigzag Ring Attention 之所以能在单条长文档上严格拉平负载，是因为假设整条序列是一个完整的 $L \times L$ 下三角掩码。当启用 Sample Packing（<code>flash_attn_varlen_func</code>）将多条长短不一的文档拼接成一条 $128\text{K}$ 序列时，注意力掩码变成了<strong>主对角线上若干个大小不一的分块下三角矩阵（Block-Diagonal Causal Mask）</strong>。此时首尾对称位置 $b_r$ 和 $b_{2N-1-r}$ 往往属于完全不同的文档，彼此之间根本没有跨文档注意力交互（全为 0），导致 Zigzag 的负载对称性被破坏。
+Llama-3 与工业界解决方案：</p>
+<ol>
+<li><strong>按文档粒度动态做 Zigzag 切分（Per-Document Zigzag Sharding）</strong>：不按全局序列一刀切，而是将每一条独立文档各自切分为 $2N$ 个对称子块分发到 $N$ 张卡上（<code>ring-flash-attention</code> 中的 <code>zigzag_ring_flash_attn_varlen_func</code>），保证每个文档内部在各卡上的三角计算面积依然严格相等。</li>
+<li><strong>All-Gather KV Context Parallelism（<code>llama3_flash_attn_varlen_func</code>）</strong>：Llama-3 预训练中针对中等规模 CP 组采用了更简洁的策略——每层 Attention 前先按文档掩码需求执行一次异步 <code>All-Gather</code> 收集相关 $K, V$，本地直接跑单次 <code>flash_attn_varlen_func</code>，反向传播再对 <code>dK, dV</code> 执行 <code>Reduce-Scatter</code>。这避免了 $N$ 次 Kernel Launch 开销与复杂的 <code>cu_seqlens</code> 重映射，在短文档密集拼接时算子效率反而更高。</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">Ring Attention 的反向传播（Backward Pass）需要额外保存和传输什么张量？为什么反向传播的通信量是前向的 2 倍？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：Ring Attention 的反向传播（Backward Pass）需要额外保存和传输什么张量？为什么反向传播的通信量是前向的 2 倍？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>在前向传播结束时，每张卡本地只保存了本地分片的输入 $Q_r, K_r, V_r$、最终合并后的输出 $O_r \in \mathbb{R}^{C \times d_h}$ 以及<strong>全局对数配分函数 $l_r \in \mathbb{R}^{C \times 1}$</strong>（绝不保存中间各步的注意力矩阵 $P_{r,j}$）。
+在反向传播时，为了利用 FlashAttention Backward 重计算局部概率 $P_{r,j} = \exp(Q_r K_j^\top / \sqrt{d_h} - l_r)$ 并求得 $\text{d}Q_r, \text{d}K_j, \text{d}V_j$：</p>
+<ol>
+<li>不仅需要像前向一样沿着环传递 $(K_j, V_j)$ 分块，以便每张卡重算 $P_{r,j}$ 并累加本地的 $\text{d}Q_r$；</li>
+<li>同时，因为第 $r$ 张卡算出的梯度贡献 $\text{d}K_j^{(r)}, \text{d}V_j^{(r)}$ 属于第 $j$ 张卡的参数路径，还必须在环上<strong>同步传递并累加梯度分块 $(\text{d}K_j, \text{d}V_j)$</strong>。
+因此，反向传播每一步环状 P2P 需要同时发送 $(K_j, V_j, \text{d}K_j, \text{d}V_j)$ 四个张量，单步通信量是前向传播（仅发送 $K_j, V_j$）的 <strong>2 倍</strong>。</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">在启用 Zigzag Ring Attention 时，旋转位置编码（RoPE）和 DataLoader 需要做怎样的特殊配合？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：在启用 Zigzag Ring Attention 时，旋转位置编码（RoPE）和 DataLoader 需要做怎样的特殊配合？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>因为 Zigzag 将原本连续的序列 $[b_0, b_1, \dots, b_{2N-1}]$ 打乱重组，使 Rank $r$ 持有了非连续的 $[b_r, b_{2N-1-r}]$：</p>
+<ol>
+<li><strong>无通信本地切片</strong>：绝不能在模型每一层都对激活值做跨卡 Shuffle，而是在 <strong>DataLoader 输入层</strong>直接为 Rank $r$ 切片喂入 <code>input_ids</code> 和 <code>labels</code> 的 $[b_r, b_{2N-1-r}]$ 部分。</li>
+<li><strong>RoPE Position IDs 绑定</strong>：由于 Embedding、MLP 和 RMSNorm 都是逐 Token 独立（Token-wise）运算，Token 顺序不影响结果；但在计算 RoPE（旋转位置编码）时，必须传入与 $[b_r, b_{2N-1-r}]$ 真实全局位置严格对应的 <code>position_ids</code>（即 $[r c \dots (r+1)c-1] \cup [(2N-1-r)c \dots (2N-r)c-1]$ 的余弦/正弦表），否则后半块 $b_{2N-1-r}$ 的相对位置距离会错乱。</li>
+</ol>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0033 · 单题笔记</span><a href="../questions/llm-0033-ring-attention-ulysses-sequence-parallelism.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0033", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

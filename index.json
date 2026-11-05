@@ -4291,6 +4291,29 @@
       "category_label": "检索增强生成",
       "updated": "2026-11-04",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0033",
+      "title": "超长上下文序列并行（Sequence Parallelism）中，Ring Attention 与 DeepSpeed-Ulysses 是如何切分注意力计算的，为什么需要 Zigzag 负载均衡与 2D 混合并行（USP）？",
+      "category": "llm",
+      "tags": [
+        "sequence-parallelism",
+        "ring-attention",
+        "deepspeed-ulysses",
+        "context-parallelism",
+        "flash-attention",
+        "long-context"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开 AI 系统设计指南与面试题库扩展改编；Ring Attention、Striped/Zigzag Attention、DeepSpeed-Ulysses、USP 原论文及官方源码核实（见参考）",
+      "file": "llm-0033-ring-attention-ulysses-sequence-parallelism.md",
+      "language": "zh",
+      "category_label": "大模型基础与原理",
+      "updated": "2026-11-05",
+      "answers_count": 1
     }
   ]
 }
