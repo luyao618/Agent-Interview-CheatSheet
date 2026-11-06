@@ -1488,6 +1488,17 @@
       "images": 0
     },
     {
+      "id": "llm-0035",
+      "file": "llm-0035-ptq-gptq-awq-smoothquant.html",
+      "source": "questions/llm-0035-ptq-gptq-awq-smoothquant.md",
+      "source_sha256": "5ff3b7b5a0b08abc65686babd7258cc3538105db553afc0fef6d28bce1f1d899",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",

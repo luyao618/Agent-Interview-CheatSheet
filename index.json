@@ -4337,6 +4337,29 @@
       "category_label": "大模型基础与原理",
       "updated": "2026-11-06",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0035",
+      "title": "大模型训练后量化（PTQ）中，GPTQ、AWQ 与 SmoothQuant 是如何分别通过 Hessian 二阶误差补偿、显著激活通道保护与跨层离群值平滑迁移解决精度崩塌的？",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "ptq",
+        "gptq",
+        "awq",
+        "smoothquant",
+        "quantization",
+        "activation-outlier"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开 AI 量化面试题库与系统设计指南扩展改编；GPTQ（ICLR 2023）、AWQ（MLSys 2024）、SmoothQuant（ICML 2023）原论文及官方源码核实（见参考）",
+      "file": "llm-0035-ptq-gptq-awq-smoothquant.md",
+      "language": "zh",
+      "updated": "2026-11-07",
+      "answers_count": 1
     }
   ]
 }
