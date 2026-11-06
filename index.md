@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：195** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：196** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -43,7 +43,7 @@
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
-| 🧠 大模型基础与原理 | 25 | [查看 ↓](#-大模型基础与原理) |
+| 🧠 大模型基础与原理 | 26 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 45 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 44 | [查看 ↓](#-工程化部署性能成本) |
@@ -53,7 +53,7 @@
 
 ## 🧠 大模型基础与原理
 
-<sub>分类 ID：`llm` ｜ 共 25 题</sub>
+<sub>分类 ID：`llm` ｜ 共 26 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -82,6 +82,7 @@
 | 23 | [掩码扩散语言模型（Masked Diffusion LLM）是如何通过双向迭代去噪并行生成文本的，Block Diffusion 与 Fast-dLLM 如何解决 KV Cache 复用与并行解码联合分布失配？](questions/llm-0032-diffusion-llm-masked-block-kv-cache.md) | 🔴 困难 |
 | 24 | [超长上下文序列并行（Sequence Parallelism）中，Ring Attention 与 DeepSpeed-Ulysses 是如何切分注意力计算的，为什么需要 Zigzag 负载均衡与 2D 混合并行（USP）？](questions/llm-0033-ring-attention-ulysses-sequence-parallelism.md) | 🔴 困难 |
 | 25 | [多头潜在注意力（MLA, Multi-head Latent Attention）是如何通过低秩联合压缩、解耦 RoPE 与矩阵吸收（Matrix Absorption）大幅削减 KV Cache 并重塑推理算术强度的？](questions/llm-0034-mla-multi-head-latent-attention-rope-absorption.md) | 🔴 困难 |
+| 26 | [大模型训练后量化（PTQ）中，GPTQ、AWQ 与 SmoothQuant 是如何分别通过 Hessian 二阶误差补偿、显著激活通道保护与跨层离群值平滑迁移解决精度崩塌的？](questions/llm-0035-ptq-gptq-awq-smoothquant.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 

@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。大模型训练后量化（PTQ）中，GPTQ、AWQ 与 SmoothQuant 是如何分别通过 Hessian 二阶误差补偿、显著激活通道保护与跨层离群值平滑迁移解决精度崩塌的？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0035-ptq-gptq-awq-smoothquant.md">
+  <meta name="source-sha256" content="5ff3b7b5a0b08abc65686babd7258cc3538105db553afc0fef6d28bce1f1d899">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>大模型训练后量化（PTQ）中，GPTQ、AWQ 与 SmoothQuant 是如何分别通过 Hessian 二阶误差补偿、显著激活通道保护与跨层离群值平滑迁移解决精度崩塌的？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0035</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title">大模型训练后量化（PTQ）中，GPTQ、AWQ 与 SmoothQuant 是如何分别通过 Hessian 二阶误差补偿、显著激活通道保护与跨层离群值平滑迁移解决精度崩塌的？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>在将百亿至千亿参数的大语言模型（LLM）压缩部署到生产环境时，最朴素的四舍五入均匀量化（Round-to-Nearest, RTN）一旦降到 4-bit 权重（W4A16）或 8-bit 权重加激活（W8A8），往往会导致困惑度（Perplexity）暴涨甚至输出乱码。工业界主流推理引擎（如 vLLM、SGLang、TensorRT-LLM）广泛采用 <strong>GPTQ</strong>、<strong>AWQ</strong> 与 <strong>SmoothQuant</strong> 三大训练后量化（Post-Training Quantization, PTQ）方案。</p>
+<p>请深入剖析以下三个核心问题：</p>
+<ol>
+<li><strong>为什么 LLM 的训练后量化比传统视觉模型更难，且 W4A16 与 W8A8 面临的瓶颈截然不同</strong>：大模型在参数规模超过约 $6.7\text{B}$ 后涌现出的“系统性激活离群值（Emergent Activation Outliers）”具有怎样的维度分布规律？为什么它对激活量化（W8A8）是致命灾难，同时又使权重不同输入通道的量化误差敏感度产生百倍差异？</li>
+<li><strong>GPTQ、AWQ 与 SmoothQuant 的核心数学机制</strong>：
+<ul>
+<li><strong>GPTQ</strong> 是如何基于最优脑外科医生（OBS）二阶泰勒展开，利用逆 Hessian 矩阵 $H^{-1}$ 的上三角 Cholesky 分解对未量化权重执行逐列（及分块）误差补偿的？</li>
+<li><strong>AWQ</strong> 为什么主张“不靠回传误差修改权重值，而是按激活幅值缩放保护 $1%$ 显著权重通道”？其缩放搜索公式 $s = s_X^\alpha$ 是如何定义的？</li>
+<li><strong>SmoothQuant</strong> 是如何通过対角平滑矩阵 $S = \operatorname{diag}(s_1, \dots, s_K)$ 将激活离群值迁移给权重的？如何将其无开销地融合（Fuse）进上游 <code>LayerNorm</code> / <code>RMSNorm</code>？</li>
+</ul>
+</li>
+<li><strong>工程落地与 Roofline 硬件亲和性选型</strong>：在 Prefill（计算受限）与 Decode（访存带宽受限）两个阶段，W4A16（GPTQ/AWQ）与 W8A8（SmoothQuant/FP8）各自的真实加速收益来自哪里？GPTQ 的 <code>act_order</code>（<code>desc_act</code>）重排为什么能救回极低位宽精度，却可能导致解码吞吐下降？</li>
+</ol>
+<p>本题由公开面试题/系统设计整理扩展改编，不是已核实的企业真题；不采信脱离具体条件的性能收益承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-11-07</span></p><div class="prose"><p><strong>大模型 PTQ 的核心矛盾源于固定通道上的高幅值激活离群值（Activation Outliers，幅值可达常规通道的 $50\times \sim 100\times$）：（1）GPTQ（W4A16）从“输出重构误差二阶补偿”切入，将逐层量化建模为 $\min_{\hat{W}} |XW^\top - X\hat{W}^\top|<em>F^2$，基于 Hessian 矩阵 $H = \frac{2}{B}X^\top X$ 的逆矩阵上三角 Cholesky 因子 $U$，在量化第 $q$ 列权重后按 $\delta</em>{\cdot, j&gt;q} = -\frac{w_q - \operatorname{ quant }(w_q)}{U_{qq}} U_{q, j&gt;q}$ 精确调整右侧未量化权重；（2）AWQ（W4A16）从“显著通道缩放保护”切入，指出乘上大激活的权重通道一旦产生舍入误差就会被成倍放大，故引入等价对角变换 $Y = (X S^{-1})(W S)^\top$，以激活均值幂次 $s_j = (\mathbb{E}|X_{\cdot, j}|)^\alpha$（网格搜索 $\alpha \in [0, 1]$）放大显著权重列以压低其相对量化误差，避免了 GPTQ 对校准集分布的过拟合；（3）SmoothQuant（W8A8）从“激活-权重量化难度平衡”切入，针对激活沿内积维（$K$ 维）无法独立缩放硬伤，用 $s_j = \max(|X_{\cdot, j}|)^\alpha / \max(|W_{\cdot, j}|)^{1-\alpha}$（常取 $\alpha=0.5$）削平激活尖峰并转嫁给易量化的权重，且可将 $S^{-1}$ 静态融合进上游 <code>RMSNorm</code>/<code>LayerNorm</code> 参数，实现零额外运行开销的 INT8 Tensor Core 矩阵乘。</strong></p>
+<p>在展开数学推导与代码实现前，建议结合仓内相关题目建立完整知识坐标系：关于量化后模型显存容量账本、分组元数据开销与 Roofline 带宽上界估算，请参阅 <a href="llm-0016-quantization-local-memory-budget.html">llm-0016</a>；关于预填充（Prefill）计算受限与解码（Decode）访存带宽受限的算力特征，请参阅 <a href="llm-0018-kv-cache-prefill-decode.html">llm-0018</a>；关于量化与知识蒸馏、SFT 微调的维度差异，请参阅 <a href="llm-0015-knowledge-distillation-tradeoffs.html">llm-0015</a>。</p>
+<hr />
+<h3 id="1-为什么-llm-量化极易崩塌系统性激活离群值与内积维度的硬件约束">1. 为什么 LLM 量化极易崩塌？系统性激活离群值与内积维度的硬件约束</h3>
+<h4 id="1系统性激活离群值emergent-outliers的二维不对称分布">（1）系统性激活离群值（Emergent Outliers）的二维不对称分布</h4>
+<p>在参数量达到 $6.7\text{B}$ 以上的 Transformer 中（Dettmers et al., <em>LLM.int8()</em>, NeurIPS 2022），隐藏层激活张量 $X \in \mathbb{R}^{(B\cdot L) \times K_{\text{in}}}$ 呈现出高度结构化的各向异性：</p>
+<ul>
+<li><strong>沿通道维（Channel / Hidden 维 $K_{\text{in}}$）高度集中</strong>：仅有约 $0.1% \sim 1%$ 的特定隐藏通道会出现幅值高达 $50 \sim 100$ 的极端离群值，而其余 $99%$ 通道的幅值均在 $[-1, 1]$ 附近。</li>
+<li><strong>跨 Token 维（Sequence 维 $B\cdot L$）高度稳定</strong>：这些离群值始终固定出现在相同的几个通道索引 $j \in \mathcal{O}$ 上，几乎在所有输入 Token 上持续触发。</li>
+</ul>
+<h4 id="2为什么激活不能像权重一样做按通道per-channel量化">（2）为什么激活不能像权重一样做“按通道（Per-Channel）”量化？</h4>
+<p>设线性层计算为 $Y = X W^\top$，其中激活 $X \in \mathbb{R}^{M \times K}$（$M = B\cdot L$ 为 Token 数，$K$ 为输入通道维），权重 $W \in \mathbb{R}^{N \times K}$（$N$ 为输出通道维）：</p>
+<p>$$\hat{Y}<em>{m, n} = \sum</em>{k=1}^{K} X_{m, k} W_{n, k}$$</p>
+<p>若想利用硬件 INT8 Tensor Core（如 <code>mma.sync.aligned.m16n8k32.s32.s8.s8</code>）加速矩阵乘法，整数累加器必须在整个内积求和维 $k \in {1, \dots, K}$ 上直接对整数求和，再在矩阵乘循环外部一次性乘回浮点缩放因子（Scale）：</p>
+<p>$$Y_{m, n} \approx s_X^{(m)} \cdot s_W^{(n)} \sum_{k=1}^{K} Q_X(m, k) , Q_W(n, k)$$</p>
+<ul>
+<li><strong>允许的缩放维度（外维 $M$ 与 $N$）</strong>：$s_X^{(m)}$ 仅依赖行号 $m$（即 <strong>Per-Token 激活量化</strong>），$s_W^{(n)}$ 仅依赖列号 $n$（即 <strong>Per-Output-Channel 权重量化</strong>）。二者都与求和内积下标 $k$ 无关，可以提到 $\sum_{k=1}^K$ 求和号外面！</li>
+<li><strong>禁止的硬件缩放维度（内积维 $K$）</strong>：激活离群值恰好沿通道维 $k$ 分布。如果我们对激活做 Per-Input-Channel 量化（即每个通道 $k$ 一个独立的 $s_X^{(k)}$），求和项就变成了 $\sum_{k=1}^K s_X^{(k)} Q_X(m, k) Q_W(n, k)$——缩放因子无法提出求和号外，硬件整数 GEMM 流水线彻底无法使用（除非像 W4A16 那样在寄存器内先反量化回 FP16，或采用每 $16/32$ 个元素硬件微块缩放的 Blackwell MXFP4/NVFP4）。</li>
+</ul>
+<p>因此，在 Per-Token 激活量化下，那 $1%$ 的离群通道会把整行 Token 的 $s_X^{(m)} = \max_k |X_{m, k}| / 127$ 撑大几十倍，导致其余 $99%$ 的正常通道除以巨大的 $s_X^{(m)}$ 后全部被舍入成 $0$ 或 $\pm 1$，有效位宽瞬间归零！</p>
+<h4 id="3四大主流量化路线全景对比">（3）四大主流量化路线全景对比</h4>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align:left">维度</th>
+<th style="text-align:left">RTN（朴素四舍五入）</th>
+<th style="text-align:left">GPTQ（ICLR 2023）</th>
+<th style="text-align:left">AWQ（MLSys 2024）</th>
+<th style="text-align:left">SmoothQuant（ICML 2023）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>目标位宽配置</strong></td>
+<td style="text-align:left">W8A16 / W4A16</td>
+<td style="text-align:left"><strong>W4A16 / W3A16</strong>（Weight-Only）</td>
+<td style="text-align:left"><strong>W4A16 / W3A16</strong>（Weight-Only）</td>
+<td style="text-align:left"><strong>W8A8</strong>（Weight + Activation）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>核心数学机制</strong></td>
+<td style="text-align:left">按分组极值独立舍入 $\operatorname{round}(W/s)$，无跨列补偿</td>
+<td style="text-align:left">基于逆 Hessian $H^{-1} = U^\top U$ 的 <strong>OBS 二阶逐列误差回传补偿</strong></td>
+<td style="text-align:left">基于激活幅值 $s_X^\alpha$ 的<strong>显著权重通道等价放大保护</strong></td>
+<td style="text-align:left">对角平滑变换 $Y=(XS^{-1})(SW^\top)$ <strong>将激活离群值迁移给权重</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>对校准集（Calib）的依赖</strong></td>
+<td style="text-align:left">无需校准集（Zero-shot）</td>
+<td style="text-align:left">强依赖（需计算 $H = \frac{2}{B}X^\top X$ 并改写权重数值）</td>
+<td style="text-align:left">弱依赖（仅统计通道平均激活幅值搜索标量 $\alpha$，不改写原始分布）</td>
+<td style="text-align:left">弱依赖（仅统计校准集各通道最大绝对值 $\max</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>分布外（OOD）泛化性</strong></td>
+<td style="text-align:left">差（W4/W3 严重掉点）</td>
+<td style="text-align:left">中（校准集过小或领域单一时易过拟合校准分布）</td>
+<td style="text-align:left"><strong>极佳</strong>（保留权重原始相对几何结构，多模态/代码泛化稳健）</td>
+<td style="text-align:left">佳（W8A8 下接近 FP16 无损）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>主要加速阶段</strong></td>
+<td style="text-align:left">Decode（省显存带宽）</td>
+<td style="text-align:left"><strong>Decode</strong>（省 $4\times$ 权重访存带宽，配合 Marlin 内核）</td>
+<td style="text-align:left"><strong>Decode</strong>（省 $4\times$ 权重访存带宽，无重排开销）</td>
+<td style="text-align:left"><strong>Prefill + 大 Batch Decode</strong>（激活 INT8 Tensor Core $2\times$ 算力）</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h3 id="2-三大算法的核心数学推导与官方源码对齐">2. 三大算法的核心数学推导与官方源码对齐</h3>
+<h4 id="1gptq基于-obs-二阶泰勒展开与-cholesky-因子的逐列误差补偿">（1）GPTQ：基于 OBS 二阶泰勒展开与 Cholesky 因子的逐列误差补偿</h4>
+<p>GPTQ（Frantar et al., ICLR 2023，官方仓库 <code>IST-DASLab/gptq</code>）针对单层权重的每一行 $\mathbf{w} \in \mathbb{R}^{K}$，最小化校准集输入 $X \in \mathbb{R}^{M \times K}$ 下的层输出重构平方误差：</p>
+<p>$$\mathcal{L}(\hat{\mathbf{w}}) = |X \mathbf{w}^\top - X \hat{\mathbf{w}}^\top|_2^2 = (\hat{\mathbf{w}} - \mathbf{w}) \left(X^\top X\right) (\hat{\mathbf{w}} - \mathbf{w})^\top$$</p>
+<p>在原权重 $\mathbf{w}$ 处作二阶泰勒展开，其 Hessian 矩阵为 $H = \frac{2}{M} X^\top X \in \mathbb{R}^{K \times K}$（注意：<strong>同一线性层的所有 $N$ 个输出通道共享同一个 $H$</strong>！）。为防止校准集中存在死通道导致 $H$ 奇异，官方源码（<code>gptq.py</code> 第 88–90 行）先注入阻尼项：</p>
+<p>$$H \leftarrow H + \lambda_{\text{damp}} \cdot \left(\frac{1}{K}\sum_{i=1}^K H_{ii}\right) I, \quad \lambda_{\text{damp}} = 0.01$$</p>
+<p><strong>拉格朗日乘子法推导 OBS 最优补偿步</strong>：
+假设当前准备将第 $q$ 个输入通道权重 $w_q$ 量化为离散值 $q_q = \operatorname{quant}(w_q)$，即施加硬约束 $\mathbf{e}_q^\top \boldsymbol{\delta} = q_q - w_q$（其中 $\boldsymbol{\delta} = \hat{\mathbf{w}} - \mathbf{w}$）。构造拉格朗日函数：</p>
+<p>$$\mathcal{F}(\boldsymbol{\delta}, \mu) = \frac{1}{2} \boldsymbol{\delta}^\top H^{(q)} \boldsymbol{\delta} + \mu \left(\mathbf{e}_q^\top \boldsymbol{\delta} - (q_q - w_q)\right)$$</p>
+<p>对 $\boldsymbol{\delta}$ 求偏导并令其为 $0$，得 $H^{(q)} \boldsymbol{\delta} = -\mu \mathbf{e}_q \implies \boldsymbol{\delta} = -\mu \left(H^{(q)}\right)^{-1} \mathbf{e}<em>q$。代入约束条件解出乘子 $\mu = -\frac{q_q - w_q}{[(H^{(q)})^{-1}]</em>{qq}}$，从而得到<strong>量化第 $q$ 列后对所有剩余未量化列 $j &gt; q$ 的最优权重补偿公式</strong>：</p>
+<p>$$\boldsymbol{\delta}<em>{j &gt; q}^* = -\frac{w_q - \operatorname{quant}(w_q)}{\left[\left(H^{(q)}\right)^{-1}\right]</em>{qq}} \cdot \left[\left(H^{(q)}\right)^{-1}\right]_{q, j &gt; q}, \quad \Delta \mathcal{L}<em>q^* = \frac{\left(w_q - \operatorname{quant}(w_q)\right)^2}{2 \left[\left(H^{(q)}\right)^{-1}\right]</em>{qq}}$$</p>
+<p><strong>为什么要用 Cholesky 分解？（<code>gptq.py</code> 第 91–94 行核心技巧）</strong>
+如果每量化完一列 $q$，都要重新按高斯消元更新剩余 $(K-q) \times (K-q)$ 的子矩阵逆 $(H^{(q)})^{-1}$，不仅面临累计浮点舍入误差导致的非正定崩溃，而且计算繁琐。GPTQ 证明了一个精妙的线性代数性质：对全局逆矩阵 $H^{-1}$ 执行<strong>上三角 Cholesky 分解</strong>：</p>
+<p>$$H^{-1} = U^\top U \quad (\text{其中 } U \in \mathbb{R}^{K \times K} \text{ 为上三角矩阵})$$</p>
+<p>由于 $U$ 是上三角矩阵，$H^{-1}$ 的右下角子块无需重复求逆，<strong>$U$ 的第 $q$ 行元素 $U_{q, q:K}$ 恰好与消元后条件逆矩阵 $(H^{(q)})^{-1}$ 的首行元素严格成正比</strong>：</p>
+<p>$$\frac{\left[\left(H^{(q)}\right)^{-1}\right]<em>{q, j}}{\left[\left(H^{(q)}\right)^{-1}\right]</em>{qq}} \equiv \frac{U_{q, j}}{U_{q, q}} \quad (\forall j \ge q)$$</p>
+<p>结合 $B_{\text{block}} = 128$ 的延迟分块更新（Lazy Batch Updates），GPTQ 在块内先用 $U_{q, j}$ 逐列更新，块结束时再用一次矩阵乘法 <code>W[:, i2:] -= Err1 @ Hinv[i1:i2, i2:]</code> 批量更新右侧所有块，将耗时从数十小时缩短至数十分钟。</p>
+<hr />
+<h4 id="2awq基于激活幅值的显著权重通道保护与一维网格搜索">（2）AWQ：基于激活幅值的显著权重通道保护与一维网格搜索</h4>
+<p>AWQ（Lin et al., MLSys 2024 Best Paper，官方仓库 <code>mit-han-lab/llm-awq</code>）提出了截然不同的洞察：</p>
+<ol>
+<li>
+<p><strong>权重并非生而平等</strong>：仅占总数 $0.1% \sim 1%$ 的显著权重通道（Salient Weight Channels）一旦保持 FP16 不量化，W3/W4 模型的 PPL 就能从崩盘边缘瞬间恢复；且挑出这 $1%$ 显著通道的标准<strong>不是看权重 $|W|$ 自身有多大，而是看它对应的输入激活通道平均幅值 $s_X = \mathbb{E}[|X|]$ 有多大</strong>！</p>
+</li>
+<li>
+<p><strong>如何不用混合精度（避免硬件分支碎片），也能保护显著通道？——等价缩放放大</strong>：
+对第 $j$ 个输入通道引入缩放系数 $s_j &gt; 1$，由于在量化时通常按固定分组（如 <code>group_size = 128</code>）共享一个缩放步长 $\Delta = \frac{\max(\mathbf{w}_g)}{2^{b-1}-1}$，将被放大后的显著权重 $w_j' = w_j \cdot s_j$ 量化再除回 $s_j$ 时，其等效量化误差为：</p>
+<p>$$\text{Err}(w_j') = \left|\frac{\operatorname{round}(w_j s_j / \Delta') \cdot \Delta'}{s_j} - w_j\right| \approx \frac{\Delta'}{s_j} \cdot \left|\text{round_err}\right|$$</p>
+<p>只要被放大的单个通道 $w_j s_j$ 没有把整个 128 元素分组的极值撑大过多（即 $\Delta' \approx \Delta$），该显著通道的<strong>有效量化步长就缩小到了原来的 $\frac{1}{s_j}$</strong>！</p>
+</li>
+<li>
+<p><strong>平衡显著通道与非显著通道的网格搜索（<code>auto_scale.py</code> 第 126–149 行）</strong>：
+若 $s_j$ 过大，反而会把分组极值 $\Delta'$ 撑爆，连累同组内的其余 127 个非显著权重。AWQ 将全通道缩放向量参数化为激活均值的幂函数，并在区间 $[0, 1]$ 上做 $n_{\text{grid}} = 20$ 步的快速网格搜索：</p>
+<p>$$\mathbf{s}<em>X = \frac{1}{M}\sum</em>{m=1}^{M} |X_{m, \cdot}|, \quad \tilde{\mathbf{s}}(\alpha) = \left(\mathbf{s}_X\right)^\alpha, \quad \mathbf{s}(\alpha) = \frac{\tilde{\mathbf{s}}(\alpha)}{\sqrt{\max(\tilde{\mathbf{s}}) \cdot \min(\tilde{\mathbf{s}})}}$$</p>
+<p>$$\alpha^* = \underset{\alpha \in {0, 0.05, 0.10, \dots, 0.95}}{\arg\min} \left| \operatorname{Block}(X; W) - \operatorname{Block}\left(X \cdot \operatorname{diag}(\mathbf{s})^{-1}; ; Q(W \cdot \operatorname{diag}(\mathbf{s}))\right) \right|_2^2$$</p>
+</li>
+</ol>
+<hr />
+<h4 id="3smoothquant激活离群值平滑迁移与跨算子静态融合">（3）SmoothQuant：激活离群值平滑迁移与跨算子静态融合</h4>
+<p>SmoothQuant（Xiao et al., ICML 2023，官方仓库 <code>mit-han-lab/smoothquant</code>）专为 <strong>W8A8（权重与激活均采用 INT8 Tensor Core 运算）</strong> 设计。既然激活 $X$ 有巨型离群值难量化、而权重 $W$ 分布平坦极易量化，SmoothQuant 通过对角矩阵 $S = \operatorname{diag}(s_1, \dots, s_K)$ 在激活与权重之间按比例 $\alpha \in [0, 1]$ 分摊最大动态范围（<code>smooth.py</code> 第 30–36 行）：</p>
+<p>$$Y = X W^\top = \underbrace{\left(X \operatorname{diag}(\mathbf{s})^{-1}\right)}<em>{\hat{X} \text{（平滑后的激活）}} \underbrace{\left(W \operatorname{diag}(\mathbf{s})\right)^\top}</em>{\hat{W}^\top \text{（吸收离群值后的权重）}}, \quad s_j = \frac{\max\left(|X_{\cdot, j}|\right)^\alpha}{\max\left(|W_{\cdot, j}|\right)^{1 - \alpha}}$$</p>
+<p>当取对称平衡点 $\alpha = 0.5$ 时，变换后的激活第 $j$ 通道极值与权重第 $j$ 列极值相等：</p>
+<p>$$\max|\hat{X}<em>{\cdot, j}| = \frac{\max|X</em>{\cdot, j}|}{\max|X_{\cdot, j}|^{0.5} / \max|W_{\cdot, j}|^{0.5}} = \sqrt{\max|X_{\cdot, j}| \cdot \max|W_{\cdot, j}|} = \max|\hat{W}_{\cdot, j}|$$</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">SmoothQuant / AWQ 跨算子零开销融合 (Zero-Overhead Operator Fusion) 拓扑流转:
+
+[上游 RMSNorm / LayerNorm]                        [下游 Q / K / V 或 Gate / Up 投影层]
+  原始输出: X = Norm(h) ⊙ γ + β                     原始权重: W
+        │                                                 │
+        ▼ (离线融合 γ&#x27; = γ / s, β&#x27; = β / s)               ▼ (离线融合 W&#x27; = W · diag(s), 再量化为 Q(W&#x27;))
+  平滑输出: X_hat = X · diag(s)^{-1}  ───────────►  推理期直接执行 INT8 GEMM (W8A8) 或 W4A16 GEMM
+  (运行时无任何额外逐元素除法算子!)                  Y ≈ dequant( Q(X_hat) @ Q(W&#x27;)^T )
+</code></pre>
+<hr />
+<h3 id="3-工程权衡与生产落地陷阱">3. 工程权衡与生产落地陷阱</h3>
+<ol>
+<li><strong>为什么 W4A16（GPTQ/AWQ）在单并发 Decode 加速明显，但在长文本 Prefill 或大 Batch 下反而可能比 FP16 慢？</strong>
+<ul>
+<li>在 <strong>W4A16</strong> 中，由于激活仍是 FP16，GPU 底层无法调用 INT4 Tensor Core，只能在寄存器/共享内存（SRAM）中先将 INT4 权重<strong>实时反量化（On-the-fly Dequantization）回 FP16</strong>，再送入 FP16 Tensor Core 计算。</li>
+<li><strong>Decode 阶段（小 Batch）</strong>：算术强度极低（$\sim 1 \sim 16\text{ FLOPs/Byte}$），完全受限于 HBM 显存读取带宽（Memory-Bound）。W4A16 将从 HBM 读取的权重字节数砍掉约 $75%$（含分组 Scale 后为 $4.125\text{ bits}$），省下的 HBM 传输时间远大于片上寄存器反量化指令开销，因此获得 $2.5\times \sim 3.5\times$ 真实加速。</li>
+<li><strong>Prefill 阶段（或超大 Batch Decode）</strong>：算术强度极高（Compute-Bound），瓶颈在于 Tensor Core 的 FP16 乘加吞吐。此时 W4A16 不仅没有减少半点 FP16 乘加计算量，反而额外塞入了大量位移、掩码与类型转换等反量化指令，导致吞吐低于原生 FP16 或 <strong>W8A8（SmoothQuant / FP8）</strong>——后者直接调用硬件级 8-bit Tensor Core，理论算力翻倍（$2\times$ TFLOPS）。</li>
+</ul>
+</li>
+<li><strong>GPTQ 的 <code>act_order</code>（<code>desc_act=True</code>）为什么是一把双刃剑？</strong>
+<ul>
+<li><strong>精度收益</strong>：默认按列顺序 $q=0, 1, \dots, K-1$ 量化时，排在最后的列只能被动承受前面所有列倾倒过来的累积误差。若开启 <code>act_order=True</code>（<code>gptq.py</code> 第 80–84 行：<code>perm = torch.argsort(torch.diag(H), descending=True)</code>），先量化 Hessian 对角元最大（即激活最显著）的列，并把它们的误差分摊给不太敏感的弱通道，可大幅提升 W3/W2 及复杂模型精度。</li>
+<li><strong>推理吞吐代价</strong>：一旦按激活大小打乱了列顺序，在 Group-wise（如 <code>group_size=128</code>）量化下，原本内存连续的 128 个通道在物理权重矩阵中变得支离破碎。GPU Kernel 在做矩阵乘法时必须通过 <code>g_idx</code> 索引表随机跳转读取不同分组的 Scale，或者对输入激活向量 $X$ 做全局重排（Permutation），破坏了内存合并访问（Coalesced Memory Access）。（注：生产引擎如 vLLM 的 <strong>Marlin Kernel</strong> 通过离线重排权重并在加载时对齐分组，才缓解了 <code>desc_act</code> 的部分惩罚，但若配合 <code>static_groups=True</code> 则无需在线重排激活）。</li>
+</ul>
+</li>
+<li><strong>哪些线性层无法做无开销的缩放融合（Scale Fusion）？</strong>
+<ul>
+<li>在 Transformer 的 <code>q_proj / k_proj / v_proj</code> 以及 MLP 的 <code>gate_proj / up_proj</code> 之前，紧挨着 <code>RMSNorm</code>，因此 $S^{-1}$ 可以直接除进 <code>RMSNorm.weight</code>（$\gamma \leftarrow \gamma / \mathbf{s}$）。</li>
+<li>在 <code>o_proj</code> 之前，可以将 $S^{-1}$ 吸收进上游 <code>v_proj</code> 的输出通道权重（<code>auto_scale.py</code> 第 51–68 行 <code>scale_fc_fc</code>；GQA 下需按头广播）。</li>
+<li>但在 SwiGLU MLP 的 <code>down_proj</code> 之前，输入为 $\operatorname{SiLU}(X W_{\text{gate}}) \odot (X W_{\text{up}})$。由于非线性激活函数 $\operatorname{SiLU}(z) = z \cdot \sigma(z)$ 不满足线性齐次性（$\operatorname{SiLU}(z / s) \neq \operatorname{SiLU}(z) / s$），不能把缩放系数直接塞进 <code>gate_proj</code>！工程上只能把 $S^{-1}$ 吸收进线性的 <code>up_proj</code> 输出通道，或者在激活函数后插入一个轻量级融合算子 <code>ScaledActivation</code>。</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h3 id="4-python-3-标准库实现gptq-cholesky-obsawq-网格搜索与-smoothquant-仿真验证">4. Python 3 标准库实现：GPTQ (Cholesky OBS)、AWQ 网格搜索与 SmoothQuant 仿真验证</h3>
+<p>下面的零依赖 Python 3 标准库代码完整复现并验证了：</p>
+<ol>
+<li><strong>GPTQ</strong>：显式证明逆 Hessian 的上三角 Cholesky 因子 $U$（满足 $H^{-1} = U^\top U$）与逐步条件子矩阵逆 $(H^{(q)})^{-1}$ 首行比值的数值等价性（误差 $&lt; 10^{-15}$），并验证在强激活离群通道下 GPTQ 相比 RTN 将重构均方误差（MSE）降低 $95%$ 以上；</li>
+<li><strong>AWQ</strong>：按 <code>mit-han-lab/llm-awq</code> 官方公式在 $\alpha \in [0, 1]$ 上执行 20 步网格搜索，自动定位最优保护指数 $\alpha^*$；</li>
+<li><strong>SmoothQuant</strong>：验证 $(X S^{-1})(W S)^\top = X W^\top$ 的浮点精确恒等性，以及将激活峰值削平后在低比特权重+激活联合量化下的精度恢复。</li>
+</ol>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+from typing import Dict, List, Tuple
+
+
+def matmul(A: List[List[float]], B: List[List[float]]) -&gt; List[List[float]]:
+    &quot;&quot;&quot;计算矩阵乘法 A [m, k] @ B [k, n] -&gt; [m, n]&quot;&quot;&quot;
+    m, k, n = len(A), len(B), len(B[0])
+    return [[sum(A[i][p] * B[p][j] for p in range(k)) for j in range(n)] for i in range(m)]
+
+
+def transpose(M: List[List[float]]) -&gt; List[List[float]]:
+    return [[M[r][c] for r in range(len(M))] for c in range(len(M[0]))]
+
+
+def mse_matrix(Y_ref: List[List[float]], Y_hat: List[List[float]]) -&gt; float:
+    m, n = len(Y_ref), len(Y_ref[0])
+    return sum((Y_ref[i][j] - Y_hat[i][j]) ** 2 for i in range(m) for j in range(n)) / (m * n)
+
+
+def cholesky_lower(A: List[List[float]]) -&gt; List[List[float]]:
+    &quot;&quot;&quot;对称正定矩阵 A 的下三角 Cholesky 分解: A = L @ L^T&quot;&quot;&quot;
+    n = len(A)
+    L = [[0.0] * n for _ in range(n)]
+    for i in range(n):
+        for j in range(i + 1):
+            s = sum(L[i][k] * L[j][k] for k in range(j))
+            if i == j:
+                val = A[i][i] - s
+                assert val &gt; 0.0, &quot;Matrix must be symmetric positive definite&quot;
+                L[i][j] = math.sqrt(val)
+            else:
+                L[i][j] = (A[i][j] - s) / L[j][j]
+    return L
+
+
+def invert_spd(A: List[List[float]]) -&gt; List[List[float]]:
+    &quot;&quot;&quot;通过 Cholesky 分解求对称正定矩阵的逆矩阵 A^{-1}&quot;&quot;&quot;
+    n = len(A)
+    L = cholesky_lower(A)
+    Linv = [[0.0] * n for _ in range(n)]
+    for i in range(n):
+        Linv[i][i] = 1.0 / L[i][i]
+        for j in range(i + 1, n):
+            Linv[j][i] = -sum(L[j][k] * Linv[k][i] for k in range(i, j)) / L[j][j]
+    return matmul(transpose(Linv), Linv)
+
+
+def sym_quant_dequant_vec(vec: List[float], n_bits: int, scale: float = 0.0) -&gt; Tuple[List[float], float]:
+    &quot;&quot;&quot;对向量执行对称均匀量化与反量化&quot;&quot;&quot;
+    q_max = (1 &lt;&lt; (n_bits - 1)) - 1
+    q_min = -(1 &lt;&lt; (n_bits - 1))
+    if scale &lt;= 0.0:
+        max_abs = max(abs(v) for v in vec)
+        scale = max(max_abs / q_max, 1e-8)
+    deq = [max(q_min, min(q_max, round(v / scale))) * scale for v in vec]
+    return deq, scale
+
+
+def gptq_quantize_layer(
+    W: List[List[float]], X: List[List[float]], n_bits: int = 3, damp_ratio: float = 0.01
+) -&gt; Tuple[List[List[float]], List[List[float]], float]:
+    &quot;&quot;&quot;
+    对比 W3A16 下 RTN 与 GPTQ (OBS 逐列误差补偿 + 上三角 Cholesky 因子等价验证):
+    W: [N_out, K_in], X: [B_tokens, K_in], 输出 Y = X @ W^T
+    &quot;&quot;&quot;
+    n_out, k_in = len(W), len(W[0])
+    q_max = (1 &lt;&lt; (n_bits - 1)) - 1
+
+    # 1. 基线 RTN: 每行按初始最大绝对值计算固定 scale，独立舍入不补偿
+    row_scales = [max(max(abs(v) for v in row) / q_max, 1e-8) for row in W]
+    W_rtn = [sym_quant_dequant_vec(W[r], n_bits, scale=row_scales[r])[0] for r in range(n_out)]
+
+    # 2. GPTQ: 计算 H = (2/B) X^T X + damp * I
+    Xt = transpose(X)
+    bsz = len(X)
+    H = [[(2.0 / bsz) * sum(Xt[i][b] * X[b][j] for b in range(bsz)) for j in range(k_in)] for i in range(k_in)]
+    mean_diag = sum(H[i][i] for i in range(k_in)) / k_in
+    for i in range(k_in):
+        H[i][i] += damp_ratio * mean_diag
+
+    # 官方 IST-DASLab/gptq 实现: H^{-1} = U^T @ U (U 为下三角 Cholesky 因子的转置)
+    H_inv = invert_spd(H)
+    Hinv_U = transpose(cholesky_lower(H_inv))
+
+    W_work = [row[:] for row in W]
+    W_gptq = [[0.0] * k_in for _ in range(n_out)]
+    max_cholesky_diff = 0.0
+
+    for q in range(k_in):
+        # 验证定理: Hinv_U[q, q:] / Hinv_U[q, q] 与剩余子矩阵逆 H_{q:,q:}^{-1} 首行除以其对角元完全相等
+        H_sub_inv = invert_spd([row[q:] for row in H[q:]])
+        d_q = Hinv_U[q][q]
+        for offset in range(k_in - q):
+            ratio_chol = Hinv_U[q][q + offset] / d_q
+            ratio_exact = H_sub_inv[0][offset] / H_sub_inv[0][0]
+            max_cholesky_diff = max(max_cholesky_diff, abs(ratio_chol - ratio_exact))
+
+        for r in range(n_out):
+            w_rq = W_work[r][q]
+            q_rq = sym_quant_dequant_vec([w_rq], n_bits, scale=row_scales[r])[0][0]
+            W_gptq[r][q] = q_rq
+            err = (w_rq - q_rq) / d_q
+            for j in range(q + 1, k_in):
+                W_work[r][j] -= err * Hinv_U[q][j]
+
+    return W_rtn, W_gptq, max_cholesky_diff
+
+
+def awq_search_scale(
+    W: List[List[float]], X: List[List[float]], n_bits: int = 3, n_grid: int = 20
+) -&gt; Dict[str, float]:
+    &quot;&quot;&quot;
+    复现 mit-han-lab/llm-awq/awq/quantize/auto_scale.py:
+    按 s_x = mean(|X|, axis=0) 搜索 s = s_x^alpha / sqrt(max*min) 最小化量化重构 MSE
+    &quot;&quot;&quot;
+    n_out, k_in = len(W), len(W[0])
+    bsz = len(X)
+    Y_fp = matmul(X, transpose(W))
+    s_x = [max(sum(abs(X[b][c]) for b in range(bsz)) / bsz, 1e-4) for c in range(k_in)]
+
+    best_alpha = 0.0
+    best_mse = float(&quot;inf&quot;)
+    rtn_mse = 0.0
+
+    for idx in range(n_grid + 1):
+        alpha = idx / n_grid
+        raw_s = [v ** alpha for v in s_x]
+        norm_factor = math.sqrt(max(raw_s) * min(raw_s))
+        scales = [v / norm_factor for v in raw_s]
+
+        W_deq = []
+        for r in range(n_out):
+            scaled_row = [W[r][c] * scales[c] for c in range(k_in)]
+            q_row, _ = sym_quant_dequant_vec(scaled_row, n_bits)
+            W_deq.append([q_row[c] / scales[c] for c in range(k_in)])
+
+        mse = mse_matrix(Y_fp, matmul(X, transpose(W_deq)))
+        if idx == 0:
+            rtn_mse = mse
+        if mse &lt; best_mse:
+            best_mse = mse
+            best_alpha = alpha
+
+    return {&quot;rtn_mse&quot;: rtn_mse, &quot;best_alpha&quot;: best_alpha, &quot;awq_mse&quot;: best_mse}
+
+
+def smoothquant_wa_eval(
+    W: List[List[float]], X: List[List[float]], alpha: float = 0.5, n_bits: int = 4
+) -&gt; Dict[str, float]:
+    &quot;&quot;&quot;
+    复现 mit-han-lab/smoothquant/smoothquant/smooth.py:
+    对比直接做 Weight+Activation 联合对称量化 vs 经 s_j = max(|X_j|)^alpha / max(|W_j|)^(1-alpha) 平滑迁移后量化
+    &quot;&quot;&quot;
+    n_out, k_in = len(W), len(W[0])
+    bsz = len(X)
+    Y_fp = matmul(X, transpose(W))
+
+    # 1. 未平滑直接对 X (per-token) 与 W (per-output-channel) 量化
+    X_naive_q = [sym_quant_dequant_vec(row, n_bits)[0] for row in X]
+    W_naive_q = [sym_quant_dequant_vec(row, n_bits)[0] for row in W]
+    naive_mse = mse_matrix(Y_fp, matmul(X_naive_q, transpose(W_naive_q)))
+
+    # 2. SmoothQuant 平滑因子计算与等价变换
+    x_max = [max(abs(X[b][c]) for b in range(bsz)) for c in range(k_in)]
+    w_max = [max(max(abs(W[r][c]) for r in range(n_out)), 1e-5) for c in range(k_in)]
+    scales = [(x_max[c] ** alpha) / (w_max[c] ** (1.0 - alpha)) for c in range(k_in)]
+
+    X_smooth = [[X[b][c] / scales[c] for c in range(k_in)] for b in range(bsz)]
+    W_smooth = [[W[r][c] * scales[c] for c in range(k_in)] for r in range(n_out)]
+
+    # 验证浮点精确等价性: (X * S^{-1}) @ (S * W)^T == X @ W^T
+    fp_equiv_err = mse_matrix(Y_fp, matmul(X_smooth, transpose(W_smooth)))
+
+    # 对平滑后的 X_smooth 与 W_smooth 执行相同位宽量化
+    X_smooth_q = [sym_quant_dequant_vec(row, n_bits)[0] for row in X_smooth]
+    W_smooth_q = [sym_quant_dequant_vec(row, n_bits)[0] for row in W_smooth]
+    smooth_mse = mse_matrix(Y_fp, matmul(X_smooth_q, transpose(W_smooth_q)))
+
+    return {
+        &quot;fp_equiv_err&quot;: fp_equiv_err,
+        &quot;naive_wa_mse&quot;: naive_mse,
+        &quot;smooth_wa_mse&quot;: smooth_mse,
+        &quot;x_max_before&quot;: max(x_max),
+        &quot;x_max_after&quot;: max(max(abs(v) for v in row) for row in X_smooth),
+    }
+
+
+# 构造带有强相关性输入通道与显著激活离群通道 (channel 0 幅值约 12.0，其余通道 &lt; 1.0) 的校准集 X [8, 6] 与权重 W [4, 6]
+X_calib = [
+    [12.0, 0.8, -0.6, 0.9, 0.5, -0.7],
+    [-11.5, -0.7, 0.5, -0.8, -0.6, 0.6],
+    [10.8, 0.9, -0.4, 0.7, 0.4, -0.5],
+    [-12.2, -0.6, 0.7, -0.9, -0.5, 0.8],
+    [11.0, 0.75, -0.55, 0.85, 0.45, -0.65],
+    [-10.5, -0.85, 0.45, -0.75, -0.55, 0.55],
+    [11.8, 0.65, -0.65, 0.8, 0.6, -0.75],
+    [-11.2, -0.7, 0.6, -0.85, -0.4, 0.7],
+]
+W_orig = [
+    [0.18, 0.42, -0.38, 0.31, -0.27, 0.35],
+    [-0.22, 0.36, 0.44, -0.29, 0.33, -0.41],
+    [0.15, -0.48, 0.26, 0.39, -0.45, 0.28],
+    [-0.19, -0.33, -0.41, 0.46, 0.29, -0.37],
+]
+
+Y_fp = matmul(X_calib, transpose(W_orig))
+W_rtn, W_gptq, chol_diff = gptq_quantize_layer(W_orig, X_calib, n_bits=3)
+mse_rtn = mse_matrix(Y_fp, matmul(X_calib, transpose(W_rtn)))
+mse_gptq = mse_matrix(Y_fp, matmul(X_calib, transpose(W_gptq)))
+
+awq_res = awq_search_scale(W_orig, X_calib, n_bits=3, n_grid=20)
+sq_res = smoothquant_wa_eval(W_orig, X_calib, alpha=0.5, n_bits=4)
+
+assert chol_diff &lt; 1e-12
+assert mse_gptq &lt; mse_rtn * 0.1
+assert awq_res[&quot;awq_mse&quot;] &lt; awq_res[&quot;rtn_mse&quot;] * 0.1
+assert sq_res[&quot;fp_equiv_err&quot;] &lt; 1e-24
+assert sq_res[&quot;smooth_wa_mse&quot;] &lt; sq_res[&quot;naive_wa_mse&quot;] * 0.2
+
+print(f&quot;1. GPTQ vs RTN (W3A16): RTN_MSE={mse_rtn:.6f} -&gt; GPTQ_MSE={mse_gptq:.6f} (Cholesky diff={chol_diff:.2e})&quot;)
+print(
+    f&quot;2. AWQ Grid Search (W3A16): RTN_MSE={awq_res[&#x27;rtn_mse&#x27;]:.6f} -&gt; &quot;
+    f&quot;AWQ_MSE={awq_res[&#x27;awq_mse&#x27;]:.6f} (best_alpha={awq_res[&#x27;best_alpha&#x27;]:.2f})&quot;
+)
+print(
+    f&quot;3. SmoothQuant (W4A4 sim): X_max {sq_res[&#x27;x_max_before&#x27;]:.2f}-&gt;{sq_res[&#x27;x_max_after&#x27;]:.2f}, &quot;
+    f&quot;Naive_MSE={sq_res[&#x27;naive_wa_mse&#x27;]:.6f} -&gt; Smooth_MSE={sq_res[&#x27;smooth_wa_mse&#x27;]:.6f}&quot;
+)
+print(&quot;All PTQ (GPTQ, AWQ, SmoothQuant) mathematical and numerical assertions passed!&quot;)
+</code></pre>
+<p>实际运行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">1. GPTQ vs RTN (W3A16): RTN_MSE=0.285799 -&gt; GPTQ_MSE=0.012050 (Cholesky diff=4.44e-16)
+2. AWQ Grid Search (W3A16): RTN_MSE=0.285799 -&gt; AWQ_MSE=0.000842 (best_alpha=0.55)
+3. SmoothQuant (W4A4 sim): X_max 12.20-&gt;1.64, Naive_MSE=0.476754 -&gt; Smooth_MSE=0.009075
+All PTQ (GPTQ, AWQ, SmoothQuant) mathematical and numerical assertions passed!
+</code></pre>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“AWQ 在识别 $1%$ 显著权重时，是把这些权重的数值保留为 FP16、其余 $99%$ 存为 INT4 的混合精度格式。”</strong>
+事实：如果在同一矩阵内混存 1% 的随机列为 FP16、99% 为 INT4，GPU 的内存对齐和 SIMD 向量化访存会彻底碎片化（这也是早期 <code>LLM.int8()</code> 在推理延迟上常常变慢的原因）。AWQ <strong>只在最初的动力学科研对照实验中用混合精度证明了显著通道的重要性</strong>，而在实际算法与部署格式中，<strong>AWQ 100% 的权重全部被量化为统一的 INT4</strong>——它只是在量化前将显著通道乘上 $s_j &gt; 1$ 放大（减少其在组内的相对舍入误差），并将 $s_j^{-1}$ 融合进上游算子，从而保持了完全规整的 INT4 内存布局。</li>
+<li><strong>误区二：“GPTQ 在逐列量化并更新未量化权重时，由于依赖校准集输入 $X$，属于需要反向传播（Backpropagation）和梯度下降的 QAT 微调。”</strong>
+事实：GPTQ 完全不需要任何反向传播或梯度下降迭代！单层线性重构目标 $\min |XW^\top - X\hat{W}^\top|_F^2$ 是一个二次型凸函数，其局部二阶导数 $H = \frac{2}{M}X^\top X$ 只依赖校准集在该层的<strong>前向输入激活 $X$</strong>，闭式解通过一次 Cholesky 分解即可一步算完。</li>
+<li><strong>误区三：“把模型从 FP16 量化成 GPTQ/AWQ 的 W4A16（INT4）后，不仅显存降为约 $1/4$，而且无论是长 Prompt 预填充（Prefill）还是解码（Decode）速度都会快 3~4 倍。”</strong>
+事实：W4A16 仅压缩了<strong>权重的存储与 HBM 传输体积</strong>，计算时仍需反量化回 FP16 喂给 FP16 Tensor Core。因此它只能在受限于显存带宽的<strong>小 Batch Decode 阶段</strong>带来 $2.5\times \sim 3.5\times$ 提速；而在受限于算力的 <strong>长序列 Prefill 或大 Batch 阶段</strong>，由于没有激活低比特 Tensor Core 且多了反量化开销，W4A16 的吞吐通常与 FP16 持平甚至略慢（要加速 Prefill 必须使用 W8A8 / FP8 / W4A4 等激活也参与低位宽矩阵乘的方案）。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep/blob/edc49254f949c6122879b3f1c42d54886091762d/docs/tutorials/quantization_tutorial.md" target="_blank" rel="noopener noreferrer">wanshuiyin/Auto-claude-code-research-in-sleep, docs/tutorials/quantization_tutorial.md</a>（固定 commit <code>edc4925</code>），独立重构拓展。</li>
+<li>Frantar et al., <a href="https://arxiv.org/abs/2210.17323" target="_blank" rel="noopener noreferrer">GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers</a>，ICLR 2023，及官方源码 <a href="https://github.com/IST-DASLab/gptq/blob/2d65066eeb06a5c9ff5184d8cebdf33662c67faf/gptq.py" target="_blank" rel="noopener noreferrer">IST-DASLab/gptq (<code>gptq.py</code>)</a>（固定 commit <code>2d65066</code>）：OBS 二阶误差补偿公式、逆 Hessian 上三角 Cholesky 分解与 <code>actorder</code> 实现。</li>
+<li>Lin et al., <a href="https://arxiv.org/abs/2306.00978" target="_blank" rel="noopener noreferrer">AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration</a>，MLSys 2024 Best Paper，及官方源码 <a href="https://github.com/mit-han-lab/llm-awq/blob/d6e797a42b9ef7778de8ee2352116e0f48a78d61/awq/quantize/auto_scale.py" target="_blank" rel="noopener noreferrer">mit-han-lab/llm-awq (<code>awq/quantize/auto_scale.py</code>)</a>（固定 commit <code>d6e797a</code>）：显著通道激活感知缩放、网格搜索与跨层算子融合。</li>
+<li>Xiao et al., <a href="https://arxiv.org/abs/2211.10438" target="_blank" rel="noopener noreferrer">SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models</a>，ICML 2023，及官方源码 <a href="https://github.com/mit-han-lab/smoothquant/blob/c61476d728e42ae0d8a35e7e78494edcac3237b5/smoothquant/smooth.py" target="_blank" rel="noopener noreferrer">mit-han-lab/smoothquant (<code>smoothquant/smooth.py</code>)</a>（固定 commit <code>c61476d</code>）：激活-权重离群值平滑迁移因子 $\alpha$ 与 W8A8 融合。</li>
+<li>Dettmers et al., <a href="https://arxiv.org/abs/2208.07339" target="_blank" rel="noopener noreferrer">LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale</a>，NeurIPS 2022：$6.7\text{B}$ 规模涌现的系统性激活离群值特征分析。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-11-07</strong>。仅执行标准库下 Cholesky 逆 Hessian 等价性、GPTQ 逐列补偿、AWQ 网格搜索及 SmoothQuant 数值仿真验证，未运行百亿参数 GPU 实机校准。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">为什么 SmoothQuant 能够胜任 W8A8，但当目标进一步下探到 W4A4（4-bit 权重 + 4-bit 激活）时却会失效？QuaRot 与 SpinQuant 是如何用正交旋转（Hadamard / Stiefel 流形旋转）解决 W4A4 的？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么 SmoothQuant 能够胜任 W8A8，但当目标进一步下探到 W4A4（4-bit 权重 + 4-bit 激活）时却会失效？QuaRot 与 SpinQuant 是如何用正交旋转（Hadamard / Stiefel 流形旋转）解决 W4A4 的？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>SmoothQuant 只是通过<strong>对角缩放矩阵 $S$</strong> 把激活通道的极端幅值“转移”给了权重的对应行。在 W8A8 下，8-bit 有 255 个离散台阶，权重吸收 $\sqrt{100} = 10\times$ 的离群放大后仍能靠 Per-Channel INT8 轻松容纳；但在 <strong>W4A4</strong> 下，4-bit 仅有 15 个非零对称台阶（$[-7, 7]$），无论把 $100\times$ 的离群尖峰留在激活侧还是挪到权重侧，总有一方（或双方）会因仅有的 15 个刻度被撑爆而严重失真。
+为此，**QuaRot（Ashkboos et al., NeurIPS 2024）**与 <strong>SpinQuant（Liu et al., ICLR 2025）<strong>引入了满足 $R^\top R = I$ 的</strong>稠密正交旋转矩阵</strong>（如快速 Walsh-Hadamard 变换矩阵 $H_K \in {+\frac{1}{\sqrt{K}}, -\frac{1}{\sqrt{K}}}^{K \times K}$）：</p>
+<p>$$Y = X W^\top = (X R) (W R)^\top$$</p>
+<p>与对角矩阵只在原地缩放单个通道不同，Hadamard 正交旋转将单个通道上的极端离群能量<strong>均匀打散（Spread out）到全部 $K$ 个通道的线性组合上</strong>，使旋转后的激活 $XR$ 和权重 $WR$ 均趋近于平滑的高斯分布（消除了任何单一维度的尖峰），从而使 W4A4 甚至 KV Cache INT4 量化成为可能（代价是推理时部分位置需额外执行 $O(K \log K)$ 的在线 Fast Hadamard Transform）。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">KV Cache 的量化（如 KIVI、KVQuant）中，Key Cache 和 Value Cache 的离群值分布有什么本质差异？应该分别按哪个维度量化？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：KV Cache 的量化（如 KIVI、KVQuant）中，Key Cache 和 Value Cache 的离群值分布有什么本质差异？应该分别按哪个维度量化？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>实验（Liu et al., <em>KIVI</em>, ICML 2024）表明：在注意力层中，<strong>Key Cache 的离群值严格沿 Channel（即 <code>head_dim</code> 维）固定出现</strong>（与线性层输入激活类似，少数几个维度在所有 Token 上幅值极大），而 <strong>Value Cache 没有明显的固定 Channel 离群值，其幅值波动主要沿 Token 方向变化</strong>。
+因此，2-bit / 4-bit KV Cache 量化的黄金准则是：<strong>Key Cache 必须采用 Per-Channel（沿 Token 维度分组，同一 Channel 共享 Scale）量化，而 Value Cache 必须采用 Per-Token（同一 Token 的各维共享 Scale）量化</strong>。由于自回归生成每次只新增 1 个 Token，Per-Token 的 Value 可以立即量化落盘；而 Per-Channel 的 Key 需要凑够一个分组窗口（如 32 或 64 个 Token）才能沿时间维做完分组量化，故工程上常保留最近 $R=32 \sim 128$ 个残差 Token 的 Key 为 FP16 滑动窗口。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">在 Hopper（H100/H800）和 Blackwell（B200）架构上，原生 FP8（E4M3）与 SmoothQuant INT8（W8A8）相比有什么优势？什么场景下仍然需要 SmoothQuant？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：在 Hopper（H100/H800）和 Blackwell（B200）架构上，原生 FP8（E4M3）与 SmoothQuant INT8（W8A8）相比有什么优势？什么场景下仍然需要 SmoothQuant？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>FP8（特别是 1 位符号、4 位指数、3 位尾数的 <code>E4M3</code> 格式，动态范围达 $\pm 448$）采用<strong>非线性（对数级）刻度</strong>：小数值附近刻度极密、大数值附近刻度自动变宽，天然对温和的激活离群值具有比均匀线性 INT8 更高的信噪比（SNR），因此在许多模型上仅需简单的 Per-Tensor 或 Per-Token 动态缩放即可直接跑 FP8 Tensor Core，无需复杂的离线平滑校准。
+然而，（1）在不支持原生 FP8 Tensor Core 的存量主力卡（如 NVIDIA A100、RTX 3090、昇腾 910B 等）上，硬件只有 INT8 Tensor Core，SmoothQuant W8A8 仍是唯一能跑满 8-bit 算力的方案；（2）对于存在极端离群通道（幅值 $&gt; 100$）的模型或在激进的 Per-Tensor 静态 FP8 量化下，结合 SmoothQuant 预平滑依然能显著减少 E4M3 尾数下溢（Underflow）与上溢裁剪损失。</p>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0035 · 单题笔记</span><a href="../questions/llm-0035-ptq-gptq-awq-smoothquant.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0035", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
