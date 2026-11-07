@@ -1,0 +1,915 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。选择性状态空间模型（Mamba / Mamba-2）是如何通过输入依赖离散化、硬件感知并行扫描与结构化状态空间对偶（SSD）突破线性时间建模瓶颈的，为什么工业界偏爱 Attention-SSM 混合架构？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0036-mamba-selective-ssm-ssd-hybrid.md">
+  <meta name="source-sha256" content="92df2fde335ff0d5ed20588b0652e14783bf957bedfac957d4c7b5fd67916be5">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>选择性状态空间模型（Mamba / Mamba-2）是如何通过输入依赖离散化、硬件感知并行扫描与结构化状态空间对偶（SSD）突破线性时间建模瓶颈的，为什么工业界偏爱 Attention-SSM 混合架构？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0036</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title">选择性状态空间模型（Mamba / Mamba-2）是如何通过输入依赖离散化、硬件感知并行扫描与结构化状态空间对偶（SSD）突破线性时间建模瓶颈的，为什么工业界偏爱 Attention-SSM 混合架构？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>在超长上下文大模型架构演进中，标准 Transformer 自注意力（Self-Attention）面临训练计算量 $O(T^2)$ 膨胀与推理期 KV Cache 随序列长度 $T$ 线性增长的双重瓶颈。以 <strong>Mamba（S6）</strong> 与 <strong>Mamba-2（SSD）</strong> 为代表的选择性状态空间模型（Selective State Space Models）实现了训练期 $O(T)$ 线性复杂度与自回归解码期 $O(1)$ 固定状态内存占用，并催生了 Jamba、Zamba2、Nemotron-H、Qwen3-Next 等工业级混合架构（Hybrid Attention-SSM）。</p>
+<p>请深入剖析以下三个核心问题：</p>
+<ol>
+<li><strong>从线性时不变（LTI）SSM 到选择性状态空间（Mamba / S6）</strong>：传统结构化状态空间模型（如 S4）是如何利用零阶保持（ZOH）将连续常微分方程（ODE）离散化并等价转化为全局 FFT 卷积的？为什么 LTI 性质使其无法胜任选择性复制（Selective Copying）与诱导头（Induction Heads）等离散文本任务？Mamba 将 $(\Delta_t, \mathbf{B}_t, \mathbf{C}_t)$ 改为输入依赖后丧失了全局卷积性质，又是如何通过**结合律并行前缀扫描（Parallel Associative Scan）**与 SRAM 融合重计算在 GPU 上实现高效并行训练的？</li>
+<li><strong>Mamba-2 与结构化状态空间对偶（Structured State Space Duality, SSD）</strong>：为什么 Mamba-1 的并行关联扫描仍难以跑满现代 GPU 的矩阵乘法单元（Tensor Cores）？Mamba-2 对状态转移矩阵施加了什么结构约束，从而证明了“选择性 SSM 的 $O(T)$ 线性递推形式”与“1-半可分矩阵（1-Semiseparable Matrix）掩码下的结构化线性注意力二次型形式”严格等价？其分块算法（Chunked SSD）是如何通过四步分解兼顾块内 Tensor Core 加速与块间状态传递的？</li>
+<li><strong>固定维状态的有损压缩瓶颈与 Attention-SSM 混合架构工程落地</strong>：为什么纯 SSM 模型在“大海捞针（Needle-in-a-Haystack）”精确键值检索和上下文学习（In-Context Learning）上弱于标准 Softmax Attention？工业界按 $1:7$ 等比例交替堆叠 Attention 与 Mamba-2 时，推理引擎（如 vLLM、SGLang）在 KV Cache 与递归状态管理、Prefix Caching 复用以及投机解码（Speculative Decoding）回滚上面临哪些独特的工程挑战？</li>
+</ol>
+<p>本题由公开面试题/系统设计整理扩展改编，不是已核实的企业真题；不采信脱离具体条件的性能收益承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-11-08</span></p><div class="prose"><p><strong>Mamba 系列架构的演进围绕“打破 LTI 固定记忆瓶颈 → 对齐 GPU Tensor Core 算力 → 弥合固定容量状态的有损检索短板”三层矛盾展开：（1）Mamba-1（S6）放弃了传统 S4 的线性时不变（LTI）假设，令离散化步长 $\Delta_t = \operatorname{Softplus}(\mathbf{W}_\Delta \mathbf{x}<em>t + b</em>\Delta)$ 及投影矩阵 $\mathbf{B}_t, \mathbf{C}_t$ 随当前输入 Token 动态变化，实现了按内容门控记忆（大 $\Delta_t$ 覆写当前信息、小 $\Delta_t \to 0$ 冻结历史状态忽略噪声）；虽然时变特性破坏了全局卷积核，但一阶线性递推 $\mathbf{h}_t = \bar{\mathbf{A}}<em>t \odot \mathbf{h}</em>{t-1} + \bar{\mathbf{B}}<em>t \mathbf{x}<em>t$ 满足二元结合律 $(a_1, b_1) \oplus (a_2, b_2) = (a_2 a_1, a_2 b_1 + b_2)$，配合片上 SRAM 融合内核得以在 $O(\log T)$ 并行深度下完成训练；（2）Mamba-2 进一步将对角转移矩阵 $\mathbf{A}$ 简化为每个头共享单个标量衰减率 $a_t \mathbf{I}$，提出结构化状态空间对偶（SSD），证明该选择性 SSM 等价于由 1-半可分下三角衰减矩阵 $\mathbf{L}</em>{t,s} = \prod</em>{k=s+1}^t a_k$ 加权的结构化掩码线性注意力 $\mathbf{Y} = (\mathbf{L} \odot (\mathbf{C}\mathbf{B}^\top))\mathbf{X}$，通过分块（Chunking，块长 $Q=64\sim 256$）把核心计算转化为矩阵乘法，使训练吞吐借力 Tensor Core 提升 $2\times\sim 8\times$ 并支持将状态维从 $N=16$ 扩展至 $N=64\sim 256$；（3）由于固定大小状态属于有损压缩，无法像 Softmax Attention 那样无损寻址任意历史 Token，工业界普遍采用 $1:7$ 左右的 Attention-Mamba 混合架构（如 Jamba），在保留精准上下文检索能力的同时将长序列 KV Cache 显存削减约 $87.5%$，但在推理引擎中需将无界增长的 Paged KV Cache 与定长原地更新的 <code>(conv_state, ssm_state)</code> 解耦管理，并通过步进状态快照（State Checkpointing）支持前缀缓存与投机解码拒绝回滚。</strong></p>
+<p>在展开数学推导与代码实现前，建议结合仓内相关题目建立完整知识坐标系：关于标准自注意力、因果掩码及复杂度根源，请参阅 <a href="llm-0010-causal-attention-architecture.html">llm-0010</a>；关于预填充（Prefill）计算受限与解码（Decode）访存带宽受限及 KV Cache 显存账本，请参阅 <a href="llm-0018-kv-cache-prefill-decode.html">llm-0018</a>；关于超长上下文分布式序列并行切分，请参阅 <a href="llm-0033-ring-attention-ulysses-sequence-parallelism.html">llm-0033</a>；关于通过低秩压缩与矩阵吸收削减 KV Cache 的另一条路线（MLA），请参阅 <a href="llm-0034-mla-multi-head-latent-attention-rope-absorption.html">llm-0034</a>。</p>
+<hr />
+<h3 id="1-从-lti-状态空间s4到选择性状态空间mamba--s6">1. 从 LTI 状态空间（S4）到选择性状态空间（Mamba / S6）</h3>
+<h4 id="1连续状态空间方程与零阶保持zoh离散化">（1）连续状态空间方程与零阶保持（ZOH）离散化</h4>
+<p>经典状态空间模型（SSM）对每个隐藏通道 $u(t) \in \mathbb{R}$ 独立维护一个 $N$ 维潜状态向量 $\mathbf{h}(t) \in \mathbb{R}^N$，通过一阶线性常微分方程（ODE）将其映射为输出 $y(t) \in \mathbb{R}$（省略残差跳跃项 $D u(t)$）：</p>
+<p>$$\mathbf{h}'(t) = \mathbf{A} \mathbf{h}(t) + \mathbf{B} u(t), \quad y(t) = \mathbf{C} \mathbf{h}(t)$$</p>
+<p>其中状态演化矩阵 $\mathbf{A} \in \mathbb{R}^{N \times N}$（S4D 与 Mamba 中约束为实对角或复对角矩阵 $\operatorname{diag}(A_1, \dots, A_N)$，且实部 $A_n &lt; 0$ 以保证指数衰减稳定性），输入投影 $\mathbf{B} \in \mathbb{R}^{N \times 1}$，输出投影 $\mathbf{C} \in \mathbb{R}^{1 \times N}$。</p>
+<p>面对离散 Token 序列 ${u_0, u_1, \dots, u_{T-1}}$，引入时间步长参数 $\Delta \in \mathbb{R}_{&gt;0}$，假设输入信号在采样区间 $[t_k, t_k + \Delta)$ 内保持恒定（<strong>零阶保持，Zero-Order Hold, ZOH</strong>），对连续 ODE 积分可得精确离散化递推方程：</p>
+<p>$$\mathbf{h}<em>t = \bar{\mathbf{A}} \mathbf{h}</em>{t-1} + \bar{\mathbf{B}} u_t, \quad y_t = \mathbf{C} \mathbf{h}_t$$</p>
+<p>$$\bar{\mathbf{A}} = \exp(\Delta \mathbf{A}), \quad \bar{\mathbf{B}} = (\Delta \mathbf{A})^{-1} \left(\exp(\Delta \mathbf{A}) - \mathbf{I}\right) \cdot \Delta \mathbf{B} \approx \Delta \mathbf{B}$$</p>
+<p>（注：Mamba-1 官方实现 <code>state-spaces/mamba/mamba_ssm/modules/mamba_simple.py</code> 在工程上对输入侧采用了一阶欧拉近似 $\bar{\mathbf{B}}_t = \Delta_t \mathbf{B}_t$，而对状态转移保持精确指数 $\bar{\mathbf{A}}_t = \exp(\Delta_t \mathbf{A})$；Mamba-3 则引入二阶指数梯形法则修正输入积分）。</p>
+<h4 id="2为什么-lti-ssm-能做全局卷积却在自然语言关键任务上失效">（2）为什么 LTI SSM 能做全局卷积，却在自然语言关键任务上失效？</h4>
+<p>在 S4 / S4D 中，$(\Delta, \mathbf{A}, \mathbf{B}, \mathbf{C})$ 全是与输入 Token 内容无关的静态可学习参数，系统满足<strong>线性时不变性（Linear Time-Invariant, LTI）</strong>。将递推式从 $t=0$ 展开，输出序列 $\mathbf{y}$ 可直接写成输入序列 $\mathbf{u}$ 与固定因果卷积核 $\overline{\mathbf{K}}$ 的一维全局卷积，并利用快速傅里叶变换（FFT）在 $O(T \log T)$ 内并行算出：</p>
+<p>$$y_t = \sum_{s=0}^{t} \left(\mathbf{C} \bar{\mathbf{A}}^{t-s} \bar{\mathbf{B}}\right) u_s \iff \mathbf{y} = \mathbf{u} * \overline{\mathbf{K}}, \quad \overline{\mathbf{K}} = \left(\mathbf{C}\bar{\mathbf{B}}, , \mathbf{C}\bar{\mathbf{A}}\bar{\mathbf{B}}, , \dots, , \mathbf{C}\bar{\mathbf{A}}^{T-1}\bar{\mathbf{B}}\right)$$</p>
+<p>然而，<strong>LTI 恰恰是离散文本建模的致命枷锁</strong>：因为无论当前读到的是核心事实实体还是无意义的语气词/填充符，权重 $(\bar{\mathbf{A}}, \bar{\mathbf{B}}, \mathbf{C})$ 完全固定不变，两点之间的信息传递权重只取决于<strong>相对距离 $(t-s)$</strong>，而与 Token 的<strong>语义内容无关</strong>。这导致 LTI SSM 在两类基础能力上彻底崩溃（Gu &amp; Dao, COLM 2024）：</p>
+<ol>
+<li><strong>选择性复制（Selective Copying）与抗噪过滤</strong>：当关键 Token 之间夹杂随机长度的无关噪声 Token 时，LTI 无法根据内容动态关闭写入门或冻结衰减率。</li>
+<li><strong>诱导头（Induction Heads）与关联回忆</strong>：给定前文模式 <code>[A][B] ... [A]</code> 预测 <code>[B]</code>，模型需要根据当前 Token 内容检索历史状态，固定卷积核无法实现基于内容的寻址。</li>
+</ol>
+<h4 id="3mambas6的选择性机制与硬件感知并行关联扫描parallel-associative-scan">（3）Mamba（S6）的选择性机制与硬件感知并行关联扫描（Parallel Associative Scan）</h4>
+<p>为赋予模型“按内容选择性记忆”的能力，Mamba 令步长 $\Delta_t \in \mathbb{R}^{D}$、写入矩阵 $\mathbf{B}_t \in \mathbb{R}^{N}$ 和读取矩阵 $\mathbf{C}_t \in \mathbb{R}^{N}$ 成为当前输入隐藏状态 $\mathbf{x}<em>t \in \mathbb{R}^{D}$（经宽度 $d</em>{\text{conv}}=4$ 的一维深度因果卷积与 SiLU 激活后）的线性投影函数：</p>
+<p>$$\mathbf{B}_t = \mathbf{W}_B \mathbf{x}_t, \quad \mathbf{C}_t = \mathbf{W}<em>C \mathbf{x}<em>t, \quad \Delta_t = \operatorname{Softplus}\left(\mathbf{W}</em>{\Delta, 2}\left(\mathbf{W}</em>{\Delta, 1} \mathbf{x}<em>t\right) + \mathbf{b}</em>\Delta\right)$$</p>
+<ul>
+<li><strong>与经典 RNN 门控的精确对应定理</strong>：当 $N=1, A=-1$ 时，$\bar{A}_t = \exp(-\Delta_t) = 1 - g_t$，其中 $g_t = 1 - \exp(-\Delta_t) \in (0, 1)$ 严格等价于经典门控循环单元（GRU）的更新门 $\sigma(\cdot)$！
+<ul>
+<li>当遇到<strong>关键信息 Token</strong> 时，模型预测 $\Delta_t \to \infty$，此时 $\bar{\mathbf{A}}_t = \exp(\Delta_t \mathbf{A}) \to \mathbf{0}$，模型彻底清空旧状态并全力写入当前输入 $\bar{\mathbf{B}}_t \mathbf{x}_t$；</li>
+<li>当遇到<strong>无关噪声 Token</strong> 时，模型预测 $\Delta_t \to 0$，此时 $\bar{\mathbf{A}}_t \to \mathbf{1}$ 且 $\bar{\mathbf{B}}_t \to \mathbf{0}$，模型完美保持历史记忆 $\mathbf{h}<em>t \approx \mathbf{h}</em>{t-1}$ 不受污染。</li>
+</ul>
+</li>
+</ul>
+<p><strong>既然失去了 FFT 卷积，Mamba 如何避免退化成慢速串行 RNN？</strong></p>
+<ol>
+<li><strong>二元结合律并行前缀扫描（Blelloch Parallel Prefix Scan, 1990）</strong>：虽然 $\bar{\mathbf{A}}_t, \bar{\mathbf{B}}<em>t$ 随时间变化，但一阶线性仿射变换 $f_t(h) = a_t h + b_t$ 的复合满足严格的<strong>结合律（Associativity）</strong>。定义二元算子 $\oplus$：
+$$(a_1, b_1) \oplus (a_2, b_2) = \left(a_2 \cdot a_1, ;; a_2 \cdot b_1 + b_2\right)$$
+利用该结合律，GPU 可通过上下两趟二叉树规约（Up-sweep / Down-sweep），在 $O(\log T)$ 的并行深度和 $O(T)$ 的总操作数内并行算出所有时刻的状态 $\mathbf{h}</em>{1:T}$。</li>
+<li><strong>SRAM 融合与激活重计算（Hardware-Aware Kernel Fusion）</strong>：扩展后的状态张量 $(\bar{\mathbf{A}}, \bar{\mathbf{B}}\mathbf{x})$ 维度高达 $(B, L, D_{\text{inner}}, N)$（如 $D_{\text{inner}} = 2D = 4096, N = 16$），若将其物化（Materialize）写回高带宽显存（HBM），显存体积是输入 $\mathbf{x}$ 的 $N=16$ 倍，必将卡死在 HBM 带宽上。Mamba 借鉴 FlashAttention 的 IO 感知思想，将 $(\Delta, \mathbf{A}, \mathbf{B}, \mathbf{C}, \mathbf{x})$ 直接加载进高速片上 <strong>SRAM</strong>，在 SRAM 内完成离散化、并行扫描与 $\mathbf{C}_t \mathbf{h}<em>t$ 乘加，**只将最终规约后的 $(B, L, D</em>{\text{inner}})$ 输出写回 HBM**；反向传播时不保存高达 $16\times$ 的中间状态 $\mathbf{h}_t$，而是从 HBM 重新读取输入在 SRAM 中极速重计算。</li>
+</ol>
+<hr />
+<h3 id="2-mamba-2-与结构化状态空间对偶structured-state-space-duality-ssd">2. Mamba-2 与结构化状态空间对偶（Structured State Space Duality, SSD）</h3>
+<h4 id="1为什么-mamba-1-还需要升级到-mamba-2">（1）为什么 Mamba-1 还需要升级到 Mamba-2？</h4>
+<p>Mamba-1 的并行关联扫描本质上执行的是<strong>标量/向量级逐元素乘加（Element-wise / Vector Scan）</strong>，运行在 GPU 的普通 CUDA Cores（SIMT 单元）上，无法调用专为矩阵乘法设计的 <strong>Tensor Cores（MMA 单元）</strong>——而在现代 GPU（如 A100/H100/B200）上，Tensor Core 的浮点算力是普通 CUDA Core 的 $8\times \sim 16\times$！此外，Mamba-1 的状态全部驻留在片上寄存器与 SRAM 中，导致状态维度 $N$ 被限制在 $16$ 左右，难以进一步扩容。</p>
+<h4 id="2结构化状态空间对偶ssd从递推到-1-半可分矩阵1-semiseparable-matrix">（2）结构化状态空间对偶（SSD）：从递推到 1-半可分矩阵（1-Semiseparable Matrix）</h4>
+<p>Dao &amp; Gu（ICML 2024）在 Mamba-2 中对转移矩阵做了一条关键化简：<strong>将对角矩阵 $\mathbf{A}<em>t = \operatorname{diag}(a</em>{t, 1}, \dots, a_{t, N})$ 约束为标量乘以单位阵 $\mathbf{A}_t = a_t \mathbf{I}_N$</strong>（其中 $a_t = \exp(\Delta_t A_{\text{head}}) \in (0, 1)$ 是每个头在时刻 $t$ 共享的标量衰减因子），同时将单通道标量输入 $x_t \in \mathbb{R}$ 扩展为多头向量输入 $\mathbf{x}_t \in \mathbb{R}^P$（通常头维度 $P = 64$ 或 $128$）。</p>
+<p>在此约束下，状态 $\mathbf{H}_t \in \mathbb{R}^{N \times P}$ 的递推式变为外积累加：</p>
+<p>$$\mathbf{H}<em>t = a_t \mathbf{H}</em>{t-1} + \mathbf{b}_t \mathbf{x}_t^\top, \quad \mathbf{y}_t^\top = \mathbf{c}_t^\top \mathbf{H}_t \quad (\mathbf{b}_t, \mathbf{c}_t \in \mathbb{R}^{N \times 1}, ; \mathbf{x}_t, \mathbf{y}_t \in \mathbb{R}^{P \times 1})$$</p>
+<p>将 $\mathbf{H}_t$ 完全展开并代入 $\mathbf{y}_t$，得到任意时刻 $t$ 的输出与历史输入 $\mathbf{x}_s$（$s \le t$）之间的显式线性映射：</p>
+<p>$$\mathbf{y}<em>t^\top = \sum</em>{s=0}^{t} \left(\prod_{k=s+1}^{t} a_k\right) \left(\mathbf{c}_t^\top \mathbf{b}_s\right) \mathbf{x}_s^\top \iff \mathbf{Y} = \mathbf{M} \mathbf{X}, \quad \mathbf{M} = \mathbf{L} \odot \left(\mathbf{C} \mathbf{B}^\top\right)$$</p>
+<p>其中 $\mathbf{L} \in \mathbb{R}^{T \times T}$ 是一个<strong>1-半可分下三角矩阵（1-Semiseparable Matrix）</strong>：</p>
+<p>$$L_{t, s} = \begin{cases} \exp\left(\sum_{k=s+1}^{t} \log a_k\right), &amp; t \ge s \ 0, &amp; t &lt; s \end{cases}$$</p>
+<p><strong>这就是著名的结构化状态空间对偶（SSD）定理</strong>：</p>
+<ul>
+<li><strong>原始递推形式（Linear / Recurrent Form）</strong>：按时间步维护 $\mathbf{H}_t \in \mathbb{R}^{N \times P}$，时间复杂度 $O(T N P)$，适合自回归解码与跨块状态传递；</li>
+<li><strong>对偶二次型形式（Quadratic / Attention Dual Form）</strong>：令 Query 为 $\mathbf{C}$、Key 为 $\mathbf{B}$、Value 为 $\mathbf{X}$，去掉 Softmax 归一化并乘上输入依赖的下三角累积衰减掩码 $\mathbf{L}$，即 $\mathbf{Y} = (\mathbf{L} \odot (\mathbf{C}\mathbf{B}^\top))\mathbf{X}$，时间复杂度 $O(T^2 (N + P))$，完全由密集矩阵乘法（GEMM）构成！</li>
+</ul>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">Mamba-2 分块 SSD (Chunked State Space Duality, 块大小 Q=64~256) 四步矩阵乘法分解流转:
+序列切分为 C = T/Q 个块；块内走 Quadratic Attention (Tensor Core)，块间走 Linear SSM 状态传递:
+
+[Step 1: 块内对角块输出 Y_diag] (Intra-chunk Quadratic GEMM)
+  每个块 c 内部计算 L_blk [Q, Q] ⊙ (C_c @ B_c^T) [Q, Q] @ X_c [Q, P] ──► Y_diag [C, Q, P]
+                                                                              │
+[Step 2: 块内局部状态聚合] (Right Factor B-term GEMM)                         │
+  将块内输入按距块尾的衰减聚合: S_local[c] = sum_s exp(A_end - A_s) B_{c,s} X_{c,s}^T  [C, N, P]
+        │                                                                     │
+        ▼                                                                     ├──► (+) 汇总输出 Y = Y_diag + Y_off
+[Step 3: 跨块边界状态扫描] (Inter-chunk SSM Recurrence, 长度仅 T/Q)           │
+  在 C 个块边界上更新真实状态: S[c] = exp(A_end) * S[c-1] + S_local[c]        │
+        │                                                                     │
+        ▼                                                                     │
+[Step 4: 块间历史状态投影输出 Y_off] (Left Factor C-term GEMM)                │
+  将块首状态 S[c-1] 投影到块内各位置: Y_off[c, l] = exp(A_l) * (C_{c,l}^T @ S[c-1]) ──┘
+</code></pre>
+<h4 id="3为什么-ssd_minimalpy-计算-mathbfl-时严禁直接做前缀和相减后再取指数">（3）为什么 <code>ssd_minimal.py</code> 计算 $\mathbf{L}$ 时严禁直接做前缀和相减后再取指数？</h4>
+<p>在官方源码 <code>state-spaces/mamba/mamba_ssm/modules/ssd_minimal.py</code> 中，作者特意对比了 <code>segsum_unstable</code> 与稳定版 <code>segsum</code>：</p>
+<ul>
+<li>若先算全序列前缀和 $S_t = \sum_{k=0}^t \log a_k$，再通过 $L_{t,s} = \exp(S_t - S_s)$ 构造矩阵，由于 $\log a_k &lt; 0$，当序列较长时 $S_t$ 与 $S_s$ 都会变成绝对值极大的负数；在低精度（FP16/BF16）下先取指数 $\exp(S_t) / \exp(S_s)$ 会立即发生下溢归零（$0/0 = \text{NaN}$），而在上三角区域（$t &lt; s$）差值 $S_t - S_s &gt; 0$ 又会在掩码前触发 $\exp(+\infty)$ 上溢！</li>
+<li>因此，稳定版 <code>segsum(x)</code> 先将对数衰减向量沿列复制并把上三角置零，直接在子区间 $[s+1, t]$ 上做局部下三角累加（Segment Sum），并将上三角填为 $-\infty$ 后再执行 <code>torch.exp</code>，从根源上杜绝了数值溢出。</li>
+</ul>
+<hr />
+<h3 id="3-四大序列建模范式对比与-attention-ssm-混合架构工程挑战">3. 四大序列建模范式对比与 Attention-SSM 混合架构工程挑战</h3>
+<h4 id="1s4mamba-1mamba-2-与-transformer-attention-全景对比">（1）S4、Mamba-1、Mamba-2 与 Transformer Attention 全景对比</h4>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align:left">维度</th>
+<th style="text-align:left">S4 / S4D（LTI SSM）</th>
+<th style="text-align:left">Mamba-1（Selective S6）</th>
+<th style="text-align:left">Mamba-2（SSD）</th>
+<th style="text-align:left">Transformer（GQA / MHA）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>状态转移与投影参数</strong></td>
+<td style="text-align:left">$(\Delta, \mathbf{A}, \mathbf{B}, \mathbf{C})$ 均为静态常数（LTI）</td>
+<td style="text-align:left">$\mathbf{A}$ 为静态对角阵；$(\Delta_t, \mathbf{B}_t, \mathbf{C}_t)$ 依赖输入 $\mathbf{x}_t$</td>
+<td style="text-align:left">$\mathbf{A}_t = a_t \mathbf{I}$（逐头标量衰减）；$(\Delta_t, \mathbf{B}_t, \mathbf{C}_t)$ 依赖输入</td>
+<td style="text-align:left">Query / Key / Value 依赖输入，Softmax 权重覆盖全历史</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>训练期核心算子与硬件</strong></td>
+<td style="text-align:left">全局 FFT 卷积（CUDA Cores）</td>
+<td style="text-align:left">并行关联扫描 Associative Scan（CUDA Cores + SRAM）</td>
+<td style="text-align:left"><strong>分块矩阵乘法 Chunked SSD（Tensor Cores 满载）</strong></td>
+<td style="text-align:left">FlashAttention 分块矩阵乘法（Tensor Cores 满载）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>训练时间复杂度</strong></td>
+<td style="text-align:left">$O(T \log T \cdot D)$</td>
+<td style="text-align:left">$O(T \cdot D \cdot N)$</td>
+<td style="text-align:left">$O(T Q (N+P) + T N P)$（对 $T$ 严格线性）</td>
+<td style="text-align:left">$O(T^2 \cdot H \cdot d_k)$（对 $T$ 二次方）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>典型状态维 $N$ 与头结构</strong></td>
+<td style="text-align:left">$N = 64$（SISO 单输入单输出）</td>
+<td style="text-align:left">$N = 16$（受限于寄存器/SRAM 容量）</td>
+<td style="text-align:left"><strong>$N = 64 \sim 256$</strong>（多头/分组 $G$ 共享 $\mathbf{B}, \mathbf{C}$）</td>
+<td style="text-align:left">无固定状态（缓存全部历史 $T$ 个 Token 的 KV）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>单步 Decode 状态体积</strong></td>
+<td style="text-align:left">$O(1)$：每层固定 $D \times N$</td>
+<td style="text-align:left">$O(1)$：每层固定 $(d_{\text{conv}}-1)D_{\text{in}} + D_{\text{in}} N$</td>
+<td style="text-align:left">$O(1)$：每层固定 $(d_{\text{conv}}-1)D_{\text{in}} + H P N$</td>
+<td style="text-align:left"><strong>$O(T)$ 随序列线性增长</strong>：每层 $2 T n_{kv} d_k$</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>大海捞针（精确召回）能力</strong></td>
+<td style="text-align:left">极弱（无内容选择性）</td>
+<td style="text-align:left">中（受限于 $N=16$ 固定压缩容量）</td>
+<td style="text-align:left">较强（状态容量大 $8\times$，但超长无损逐字复制仍受限）</td>
+<td style="text-align:left"><strong>极强</strong>（保留全部历史 Token 精确副本，无损检索）</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="2为什么纯-mamba-难以完全取代-attention工业界普遍走向-hybrid混合架构">（2）为什么纯 Mamba 难以完全取代 Attention，工业界普遍走向 Hybrid（混合架构）？</h4>
+<p>从信息论角度看，自回归生成中的上下文检索（如从 $128\text{K}$ 文档中精确抄写一段 32 位 UUID 或键值字典查询）需要传递的信息熵随键对数量线性增长。</p>
+<ul>
+<li><strong>纯 SSM 的信息瓶颈</strong>：无论状态设计多精巧，Mamba-1/2 始终把任意长度 $T$ 的历史前缀压缩进一个<strong>固定比特数（如每层约 $1\text{ MiB}$）的矩阵状态 $\mathbf{H}_t$</strong> 中。根据鸽巢原理，固定维度的线性状态必然是<strong>有损压缩（Lossy Compression）</strong>，擅长提取模糊语义摘要与局部语法流，却无法在几十万 Token 中无损记住任意未知位置的精确字面量。</li>
+<li><strong>Attention-SSM 混合黄金配比（如 Jamba / Zamba2 / Nemotron-H）</strong>：实验（Lieber et al., <em>Jamba</em>, ICLR 2025；Dao &amp; Gu, <em>Mamba-2</em>, ICML 2024）证明，只需在模型中保留极少量的标准 Attention 层（通常 <strong>Attention : Mamba 比例为 $1:7$ 甚至 $1:11$</strong>），即可由 Mamba 层承担 $85%\sim 90%$ 的局部上下文平滑、特征变换与状态追踪，再由每隔 7~8 层出现一次的 GQA Attention 层负责跨全局的精确键值寻址（Induction Heads / In-Context Learning）。在 $128\text{K}$ 上下文下，这种 $1:7$ 混合架构不仅在多项基准上超越纯 Transformer，还将 KV Cache 显存直接砍掉 <strong>$87.5%$</strong>！</li>
+</ul>
+<h4 id="3生产级推理引擎vllm--sglang服务-hybrid-模型的三大工程陷阱">（3）生产级推理引擎（vLLM / SGLang）服务 Hybrid 模型的三大工程陷阱</h4>
+<ol>
+<li><strong>异构状态缓存（Paged KV Cache vs 定长 State Cache）的协同分配</strong>：
+<ul>
+<li>Attention 层使用的是按块（Block Size = 16/32 Tokens）动态增长的 <strong>Paged KV Cache</strong>；而 Mamba 层使用的是每个请求（Sequence）固定分配一块内存、每个时间步**原地覆写（In-place Update）**的定长缓存（包含宽度为 $d_{\text{conv}}-1 = 3$ 的滑动窗口 <code>conv_state</code> 和形状为 <code>[n_heads, d_head, d_state]</code> 的 <code>ssm_state</code>）。</li>
+<li>如果把二者混在同一个固定分块的内存池里，要么会因为 Mamba 状态块大小与 KV 页大小不匹配产生严重内部碎片，要么会在请求完成时无法高效回收。现代引擎（如 vLLM 的 <code>MambaCacheManager</code>）专门将 GPU 显存划分为“Paged KV 池”和“按最大并发槽位数 <code>max_num_seqs</code> 预分配的定长 Mamba State 槽位池”。</li>
+</ul>
+</li>
+<li><strong>Prefix Caching（前缀缓存）无法按任意 Token 粒度直接切片复用</strong>：
+<ul>
+<li>在纯 Transformer 中，若命中前 $k$ 个 Token 的公共前缀，只需直接引用前 $k$ 个位置的 KV Cache 即可，因为第 $i$ 个位置的 $(K_i, V_i)$ 永远不会被后续 Token 覆盖。</li>
+<li>但在 Mamba 层中，状态 $\mathbf{H}_t$ 是所有历史 Token 经过指数衰减累加后的<strong>终态覆盖值</strong>——如果不额外保存历史快照，引擎手里只有算到序列末尾 $T$ 时的 $\mathbf{H}_T$，根本无法倒推出中间第 $k$ 个 Token 处的历史状态 $\mathbf{H}_k$！工程上必须在粗粒度块边界（如每 256 或 512 个 Token）对 <code>(conv_state, ssm_state)</code> 额外落盘一份<strong>状态检查点（State Snapshot）</strong>，命中前缀时回退到最近的快照块并重算余下少量 Token。</li>
+</ul>
+</li>
+<li><strong>投机解码（Speculative Decoding）验证拒绝时的状态回滚（State Rollback）</strong>：
+<ul>
+<li>投机解码一次向目标模型喂入 $\gamma + 1$ 个候选草稿 Token。在 Attention 层中，若第 $j$ 个草稿 Token 被拒绝，只需把 KV Cache 的长度指针 <code>seq_len</code> 拨回 $t + j$ 即可（零拷贝回滚）。</li>
+<li>而在 Mamba 层中，若直接原地更新了 <code>ssm_state</code> 和 <code>conv_state</code>，一旦中间草稿 Token 被拒绝，整个递归状态就已经被错误草稿污染！因此，Mamba 层的投机验证算子必须要么在验证前备份上一轮确认状态 $(\mathbf{H}<em>{t}, \mathbf{C}</em>{t}^{\text{conv}})$，要么在单次验证内核中输出全部 $\gamma + 1$ 个候选步的中间状态栈，并在采样确认接受长度 $n_{\text{accept}}$ 后拣选对应的第 $n_{\text{accept}}$ 个状态快照写回主槽位。</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h3 id="4-python-3-标准库实现结合律并行扫描mamba-2-ssd-三态等价与混合架构显存核算">4. Python 3 标准库实现：结合律并行扫描、Mamba-2 SSD 三态等价与混合架构显存核算</h3>
+<p>下面的零依赖 Python 3 标准库代码完整复现并验证了：</p>
+<ol>
+<li><strong>Mamba-1 结合律并行前缀扫描（Parallel Associative Scan）</strong>：利用二元算子 $(a_1, b_1) \oplus (a_2, b_2) = (a_2 a_1, a_2 b_1 + b_2)$ 在 $\log_2 T$ 层并行规约下求解时变递推，验证其与顺序递推的误差 $&lt; 10^{-15}$；</li>
+<li><strong>Mamba-2 结构化状态空间对偶（SSD）</strong>：对齐官方 <code>state-spaces/mamba/mamba_ssm/modules/ssd_minimal.py</code>，同时运行<strong>顺序状态递推（Recurrent）</strong>、<strong>全序列 1-半可分掩码二次型（Quadratic Dual）<strong>与</strong>四步分块算法（Chunked SSD）</strong>，证明三者输出达到 $10^{-15}$ 机器精度等价；</li>
+<li><strong>选择性抗噪过滤与 $128\text{K}$ 混合架构显存对比</strong>：验证动态 $\Delta_t$ 相比 LTI 固定步长对噪声污染的抑制，以及 $128\text{K}$ 上下文下 GQA-8、Mamba-2 与 $1:7$ Hybrid 架构的缓存显存占用。</li>
+</ol>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+from typing import Dict, List, Tuple
+
+
+def parallel_prefix_scan_ssm(
+    a_seq: List[float], bu_seq: List[float], h0: float = 0.0
+) -&gt; List[float]:
+    &quot;&quot;&quot;
+    基于 Blelloch (1990) 二叉树结合律算子 (a1, b1) ⊕ (a2, b2) = (a2 * a1, a2 * b1 + b2)
+    在线性深度 O(log T) 下并行求解时变一阶线性递推 h_t = a_t * h_{t-1} + bu_t
+    &quot;&quot;&quot;
+    n = len(a_seq)
+    assert n &gt; 0 and (n &amp; (n - 1)) == 0, &quot;Length must be a power of 2 for binary tree scan&quot;
+
+    # 1. 定义满足结合律的二元算子: ((e1 ⊕ e2) ⊕ e3) == (e1 ⊕ (e2 ⊕ e3))
+    def op(left: Tuple[float, float], right: Tuple[float, float]) -&gt; Tuple[float, float]:
+        a1, b1 = left
+        a2, b2 = right
+        return (a2 * a1, a2 * b1 + b2)
+
+    # 构造初始序列元素 (将初始状态 h0 融入 t=0 的偏置项: h_0 = a_0 * h0 + bu_0)
+    elems: List[Tuple[float, float]] = [
+        (a_seq[t], bu_seq[t] + (a_seq[0] * h0 if t == 0 else 0.0)) for t in range(n)
+    ]
+
+    # Hillis-Steele / Kogge-Stone 风格并行前缀规约 (log2(n) 步并行阶段)
+    num_levels = int(math.log2(n))
+    cur = elems[:]
+    for level in range(num_levels):
+        stride = 1 &lt;&lt; level
+        nxt = cur[:]
+        for i in range(stride, n):
+            nxt[i] = op(cur[i - stride], cur[i])
+        cur = nxt
+
+    return [b_val for _, b_val in cur]
+
+
+def segsum_stable(log_a: List[float]) -&gt; List[List[float]]:
+    &quot;&quot;&quot;
+    复现 state-spaces/mamba/mamba_ssm/modules/ssd_minimal.py 的 segsum(x):
+    不通过前缀和相减 (避免 exp(cs_t) / exp(cs_s) 上下溢), 而是将下三角直接累加得到 L_{t,s} = exp(sum_{k=s+1}^t log_a[k])
+    &quot;&quot;&quot;
+    T = len(log_a)
+    L = [[0.0] * T for _ in range(T)]
+    for t in range(T):
+        L[t][t] = 1.0  # t == s 时空积为 1 (exp(0))
+        acc_log = 0.0
+        for s in range(t - 1, -1, -1):
+            acc_log += log_a[s + 1]
+            L[t][s] = math.exp(acc_log)
+    return L
+
+
+def ssd_recurrent_vs_dual_and_chunked(
+    X: List[List[float]],
+    log_a: List[float],
+    B: List[List[float]],
+    C: List[List[float]],
+    chunk_size: int = 4,
+) -&gt; Dict[str, float]:
+    &quot;&quot;&quot;
+    验证 Mamba-2 结构化状态空间对偶 (SSD, Dao &amp; Gu ICML 2024 Listing 1):
+    X: [T, P] (单头输入向量, P=d_head)
+    log_a: [T] (逐 Token 对数衰减率 Δ_t * a, 满足 log_a[t] &lt;= 0)
+    B, C: [T, N] (逐 Token 输入/输出投影, N=d_state)
+    对比三种计算路径:
+      1) Recurrent 逐 Token 递推: H_t = exp(log_a[t]) * H_{t-1} + B_t^T @ X_t, Y_t = C_t @ H_t
+      2) Full Semiseparable Quadratic 对偶形式: Y = (L ⊙ (C @ B^T)) @ X
+      3) Chunked SSD 分块混合算法 (ssd_minimal_discrete 四步分解: Y_diag + Y_off)
+    &quot;&quot;&quot;
+    T, P = len(X), len(X[0])
+    N = len(B[0])
+    assert T % chunk_size == 0
+
+    # --- 路径 1: O(T) 顺序状态递推 (Recurrent Scan) ---
+    H = [[0.0] * P for _ in range(N)]  # 状态矩阵 [N, P]
+    Y_rec = [[0.0] * P for _ in range(T)]
+    for t in range(T):
+        a_t = math.exp(log_a[t])
+        for n in range(N):
+            for p in range(P):
+                H[n][p] = a_t * H[n][p] + B[t][n] * X[t][p]
+        for p in range(P):
+            Y_rec[t][p] = sum(C[t][n] * H[n][p] for n in range(N))
+
+    # --- 路径 2: 全序列 1-Semiseparable 矩阵对偶形式 M = L ⊙ (C B^T), Y = M X ---
+    L_full = segsum_stable(log_a)
+    Y_quad = [[0.0] * P for _ in range(T)]
+    for t in range(T):
+        for s in range(t + 1):
+            cb_dot = sum(C[t][n] * B[s][n] for n in range(N))
+            m_ts = L_full[t][s] * cb_dot
+            for p in range(P):
+                Y_quad[t][p] += m_ts * X[s][p]
+
+    # --- 路径 3: Chunked SSD 分块算法 (复现 ssd_minimal_discrete 四步法) ---
+    num_chunks = T // chunk_size
+    Y_chunk = [[0.0] * P for _ in range(T)]
+    S_prev = [[0.0] * P for _ in range(N)]  # 跨块传递的 [N, P] 边界状态
+
+    for c in range(num_chunks):
+        start = c * chunk_size
+        chunk_log_a = log_a[start : start + chunk_size]
+        A_cumsum = []
+        running = 0.0
+        for val in chunk_log_a:
+            running += val
+            A_cumsum.append(running)
+
+        L_blk = segsum_stable(chunk_log_a)
+
+        # Step 1 (Y_diag) &amp; Step 4 (Y_off): 块内二次型矩阵乘 + 块间历史状态读取
+        for l_idx in range(chunk_size):
+            t_idx = start + l_idx
+            # Y_diag: 块内对角块 (L_blk ⊙ (C_blk @ B_blk^T)) @ X_blk
+            y_diag_p = [0.0] * P
+            for s_idx in range(l_idx + 1):
+                cb = sum(C[t_idx][n] * B[start + s_idx][n] for n in range(N))
+                weight = L_blk[l_idx][s_idx] * cb
+                for p in range(P):
+                    y_diag_p[p] += weight * X[start + s_idx][p]
+
+            # Y_off: 块间状态转换 exp(A_cumsum[l]) * (C_{c,l} @ S_{c-1})
+            scale_out = math.exp(A_cumsum[l_idx])
+            y_off_p = [
+                scale_out * sum(C[t_idx][n] * S_prev[n][p] for n in range(N))
+                for p in range(P)
+            ]
+            for p in range(P):
+                Y_chunk[t_idx][p] = y_diag_p[p] + y_off_p[p]
+
+        # Step 2 &amp; Step 3: 更新当前块末尾状态 S_new = exp(A_cumsum[-1]) * S_prev + sum_s exp(A_cumsum[-1]-A_cumsum[s]) B_s^T X_s
+        chunk_total_decay = math.exp(A_cumsum[-1])
+        S_new = [[chunk_total_decay * S_prev[n][p] for p in range(P)] for n in range(N)]
+        for s_idx in range(chunk_size):
+            decay_to_end = math.exp(A_cumsum[-1] - A_cumsum[s_idx])
+            for n in range(N):
+                for p in range(P):
+                    S_new[n][p] += decay_to_end * B[start + s_idx][n] * X[start + s_idx][p]
+        S_prev = S_new
+
+    max_err_quad = max(
+        abs(Y_rec[t][p] - Y_quad[t][p]) for t in range(T) for p in range(P)
+    )
+    max_err_chunk = max(
+        abs(Y_rec[t][p] - Y_chunk[t][p]) for t in range(T) for p in range(P)
+    )
+    return {&quot;max_err_quad&quot;: max_err_quad, &quot;max_err_chunk&quot;: max_err_chunk}
+
+
+def compare_selective_vs_lti_filtering() -&gt; Tuple[float, float]:
+    &quot;&quot;&quot;
+    验证 Mamba 选择性机制 (Selective Δ_t, B_t) vs 传统 LTI SSM (固定 Δ, B):
+    任务: 序列在 t=0 处写入关键信息 token (+1.0), 随后经过 6 个高幅值噪声 token (t=1..6), 在末尾读取状态并还原 t=0 的信号。
+    &quot;&quot;&quot;
+    signal = 1.0
+    stream = [signal, 8.5, -6.2, 9.1, -7.4, 5.8, -8.9]
+    is_relevant = [True, False, False, False, False, False, False]
+    A = -1.0
+
+    # 1. LTI SSM: 所有时间步被迫共享同一个固定步长 Δ=0.25 与固定 B=1.0
+    dt_lti = 0.25
+    a_bar_lti = math.exp(dt_lti * A)
+    b_bar_lti = (a_bar_lti - 1.0) / A  # 精确 ZOH 离散化: A^{-1}(exp(ΔA) - I)B
+    h_lti = 0.0
+    for u_t in stream:
+        h_lti = a_bar_lti * h_lti + b_bar_lti * u_t
+
+    # 2. Selective SSM (Mamba): 遇关键 Token 令 Δ_t=4.0 (强写入), 遇噪声 Token 令 Δ_t=1e-4, B_t=0 (冻结记忆)
+    h_sel = 0.0
+    for u_t, rel in zip(stream, is_relevant):
+        dt_t = 4.0 if rel else 1e-4
+        b_t = 1.0 / ((math.exp(dt_t * A) - 1.0) / A) if rel else 0.0
+        a_bar_t = math.exp(dt_t * A)
+        b_bar_t = ((a_bar_t - 1.0) / A) * b_t
+        h_sel = a_bar_t * h_sel + b_bar_t * u_t
+
+    return abs(h_lti - signal), abs(h_sel - signal)
+
+
+# 1. 验证并行前缀扫描与顺序递推的精确等价性 (T=8)
+a_vals = [0.92, 0.85, 0.99, 0.76, 0.88, 0.95, 0.81, 0.90]
+bu_vals = [0.50, -0.20, 0.05, 0.80, -0.40, 0.15, 0.60, -0.10]
+h0_init = 0.35
+h_seq = []
+h_cur = h0_init
+for a_t, bu_t in zip(a_vals, bu_vals):
+    h_cur = a_t * h_cur + bu_t
+    h_seq.append(h_cur)
+h_scan = parallel_prefix_scan_ssm(a_vals, bu_vals, h0=h0_init)
+scan_max_err = max(abs(x - y) for x, y in zip(h_seq, h_scan))
+
+# 2. 验证 Mamba-2 SSD 三种形态 (Recurrent / Quadratic / Chunked SSD) 的精确等价性 (T=8, chunk_size=4, N=3, P=2)
+T_len = 8
+X_in = [[math.sin(0.5 * t + p) for p in range(2)] for t in range(T_len)]
+log_a_in = [-0.15 - 0.05 * (t % 3) for t in range(T_len)]
+B_in = [[math.cos(0.3 * t - n * 0.4) for n in range(3)] for t in range(T_len)]
+C_in = [[math.sin(0.4 * t + n * 0.5) for n in range(3)] for t in range(T_len)]
+ssd_res = ssd_recurrent_vs_dual_and_chunked(X_in, log_a_in, B_in, C_in, chunk_size=4)
+
+# 3. 验证选择性过滤 vs LTI 噪声污染
+lti_err, sel_err = compare_selective_vs_lti_filtering()
+
+# 4. 核算 128K 上下文下 Mamba-2 vs GQA-8 vs Hybrid (1:7) 的状态显存占用 (64 层, BF16=2 Bytes)
+seq_128k = 131072
+layers = 64
+gqa_kv_gib = (layers * seq_128k * 2 * 8 * 128 * 2) / (1024 ** 3)
+mamba2_state_mib = (layers * (64 * 64 * 128 + 3 * 4096) * 2) / (1024 ** 2)
+hybrid_gib = (8 * seq_128k * 2 * 8 * 128 * 2 + 56 * (64 * 64 * 128 + 3 * 4096) * 2) / (1024 ** 3)
+
+assert scan_max_err &lt; 1e-15
+assert ssd_res[&quot;max_err_quad&quot;] &lt; 1e-14
+assert ssd_res[&quot;max_err_chunk&quot;] &lt; 1e-14
+assert sel_err &lt; 1e-3 and lti_err &gt; 1.5
+
+print(f&quot;1. Parallel Associative Scan vs Sequential: max_err={scan_max_err:.2e}&quot;)
+print(
+    f&quot;2. Mamba-2 SSD Equivalence (T=8, Q=4): &quot;
+    f&quot;Recurrent_vs_Quadratic={ssd_res[&#x27;max_err_quad&#x27;]:.2e}, &quot;
+    f&quot;Recurrent_vs_Chunked={ssd_res[&#x27;max_err_chunk&#x27;]:.2e}&quot;
+)
+print(f&quot;3. Selective Noise Filtering Error: LTI_err={lti_err:.4f} vs Selective_Mamba_err={sel_err:.6f}&quot;)
+print(
+    f&quot;4. 128K Context Memory (64L, BF16): &quot;
+    f&quot;GQA-8={gqa_kv_gib:.2f} GiB, Mamba-2={mamba2_state_mib:.2f} MiB (O(1) fixed!), &quot;
+    f&quot;1:7 Hybrid={hybrid_gib:.2f} GiB&quot;
+)
+print(&quot;All Mamba / SSD / Hybrid mathematical and numerical assertions passed!&quot;)
+</code></pre>
+<p>实际运行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">1. Parallel Associative Scan vs Sequential: max_err=2.22e-16
+2. Mamba-2 SSD Equivalence (T=8, Q=4): Recurrent_vs_Quadratic=8.88e-16, Recurrent_vs_Chunked=8.88e-16
+3. Selective Noise Filtering Error: LTI_err=1.9280 vs Selective_Mamba_err=0.000600
+4. 128K Context Memory (64L, BF16): GQA-8=32.00 GiB, Mamba-2=65.50 MiB (O(1) fixed!), 1:7 Hybrid=4.06 GiB
+All Mamba / SSD / Hybrid mathematical and numerical assertions passed!
+</code></pre>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“Mamba 是线性复杂度 $O(T)$ 模型，是因为它像 S4 一样在训练时把递归展开成了全局 FFT 卷积。”</strong>
+事实：全局 FFT 卷积成立的唯一前提是系统满足<strong>线性时不变（LTI）</strong>，即状态转移核只依赖时间差 $(t-s)$。Mamba 的核心创新恰恰是<strong>打破 LTI</strong>，让 $(\Delta_t, \mathbf{B}_t, \mathbf{C}_t)$ 随每个输入 Token 动态变化，导致任意两点间的转移系数无法合并为静态卷积核。Mamba 训练期之所以仍能并行且保持 $O(T)$ 工作量，靠的是<strong>一阶线性递推的结合律并行前缀扫描（Parallel Associative Scan）</strong>（Mamba-1）或<strong>分块半可分矩阵乘法（Chunked SSD）</strong>（Mamba-2），而非 FFT 卷积。</li>
+<li><strong>误区二：“因为 Mamba 解码时没有随长度增长的 KV Cache（状态大小恒为 $O(1)$），所以在任何上下文长度下，Mamba 的显存占用和首字延迟（TTFT）都一定比 Transformer 小。”</strong>
+事实：Mamba 的定长状态并不是免费的。以 Mamba-2（$H=64, P=64, N=128$）为例，单层 <code>ssm_state</code> 加 <code>conv_state</code> 固定占用约 $536\text{K}$ 个元素（约 $1.02\text{ MiB}$）；而同等规模的 GQA-8（$n_{kv}=8, d_k=128$）每层每 Token 仅需 $2 \times 8 \times 128 = 2048$ 个元素（$4\text{ KiB}$）。简单相除可知，$536,576 / 2048 \approx 262$——即<strong>在短序列（$T &lt; 256$ Tokens）场景下，Mamba 每层固定分配的状态内存反而比 GQA-8 的 KV Cache 更大</strong>！只有当序列长度跨过数百至数千 Token 后，Mamba 的 $O(1)$ 常数显存优势才会真正拉开差距。</li>
+<li><strong>误区三：“Mamba-2 将块内计算转化成了类似 Attention 的矩阵乘法 $\mathbf{Y}_{\text{diag}} = (\mathbf{L} \odot (\mathbf{C}\mathbf{B}^\top))\mathbf{X}$，说明它的总复杂度又退化回了 $O(T^2)$。”</strong>
+事实：Mamba-2 只在<strong>固定大小的局部块（Chunk Size $Q = 64 \sim 256$）内部</strong>构造 $Q \times Q$ 的二次型矩阵，共有 $T/Q$ 个块，因此块内总计算量为 $(T/Q) \cdot O(Q^2 (N+P)) = O(T \cdot Q (N+P))$；而跨块之间（Off-diagonal blocks）则利用 1-半可分矩阵的低秩分解性质，直接通过大小为 $N \times P$ 的递归状态 $\mathbf{S}_c$ 以 $O(T N P)$ 线性传递。对于任意增长的序列长度 $T \gg Q$，由于块长 $Q$ 是固定硬件常数，Mamba-2 的全局渐进时间复杂度依然严格是 <strong>$O(T)$ 线性复杂度</strong>。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/vaibhav3000/s4-to-mamba/blob/8d70fbd792fa502e54059e0b00e79ebf0f049504/docs/interview_guide.md" target="_blank" rel="noopener noreferrer">vaibhav3000/s4-to-mamba (<code>docs/interview_guide.md</code>)</a>（固定 commit <code>8d70fbd</code>）与 <a href="https://github.com/spawn08/llmbase/blob/03f453aaa8c14cd1de6c9d63f0ef79c9a3ece562/docs/interview_questions.md" target="_blank" rel="noopener noreferrer">spawn08/llmbase (<code>docs/interview_questions.md</code>)</a>（固定 commit <code>03f453a</code>），独立重构拓展。</li>
+<li>Gu &amp; Dao, <a href="https://arxiv.org/abs/2312.00752" target="_blank" rel="noopener noreferrer">Mamba: Linear-Time Sequence Modeling with Selective State Spaces</a>，COLM 2024，及官方源码 <a href="https://github.com/state-spaces/mamba/blob/e9594ce1c732d97440f0332fdc43170a2294dbfa/mamba_ssm/modules/mamba_simple.py" target="_blank" rel="noopener noreferrer">state-spaces/mamba (<code>mamba_ssm/modules/mamba_simple.py</code>)</a>（固定 commit <code>e9594ce</code>）：选择性参数投影、ZOH 离散化与 SRAM 融合并行扫描。</li>
+<li>Dao &amp; Gu, <a href="https://arxiv.org/abs/2405.21060" target="_blank" rel="noopener noreferrer">Transformers are SSMs: Generalized Models and Efficient Algorithms Through Structured State Space Duality</a>，ICML 2024，及官方源码 <a href="https://github.com/state-spaces/mamba/blob/e9594ce1c732d97440f0332fdc43170a2294dbfa/mamba_ssm/modules/ssd_minimal.py" target="_blank" rel="noopener noreferrer">state-spaces/mamba (<code>mamba_ssm/modules/ssd_minimal.py</code>)</a>（固定 commit <code>e9594ce</code>）：1-半可分矩阵对偶定理、稳定 <code>segsum</code> 与四步分块 SSD 算法。</li>
+<li>Lieber et al., <a href="https://arxiv.org/abs/2403.19887" target="_blank" rel="noopener noreferrer">Jamba: A Hybrid Transformer-Mamba Language Model</a>，ICLR 2025：Attention 与 Mamba $1:7$ 混合交替架构、长上下文大海捞针检索与显存收益分析。</li>
+<li>Lahoti et al., <a href="https://arxiv.org/abs/2603.15569" target="_blank" rel="noopener noreferrer">Mamba-3: Improved Sequence Modeling using State Space Principles</a>，ICLR 2026：指数梯形离散化、复数旋转状态转移（等价数据依赖 RoPE）与 MIMO 状态空间扩展。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-11-08</strong>。仅执行标准库下结合律并行前缀扫描、Mamba-2 SSD 三态数值等价性、选择性噪声过滤及显存账本核算验证，未运行多卡 GPU Triton 内核实机评测。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">为什么 Mamba-1 / Mamba-2 模块都不需要像 Transformer 那样添加显式位置编码（如 RoPE 或 ALiBi）？如果在 Mamba-2 的 $\mathbf{B}_t, \mathbf{C}_t$ 上强行施加类似 RoPE 的复数相位旋转，会带来什么实质性改进（如 Mamba-3）？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么 Mamba-1 / Mamba-2 模块都不需要像 Transformer 那样添加显式位置编码（如 RoPE 或 ALiBi）？如果在 Mamba-2 的 $\mathbf{B}_t, \mathbf{C}_t$ 上强行施加类似 RoPE 的复数相位旋转，会带来什么实质性改进（如 Mamba-3）？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>标准自注意力（Self-Attention）在去掉因果掩码后是严格<strong>置换等变（Permutation-Equivariant）<strong>的集合算子——打乱输入 Token 顺序不会改变两两内积，因此必须靠 RoPE 注入相对位置。而 SSM 本质上是非交换的因果状态递推 $\mathbf{h}_t = \bar{\mathbf{A}}<em>t \mathbf{h}</em>{t-1} + \bar{\mathbf{B}}_t \mathbf{x}_t$，每一步乘上的衰减因子 $\bar{\mathbf{A}}_t &lt; 1$ 天然编码了时间先后与相对距离，因此无需额外位置编码即可感知语序。
+然而，Mamba-1 和 Mamba-2 将状态转移参数限制为</strong>非负实数衰减 $\bar{\mathbf{A}}_t \in (0, 1)^N$</strong>。代数理论（Grazzi et al., 2024; Lahoti et al., <em>Mamba-3</em>, ICLR 2026）证明：纯正实数特征值只能对状态执行单调缩放（衰减），无法让状态在隐藏空间内发生相位翻转或周期旋转，导致实数 Mamba-1/2 无法解决简单的<strong>奇偶校验（Parity / 累积 XOR）<strong>和模运算状态追踪问题！<strong>Mamba-3</strong> 通过将转移矩阵恢复为复数形式 $A = -\exp(a_{\text{real}}) + i\theta$（经代数变换证明其等价于在输入/输出投影 $\mathbf{B}_t, \mathbf{C}_t$ 上施加</strong>数据依赖的旋转位置编码 Data-dependent RoPE</strong>），在不增加状态内存的前提下恢复了完整的有限状态机追踪能力。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">为什么 Mamba 模块在进入选择性状态空间（SSM）之前，始终固定串联一层卷积核宽度 $d_{\text{conv}} = 4$ 的一维深度因果卷积（Depthwise Causal Conv1d）？直接把 Token 投影后送入 SSM 有什么缺陷？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么 Mamba 模块在进入选择性状态空间（SSM）之前，始终固定串联一层卷积核宽度 $d_{\text{conv}} = 4$ 的一维深度因果卷积（Depthwise Causal Conv1d）？直接把 Token 投影后送入 SSM 有什么缺陷？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>在 Mamba / Mamba-2 中，选择性参数 $(\Delta_t, \mathbf{B}<em>t, \mathbf{C}<em>t)$ 是直接由当前时刻特征线性投影生成的。如果没有前置的短因果卷积，时刻 $t$ 决定“是否将该 Token 写入长期记忆（$\Delta_t, \mathbf{B}<em>t$）”时，模型只能看到孤立的第 $t$ 个 Token 自身，完全看不到局部上下文（如前一个词是否定词还是修饰词，或子词 Token 拼接而成的完整词义）。宽度为 $d</em>{\text{conv}}=4$ 的轻量级 Depthwise Conv1d 仅消耗极少参数（每通道 4 个权重）和每层 $(d</em>{\text{conv}}-1) \times D</em>{\text{inner}}$ 的固定缓存，就为后续生成 $(\Delta_t, \mathbf{B}_t, \mathbf{C}_t)$ 提供了局部 $4$-gram 滑动窗口感受野，并有效抑制了单 Token 局部抖动导致的误触发写入。</p>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">在大规模分布式训练中，当单条样本长度达到百万 Token（$1\text{M}$ Context）时，Mamba-2 的序列并行（Sequence Parallelism）切分方式与 Transformer 的 Ring Attention 有何本质差异？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：在大规模分布式训练中，当单条样本长度达到百万 Token（$1\text{M}$ Context）时，Mamba-2 的序列并行（Sequence Parallelism）切分方式与 Transformer 的 Ring Attention 有何本质差异？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>在 Transformer 的 Ring Attention（见 <a href="llm-0033-ring-attention-ulysses-sequence-parallelism.html">llm-0033</a>）中，序列被切分到 $P_{\text{sp}}$ 张 GPU 后，每个位置都需要与所有历史分片的 KV 块做内积，因此必须通过环形点对点通信流转完整的 KV 张量，跨卡通信量高达 $O(T \cdot d)$。
+而在 Mamba-2（SSD）中，得益于分块半可分分解（<code>ssd_minimal_discrete</code> 的 Step 2–4），每个 GPU 持有一个长度为 $T / P_{\text{sp}}$ 的连续子序列，<strong>各卡完全可以在本地独立并行算完本分片内部的对角块输出 $\mathbf{Y}<em>{\text{diag}}$ 以及本分片对状态的净贡献 $\mathbf{S}</em>{\text{local}}$</strong>；跨 GPU 之间只需要传递一个<strong>体积极小且与序列长度 $T$ 无关的边界状态矩阵 $\mathbf{S} \in \mathbb{R}^{H \times P \times N}$（每层仅约 $1\text{ MiB}$）</strong>，通过一次轻量级跨卡前缀扫描即可合成全局输出 $\mathbf{Y}_{\text{off}}$，通信开销比 Ring Attention 低数个数量级！</p>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0036 · 单题笔记</span><a href="../questions/llm-0036-mamba-selective-ssm-ssd-hybrid.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0036", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
