@@ -1499,6 +1499,17 @@
       "images": 0
     },
     {
+      "id": "llm-0036",
+      "file": "llm-0036-mamba-selective-ssm-ssd-hybrid.html",
+      "source": "questions/llm-0036-mamba-selective-ssm-ssd-hybrid.md",
+      "source_sha256": "92df2fde335ff0d5ed20588b0652e14783bf957bedfac957d4c7b5fd67916be5",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
