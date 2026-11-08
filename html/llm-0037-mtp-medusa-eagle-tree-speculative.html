@@ -1,0 +1,949 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。多 Token 预测（MTP）、Medusa 与 EAGLE（1/2/3）是如何通过特征层自回归、训练时测试与树状注意力（Tree Attention）突破自投机解码瓶颈的？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0037-mtp-medusa-eagle-tree-speculative.md">
+  <meta name="source-sha256" content="5fbc1841b9478f92f935b738f6d79d51a0feda93a652e5f57a0d996e3466ee1f">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>多 Token 预测（MTP）、Medusa 与 EAGLE（1/2/3）是如何通过特征层自回归、训练时测试与树状注意力（Tree Attention）突破自投机解码瓶颈的？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0037</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title">多 Token 预测（MTP）、Medusa 与 EAGLE（1/2/3）是如何通过特征层自回归、训练时测试与树状注意力（Tree Attention）突破自投机解码瓶颈的？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>在 LLM 推理部署中，经典的双模型投机解码（Draft-Target Speculative Decoding）虽然能利用拒绝采样（Rejection Sampling）在不改变输出分布的前提下摊薄访存带宽开销，但在工业界落地时却常受困于“缺乏同词表同分布的高质量小草稿模型、维护双套权重与异构 KV Cache 显著挤占显存、以及单条链式草稿在首错位置即截断”等工程痛点。为此，业界演进出了以 <strong>Medusa</strong>、<strong>EAGLE（EAGLE-1 / EAGLE-2 / EAGLE-3）</strong> 以及 <strong>原生多 Token 预测（Native Multi-Token Prediction, MTP，如 Meta MTP 与 DeepSeek-V3 MTP）</strong> 为代表的**自投机（Self-Speculation）与树状验证（Tree Verification）**技术体系。</p>
+<p>请深入剖析以下三个核心问题：</p>
+<ol>
+<li><strong>从并行独立头到因果链式 MTP（Medusa / Meta MTP vs DeepSeek-V3 MTP）</strong>：Medusa 与早期并行 MTP 是如何在共享主干最终隐藏态 $\mathbf{h}<em>t$ 上挂载多个独立预测头的？为什么独立预测头在多模态/多分支分布下会发生严重的“模态碰撞（Modality Collision）”导致连贯性崩塌？DeepSeek-V3 的序列式 MTP（Sequential MTP）是如何通过 <code>RMSNorm</code> 特征拼接、共享词表嵌入与输出头（Shared Embedding &amp; LM Head）以及切片交叉熵损失 $\mathcal{L}</em>{\text{MTP}}$ 同时兼顾预训练表征增强与推理期投机解码的？</li>
+<li><strong>从 Token 层到特征层自回归及训练时测试（EAGLE-1/2 到 EAGLE-3）</strong>：为什么 EAGLE-1 指出“直接从特征 $\mathbf{f}<em>t$ 自回归外推下一特征 $\mathbf{f}</em>{t+1}$ 仍存在采样不确定性”，必须将上一步已采样出的 Token Embedding $\mathbf{e}<em>{t+1}$ 一并拼入输入？既然 EAGLE-1/2 已经消除了采样分支不确定性，为什么 EAGLE-3 发现其 Smooth L1 特征回归损失 $\mathcal{L}</em>{\text{fea}}$ 反而在大数据训练下成为性能上限瓶颈，并改用<strong>训练时测试（Training-Time Test, TTT）</strong>、<strong>低中高三层特征融合</strong>与**草稿小词表映射（<code>d2t</code> / <code>t2d</code>）**实现进一步跃升？</li>
+<li><strong>树状注意力（Tree Attention）单次前向验证与 KV Cache 原地压缩</strong>：当草稿模块给出多步 Top-$K$ 候选树时，如何在目标模型**单次前向传播（Single Forward Pass）**中同时验证数十条候选分支而不产生跨分支信息泄露？请结合 Medusa / EAGLE 源码剖析二维偏序掩码 <code>medusa_attn_mask</code>、同深共享位置编码 <code>medusa_position_ids</code>、叶子路径提取矩阵 <code>retrieve_indices</code>、熵自适应典型接受准则（Typical Acceptance）以及验证通过后 KV Cache 的原地拣选压缩（In-place Compaction）机制。</li>
+</ol>
+<p>本题由公开面试题/系统设计整理扩展改编，不是已核实的企业真题；不采信脱离具体条件的性能收益承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-11-09</span></p><div class="prose"><p><strong>现代自投机与多 Token 预测架构的演进，本质上是围绕“消除草稿生成的条件独立性误差 → 消除多步滚动的训练-推理暴露偏差 → 用树状偏序掩码最大化单次验证期望接受长度”三条主线展开的：（1）Medusa 与 Meta 并行 MTP 在主模型顶层隐藏态 $\mathbf{h}<em>t$ 后并联 $K$ 个相互独立的预测头，虽免去了外部草稿模型，但因预测第 $t+2$ 步时对第 $t+1$ 步的实际采样结果 $\hat{t}</em>{t+1}$ 处于“盲猜”状态，在双峰同义词或分支语境下极易拼出语法互斥的废案；DeepSeek-V3 的序列式 MTP 通过在第 $k$ 层级联模块中显式融合上一深度隐藏态与未来位置 Token Embedding $\mathbf{h}<em>i^{\prime k} = M_k [\operatorname{RMSNorm}(\mathbf{h}<em>i^{k-1}); \operatorname{RMSNorm}(\operatorname{Emb}(t</em>{i+k}))]$，并复用主模型 Embedding 与 LM Head，以极低显存开销重建了完整因果链；（2）EAGLE-1/2 揭示了隐藏特征比离散 Token 更具规律性，但特征演化受随机采样分支支配，故采用单层自回归 Decoder 融合 $(\mathbf{f}<em>t, \mathbf{e}</em>{t+1})$ 预测 $\hat{\mathbf{f}}</em>{t+1}$；EAGLE-3 进一步指出强迫草稿层用 Smooth L1 损失去逐元素模仿主模型顶层特征会锁死表达空间、且 Teacher-Forcing 训练无法抵御多步自回归特征漂移，因而移除特征回归损失，改用拼接主模型低/中/高三层特征并在训练前向循环中直接回喂自身预测特征（Training-Time Test, TTT）端到端优化交叉熵；（3）在验证期，目标模型利用二维偏序掩码 <code>tree_attn_mask</code>（仅对当前节点的直系祖先置 1）和按树深度分配的 <code>position_ids</code>，在一次 Forward 中并行评估整棵稀疏草稿树，随后通过 <code>retrieve_indices</code> 聚集出各叶子分支的对数似然或无损拒绝采样结果，并将胜出路径对应的离散 KV Cache 槽位原地搬移（<code>dst.copy_(tgt)</code>）到连续前缀末尾。</strong></p>
+<p>在深入拆解架构公式与源码实现之前，建议先结合题库内已有的基础题目建立上下文连接：关于经典双模型 Speculative Decoding 的无损拒绝采样数学证明（$\min(1, p(x)/q(x))$ 与残差分布修正）及适用边界，请参阅 <a href="llm-0006-speculative-decoding.html">llm-0006</a>；关于自回归模型 Next-Token Prediction 的训练与推理差异，请参阅 <a href="llm-0008-next-token-training-inference.html">llm-0008</a>；关于 Prefill 计算受限与 Decode 访存带宽受限（Memory-bound）的算术强度分析，请参阅 <a href="llm-0018-kv-cache-prefill-decode.html">llm-0018</a>；关于 DeepSeek-V3 主干网络中与 MTP 配合降低 KV 带宽的 MLA 架构，请参阅 <a href="llm-0034-mla-multi-head-latent-attention-rope-absorption.html">llm-0034</a>。</p>
+<hr />
+<h3 id="1-从并行独立预测头medusa--meta-mtp到序列式因果链deepseek-v3-mtp">1. 从并行独立预测头（Medusa / Meta MTP）到序列式因果链（DeepSeek-V3 MTP）</h3>
+<h4 id="1并行独立头的结构与模态碰撞modality-collision根源">（1）并行独立头的结构与“模态碰撞（Modality Collision）”根源</h4>
+<p>在标准自回归解码中，每次生成 1 个 Token 都要从高带宽显存（HBM）完整读取一遍数十 GB 的模型权重，算术强度（Arithmetic Intensity）极低。<strong>Medusa</strong>（Cai et al., ICML 2024）与 <strong>Meta Native MTP</strong>（Gloeckle et al., ICML 2024）提出了最直观的无外部草稿模型方案：在主模型最后一层的隐藏状态 $\mathbf{h}_t \in \mathbb{R}^d$ 之上，并联挂载 $K$ 个轻量级预测头（如 Medusa 中每个头为带残差连接的单层 SiLU MLP + 独立线性分类器）：</p>
+<p>$$\mathbf{z}<em>t^{(k)} = \mathbf{W}</em>{2}^{(k)} \left( \mathbf{h}<em>t + \operatorname{SiLU}\left(\mathbf{W}</em>{1}^{(k)} \mathbf{h}<em>t\right) \right), \quad P^{(k)}(x</em>{t+k+1} \mid \mathbf{x}_{\le t}) = \operatorname{Softmax}\left(\mathbf{z}_t^{(k)}\right), \quad k \in {1, \dots, K}$$</p>
+<p>这种并行结构的致命数学缺陷在于<strong>条件独立性假设（Conditional Independence Assumption）</strong>：</p>
+<p>$$P_{\text{parallel}}(x_{t+1}, x_{t+2} \mid \mathbf{x}<em>{\le t}) = P^{(0)}(x</em>{t+1} \mid \mathbf{x}<em>{\le t}) \cdot P^{(1)}(x</em>{t+2} \mid \mathbf{x}<em>{\le t}) \neq P(x</em>{t+1} \mid \mathbf{x}<em>{\le t}) \cdot P(x</em>{t+2} \mid \mathbf{x}<em>{\le t}, x</em>{t+1})$$</p>
+<ul>
+<li><strong>模态碰撞实例</strong>：假设当前上下文是 <code>The capital of France is</code> 或一段代码前缀，模型对于后续紧跟的表达存在两个概率各占 $50%$ 的合法分支：分支 A 为 <code>&quot;located in&quot;</code>，分支 B 为 <code>&quot;Paris ,&quot;</code>。</li>
+<li>此时第 0 头（主 LM Head）对 $t+1$ 位置预测 <code>{&quot;located&quot;: 0.5, &quot;Paris&quot;: 0.5}</code>；而第 1 头在预测 $t+2$ 位置时，<strong>根本不知道第 0 头在运行时采样出了 <code>&quot;located&quot;</code> 还是 <code>&quot;Paris&quot;</code></strong>，只能输出边缘分布（Marginal Distribution）<code>{&quot;in&quot;: 0.5, &quot;,&quot;: 0.5}</code>。</li>
+<li>如果两个头各自独立取 Top-1 或独立采样，就会有 $2 \times 0.5 \times 0.5 = 50%$ 的概率组合出 <code>&quot;located ,&quot;</code> 或 <code>&quot;Paris in&quot;</code> 这样完全不通顺的跨模态碰撞废案！为了兜住正确组合，Medusa 被迫在每个头展开 Top-$k$ 笛卡尔积（候选树节点数随深度呈指数级爆炸）。</li>
+</ul>
+<h4 id="2deepseek-v3-的序列式-mtpsequential-mtp数学公式与零冗余设计">（2）DeepSeek-V3 的序列式 MTP（Sequential MTP）数学公式与零冗余设计</h4>
+<p>为彻底根除独立头的模态碰撞，同时在预训练期利用多步监督信号迫使主干网络“提前规划（Pre-plan）”未来语义表征，<strong>DeepSeek-V3</strong>（arXiv:2412.19437, §2.2）设计了包含 $D$ 个串行深度的序列式 MTP 模块（实际预训练设置 $D=1$，即额外预测第 $t+2$ 个 Token）。</p>
+<p>对于输入序列 $t_{1:T}$ 中的第 $i$ 个位置，在第 $k \in {1, \dots, D}$ 个预测深度上，DeepSeek-V3 包含四个核心组件：<strong>与主模型完全共享的词嵌入层 $\operatorname{Emb}(\cdot)$</strong>、<strong>与主模型完全共享的输出头 $\operatorname{OutHead}(\cdot)$</strong>、一个独立的单层 Transformer 块 $\operatorname{TRM}_k(\cdot)$ 以及一个线性降维投影矩阵 $M_k \in \mathbb{R}^{d \times 2d}$。其前向流转严格遵循以下三步方程（DeepSeek-V3 Eq. 21–23）：</p>
+<ol>
+<li><strong>双源归一化与特征-Token 拼接投影</strong>：将第 $i$ 个位置在上一深度 $(k-1)$ 的隐藏表征 $\mathbf{h}_i^{k-1} \in \mathbb{R}^d$（当 $k=1$ 时即为主模型最终层输出 $\mathbf{h}_i^{\text{main}}$）与偏移位置 $(i+k)$ 的 Token 嵌入分别做 <code>RMSNorm</code>，拼接为 $2d$ 维向量后经 $M_k$ 压回 $d$ 维：
+$$\mathbf{h}_i^{\prime k} = M_k \left[ \operatorname{RMSNorm}\left(\mathbf{h}<em>i^{k-1}\right) ,;, \operatorname{RMSNorm}\left(\operatorname{Emb}\left(t</em>{i+k}\right)\right) \right] \in \mathbb{R}^d$$</li>
+<li><strong>有效切片区间上的单层 Transformer 编码</strong>：由于序列末尾缺少足够长的未来 Ground-Truth Token，第 $k$ 深度仅在有效切片区间 $1 : T-k$ 上运行因果 Transformer 块：
+$$\mathbf{h}_{1:T-k}^k = \operatorname{TRM}<em>k\left(\mathbf{h}</em>{1:T-k}^{\prime k}\right)$$</li>
+<li><strong>共享输出头预测未来第 $i+k+1$ 个 Token 分布</strong>：
+$$P_{i+k+1}^k = \operatorname{OutHead}\left(\mathbf{h}_i^k\right) \in \mathbb{R}^V$$</li>
+</ol>
+<ul>
+<li><strong>训练目标与梯度切片归一化（DeepSeek-V3 Eq. 24–25）</strong>：第 $k$ 深度的预测目标是真实序列切片 $t_{2+k : T+1}$（注意下标从 $2+k$ 开始：因为 $i=1$ 时已经消费了 $t_{1+k}$ 的 Embedding，预测的是 $t_{2+k}$），损失按序列总长 $T$ 归一化并以权重 $\lambda / D$ 汇入总损失：
+$$\mathcal{L}<em>{\text{MTP}}^k = -\frac{1}{T} \sum</em>{i=2+k}^{T+1} \log P_i^k\left[t_i\right], \qquad \mathcal{L}<em>{\text{MTP}} = \frac{\lambda}{D} \sum</em>{k=1}^{D} \mathcal{L}_{\text{MTP}}^k$$</li>
+<li><strong>为什么必须共享 $\operatorname{Emb}$ 与 $\operatorname{OutHead}$？</strong> 在词表规模 $V = 129,280$、隐藏维 $d = 7168$ 的现代大模型中，单独一个输出矩阵 $\mathbf{W}<em>{\text{head}} \in \mathbb{R}^{V \times d}$ 就高达 $9.26\text{ 亿}$ 参数（BF16 下约 $1.85\text{ GiB}$）。若像 Medusa-1 那样为每个预测头独立维护分类矩阵，不仅显存与流水线并行（DualPipe）通信开销剧增，而且还会迫使草稿模块学习一套与主模型解耦的独立特征空间。共享词表层使得 MTP 模块仅需增加 1 层轻量 Transformer Block，且在推理时既可直接丢弃 MTP 模块零开销运行主模型，又可将训练期的 Ground-Truth $t</em>{i+k}$ 替换为主模型刚采样出的 $\hat{t}_{i+k}$，无缝化身为高接受率（约 $85%\sim 90%$）的自投机草稿器！</li>
+</ul>
+<hr />
+<h3 id="2-eagle-12-到-eagle-3特征不确定性消解与训练时测试training-time-test">2. EAGLE-1/2 到 EAGLE-3：特征不确定性消解与训练时测试（Training-Time Test）</h3>
+<h4 id="1eagle-1-的核心洞见为什么只外推特征还不够必须延迟一步拼入-token-embedding">（1）EAGLE-1 的核心洞见：为什么“只外推特征”还不够，必须延迟一步拼入 Token Embedding？</h4>
+<p><strong>EAGLE-1</strong>（Li et al., ICML 2024）从动力学视角审视投机草稿：直接预测离散 Token 分布变化剧烈，而主模型倒数第二层（LM Head 之前）的连续隐藏特征序列 ${\mathbf{f}_1, \mathbf{f}_2, \dots, \mathbf{f}_t}$ 具有更平滑的局部马尔可夫规律。</p>
+<p>然而，EAGLE-1 发现了一个极具迷惑性的陷阱：<strong>如果直接训练一个自回归网络从历史特征 $\mathbf{f}<em>{1:t}$ 预测下一时刻特征 $\hat{\mathbf{f}}</em>{t+1}$，准确率依然很低！</strong></p>
+<ul>
+<li><strong>根源在于特征演化的分支不确定性（Feature Uncertainty under Sampling）</strong>：在时刻 $t$，主模型特征 $\mathbf{f}<em>t$ 经 LM Head 映射为概率分布 $p</em>{t+1} = \operatorname{Softmax}(\mathbf{W}<em>{\text{head}} \mathbf{f}<em>t)$，随后采样器从中随机采样出具体 Token $t</em>{t+1}$（例如在 <code>&quot;I&quot;</code> 之后可能采出 <code>&quot;am&quot;</code>，也可能采出 <code>&quot;always&quot;</code>）。在主模型内部，下一步的真实特征 $\mathbf{f}</em>{t+1}$ 是以<strong>已经采样落定的具体 Token $t_{t+1}$</strong> 为输入算出来的——如果草稿网络看不见采样结果 $t_{t+1}$，仅凭 $\mathbf{f}_t$ 就只能预测所有可能采样分支的平均特征重心！</li>
+<li><strong>EAGLE-1 的移位拼接解法</strong>：将特征序列与<strong>超前一个时间步的已采样 Token 嵌入</strong>对齐拼接，即在预测 $\hat{\mathbf{f}}<em>{t+1}$ 时，将上一特征 $\mathbf{f}<em>t$ 与刚刚采样出的 Token 嵌入 $\mathbf{e}</em>{t+1} = \operatorname{Emb}(\hat{t}</em>{t+1})$ 拼接后通过全连接层 <code>fc(2d -&gt; d)</code> 送入单层 Draft Decoder：
+$$\hat{\mathbf{f}}<em>{t+1} = \operatorname{DraftDecoder}\left( \mathbf{W}</em>{\text{fc}} \left[\mathbf{f}<em>t ,;, \mathbf{e}</em>{t+1}\right] \right), \qquad \mathcal{L}<em>{\text{EAGLE-1}} = \operatorname{SmoothL1}\left(\hat{\mathbf{f}}</em>{t+1}, , \mathbf{f}<em>{t+1}\right) + w</em>{\text{cls}} \cdot \operatorname{KL}\left(p_{t+2} \parallel \hat{p}_{t+2}\right)$$
+（注：在官方源码 <code>SafeAILab/EAGLE/eagle/train/main.py</code> 中，为缓解推理期特征噪声，EAGLE-1 只能在训练数据上人为叠加静态高斯白噪声 <code>AddGaussianNoise(mean=0, std=0.2)</code>）。</li>
+<li><strong>EAGLE-2</strong>（Li et al., EMNLP 2024）在此基础上指出：不同上下文的预测难度差异极大（如代码缩进或固定成语极易预测，而创意开头极难预测）。EAGLE-2 观察到草稿模型的<strong>节点置信度与真实接受率高度正相关</strong>，因此将 EAGLE-1 的静态固定树改为<strong>基于上下文置信度的两阶段动态草稿树（Context-Aware Dynamic Draft Tree）</strong>：扩展阶段（Expansion）在每层仅保留全局累计置信度路径概率 $\prod_j c_j$ 最高的 Top-$k$ 节点继续向下生长；重排阶段（Reranking）从整棵生成树的所有节点中按全局先验概率拣选价值最高的 $M$ 个节点打包送入目标模型验证。</li>
+</ul>
+<h4 id="2eagle-3-的三大范式重构为什么删掉特征回归损失反而让加速比大幅跃升">（2）EAGLE-3 的三大范式重构：为什么删掉特征回归损失反而让加速比大幅跃升？</h4>
+<p>尽管 EAGLE-1/2 取得了显著加速，<strong>EAGLE-3</strong>（Li et al., <em>Scaling up Inference Acceleration of Large Language Models via Training-Time Test</em>, arXiv:2503.01840）通过严格的缩放定律（Scaling Law）实验发现：<strong>当训练语料扩大数倍时，EAGLE-1/2 的接受率几乎停滞不前！</strong> 结合官方源码 <code>SafeAILab/EAGLE/eagle/traineagle3/cnets.py</code>，EAGLE-3 指出了前代架构的三大结构性枷锁并给出了根治方案：</p>
+<ol>
+<li><strong>废除 Smooth L1 特征模仿约束，结合“训练时测试（Training-Time Test, TTT）”消除多步暴露偏差</strong>：
+<ul>
+<li>在 EAGLE-1/2 中，训练时输入的特征全都是主模型算出的完美真值 $\mathbf{f}<em>t$（Teacher-Forcing），并通过 $\mathcal{L}</em>{\text{fea}} = \operatorname{SmoothL1}(\hat{\mathbf{f}}<em>{t+1}, \mathbf{f}</em>{t+1})$ 强迫 1 层草稿网络去精确复刻 64 层主模型的顶层向量。</li>
+<li>这带来两个恶果：第一，1 层小网络容量有限，强行拟合高维精确坐标会挤占其对 Top-1 Token 排序边界的表达能力；第二，推理时从第 2 步起输入的是带有偏差的预测特征 $\hat{\mathbf{f}}<em>{t+1} = \mathbf{f}</em>{t+1} + \boldsymbol{\epsilon}_1$，单步 Teacher-Forcing 训练出的网络从未见过自身的预测残差分布，导致多步自回归滚动时误差呈指数级放大！</li>
+<li><strong>如果仅仅简单删掉 $\mathcal{L}_{\text{fea}}$ 而不改训练流程会怎样？</strong> 论文消融实验证明，若仍在单步 Teacher-Forcing 下直接去掉 $\mathcal{L}<em>{\text{fea}}$，第 2 步以后的草稿接受率会瞬间崩塌！因为缺少了 $\mathcal{L}</em>{\text{fea}}$ 的拉拽，草稿层输出的向量 $\hat{\mathbf{a}}_{t+1}$ 会徹底偏离输入分布，下一步再把它当成隐藏态喂回自己时就会发生灾难性的分布外失配（OOD）。</li>
+<li><strong>EAGLE-3 的 TTT 闭环解法</strong>：彻底移除 $\mathcal{L}_{\text{fea}}$，但在训练的 <code>forward</code> 中（见 <code>traineagle3/cnets.py</code> 的 <code>for idx in range(self.length):</code> 循环），<strong>直接将当前步草稿层输出的自由隐藏向量 <code>hidden_states = hidden_states_out</code> 留作下一时间步 <code>idx + 1</code> 的输入</strong>，沿着长度 <code>self.length = 7</code> 步展开闭环训练，每一步仅用目标模型分布的交叉熵 <code>plosses.append(-torch.sum(position_mask * target_p * out_logp, 2).mean())</code> 进行反向传播！这迫使草稿层在完全自由的隐藏空间中自行学会收缩多步迭代误差。</li>
+</ul>
+</li>
+<li><strong>低、中、高三层特征融合（Multi-Layer Feature Fusion）</strong>：
+<ul>
+<li>主模型倒数第二层特征 $\mathbf{f}<em>{\text{top}}$ 高度特化于紧邻的下一个 Token $t</em>{t+1}$，在其经过非线性变换后，许多对预测更远位置 $t_{t+2}, t_{t+3}$ 有用的句法与局部上下文细节已被丢弃。</li>
+<li>如 <code>traineagle3/cnets.py::dataprepare</code> 所示，EAGLE-3 从目标模型提取低、中、高三个深度的隐藏态 <code>hidden_states0, hidden_states1, hidden_states2</code>，沿通道维拼接为 $3d$ 维向量 <code>torch.cat((hidden_states0, hidden_states1, hidden_states2), dim=-1)</code>，再经无偏置线性层 <code>self.fc = nn.Linear(self.hidden_size * 3, self.hidden_size, bias=False)</code> 融合为初始上下文表征 $\mathbf{g}_t \in \mathbb{R}^d$。</li>
+</ul>
+</li>
+<li><strong>草稿小词表剪枝映射（Draft Vocab Mapping <code>d2t</code> / <code>t2d</code>）</strong>：
+<ul>
+<li>在单层草稿网络中，用 $d=4096$ 乘以主词表 $V=128,256$ 的 <code>lm_head</code> 矩阵乘法反而是草稿生成阶段最大的算力开销！EAGLE-3 在训练语料上统计高频 Token（如取 $V_{\text{draft}} = 32,000$，可覆盖 $&gt;98%$ 的出现频次），在 <code>cnets.py</code> 中构建布尔掩码 <code>t2d</code>（Target-to-Draft）与偏移增量表 <code>d2t</code>（Draft-to-Target，<code>d2t[i] = used_tokens[i] - i</code>），使草稿头仅在缩小 $4\times$ 的子词表上计算 Logits，验证时再通过 <code>draft_id + d2t[draft_id]</code> 零开销还原回主词表 ID。</li>
+</ul>
+</li>
+</ol>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align:left">维度</th>
+<th style="text-align:left">Medusa-1 / 2</th>
+<th style="text-align:left">DeepSeek-V3 MTP</th>
+<th style="text-align:left">EAGLE-1 / EAGLE-2</th>
+<th style="text-align:left">EAGLE-3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>草稿模块结构</strong></td>
+<td style="text-align:left">$K$ 个并联独立单层 MLP 头</td>
+<td style="text-align:left">$D$ 个串联单层 Transformer 模块</td>
+<td style="text-align:left">1 层自回归 Decoder（接收 $\mathbf{f}<em>t$ 与 $\mathbf{e}</em>{t+1}$）</td>
+<td style="text-align:left">1 层自回归 Decoder（首步接收 $3d \to d$ 融合特征）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>主模型特征来源</strong></td>
+<td style="text-align:left">仅顶层隐藏态 $\mathbf{h}_t^{\text{top}}$</td>
+<td style="text-align:left">仅顶层隐藏态 $\mathbf{h}_t^{\text{main}}$</td>
+<td style="text-align:left">仅顶层隐藏态 $\mathbf{f}_t^{\text{top}}$</td>
+<td style="text-align:left"><strong>低、中、高三层特征拼接</strong> $[\mathbf{h}^{(l_{\text{low}})}; \mathbf{h}^{(l_{\text{mid}})}; \mathbf{h}^{(l_{\text{high}})}]$</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>草稿步间因果依赖</strong></td>
+<td style="text-align:left"><strong>无</strong>（各头条件独立预测，易模态碰撞）</td>
+<td style="text-align:left"><strong>有</strong>（链式传递 $\mathbf{h}<em>i^{k-1}$ 并拼入 $\operatorname{Emb}(t</em>{i+k})$）</td>
+<td style="text-align:left"><strong>有</strong>（自回归传递预测特征 $\hat{\mathbf{f}}<em>{t+k}$ 与采样 $\mathbf{e}</em>{t+k+1}$）</td>
+<td style="text-align:left"><strong>有</strong>（自回归传递无约束向量 $\hat{\mathbf{a}}<em>{t+k}$ 与采样 $\mathbf{e}</em>{t+k+1}$）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>训练期多步防漂移机制</strong></td>
+<td style="text-align:left">单步静态监督（无自回归滚动）</td>
+<td style="text-align:left">训练期使用 Ground-Truth Token Teacher-Forcing</td>
+<td style="text-align:left">单步 Teacher-Forcing + 静态高斯白噪声注入</td>
+<td style="text-align:left"><strong>训练时测试（TTT，7 步自回归闭环展开直接反传）</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>训练损失函数</strong></td>
+<td style="text-align:left">交叉熵（Medusa-2 含主干联合蒸馏）</td>
+<td style="text-align:left">深度平均交叉熵 $\frac{\lambda}{D}\sum_k \mathcal{L}_{\text{MTP}}^k$</td>
+<td style="text-align:left"><strong>Smooth L1 特征回归损失</strong> + Token 分类 KL 损失</td>
+<td style="text-align:left"><strong>纯交叉熵/KL 损失（彻底移除 $\mathcal{L}_{\text{fea}}$ 特征约束）</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>词表输出头开销</strong></td>
+<td style="text-align:left">$K$ 个独立 $d \times V$ 矩阵（显存膨胀显著）</td>
+<td style="text-align:left"><strong>完全共享主模型 $\operatorname{Emb}$ 与 $\operatorname{OutHead}$</strong></td>
+<td style="text-align:left">复用主模型全量 $\operatorname{OutHead}$（$d \times V$）</td>
+<td style="text-align:left"><strong>高频子词表剪枝头（$d \times V_{\text{draft}}$，<code>d2t</code>/<code>t2d</code> 映射）</strong></td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h3 id="3-树状注意力tree-attention单次验证与-kv-cache-原地压缩机制">3. 树状注意力（Tree Attention）单次验证与 KV Cache 原地压缩机制</h3>
+<p>无论是 Medusa 的多头 Top-$k$ 组合，还是 EAGLE-2/3 的多步置信度动态扩展，最终都会生成一棵以当前已确认 Token 为根（节点 0）的<strong>候选草稿树（Draft Tree）</strong>。如果把树中的 $N_{\text{leaf}}$ 条分支拆成独立 Batch 去跑目标模型，公共前缀与内部节点会被重复计算，且显存带宽随分支数成倍消耗。</p>
+<p><strong>Tree Attention</strong> 的核心工程巧思是：<strong>把整棵树的所有 $L_{\text{tree}}$ 个节点拍平（Flatten）为一条长度为 $L_{\text{tree}}$ 的伪序列，通过定制二维注意力掩码与深度位置编码，在目标模型的单次前向传播（Batch Size = 1）中并行算出所有节点的精确条件概率！</strong></p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">示例草稿树 (共 7 个节点: 根 0 + 6 个草稿节点, 包含 3 条叶子路径):
+深度 d=0          [0: root]
+                  /       \
+深度 d=1     [1:(0,)]    [2:(1,)]
+              /    \         \
+深度 d=2 [3:(0,0)] [4:(0,1)] [5:(1,0)]
+            /
+深度 d=3 [6:(0,0,0)]
+
+拍平后送入 Target Model 单次验证的 4 个关键张量 (对齐 medusa/model/utils.py):
+1. 拍平节点序列:   idx = [  0,      1,      2,       3,       4,       5,        6     ]
+2. 相对位置编码:   pos = [  0,      1,      1,       2,       2,       2,        3     ] (同层共享相同 RoPE 偏移!)
+3. 节点 6 的掩码: mask[6]= [  1,      1,      0,       1,       0,       0,        1     ] (仅见祖先 0-&gt;1-&gt;3-&gt;6, 屏蔽旁支 2,4,5!)
+4. 叶子提取矩阵 retrieve_indices (形状 [3, 4], 从各叶子回溯到根的拍平下标):
+   - 分支 0 (对应路径 (0,0,0)): [0, 1, 3, 6]
+   - 分支 1 (对应路径 (1,0)  ): [0, 2, 5, -1]
+   - 分支 2 (对应路径 (0,1)  ): [0, 1, 4, -1]
+</code></pre>
+<h4 id="1源码级拆解generate_medusa_buffers-的四大核心缓冲区">（1）源码级拆解：<code>generate_medusa_buffers</code> 的四大核心缓冲区</h4>
+<p>结合官方源码 <code>FasterDecoding/Medusa/medusa/model/utils.py</code>，目标模型单次验证依赖以下四个张量的精确协同：</p>
+<ol>
+<li><strong>二维偏序注意力掩码 <code>medusa_attn_mask</code>（形状 <code>[L_tree, L_tree]</code>）</strong>：
+<ul>
+<li>在标准因果掩码中，只要 $j \le i$，位置 $i$ 就能看到位置 $j$。但在拍平的草稿树中，节点 2 <code>path=(1,)</code> 与节点 1 <code>path=(0,)</code> 是互斥的平行假设，若节点 2 看到节点 1 的 Key/Value，就会发生致命的<strong>跨分支特征污染</strong>！</li>
+<li>因此，树掩码定义为树上的<strong>偏序祖先关系（Ancestral Partial Order）</strong>：
+$$\text{Mask}[i, j] = \begin{cases} 1, &amp; \text{若节点 } j \text{ 是节点 } i \text{ 的直系前缀祖先（含 } j=0 \text{ 根节点与 } j=i \text{ 自身）} \ 0, &amp; \text{其他情况（同层兄弟节点或非直系旁支）} \end{cases}$$</li>
+</ul>
+</li>
+<li><strong>同深共享位置编码 <code>medusa_position_ids</code>（形状 <code>[L_tree]</code>）</strong>：
+<ul>
+<li>拍平后节点 3、4、5 在一维数组中的下标分别是 <code>3, 4, 5</code>，但它们在各自候选分支中全都处于紧随前缀长度 $L_{\text{prev}}$ 之后的第 $2$ 个未来时间步！</li>
+<li>因此，送入旋转位置编码（RoPE）的绝对位置必须按<strong>树深度 $\operatorname{depth}(i)$</strong> 赋值：$\text{pos_id}[i] = L_{\text{prev}} + \operatorname{depth}(i)$，确保无论哪条分支最终胜出，其 KV Cache 中内嵌的 RoPE 旋转角都与标准串行解码严格一致。</li>
+</ul>
+</li>
+<li><strong>叶子路径重组矩阵 <code>retrieve_indices</code>（形状 <code>[N_leaf, max_depth + 1]</code>）</strong>：
+<ul>
+<li>目标模型前向传播输出的 <code>tree_logits</code> 形状为 <code>[1, L_tree, V]</code>。为了批量判断哪条分支走得最远，源码通过倒序遍历过滤掉已被更长路径包含的内部前缀，构造 <code>retrieve_indices</code>，仅用一行高级索引 <code>logits = tree_logits[0, retrieve_indices]</code> 就能将一维树输出瞬间重组为 <code>[N_leaf, max_depth + 1, V]</code> 的笛卡尔路径矩阵！</li>
+</ul>
+</li>
+<li><strong>验证准则（无损多轮树采样 vs 熵自适应 Typical Acceptance）与 KV Cache 原地压缩</strong>：
+<ul>
+<li><strong>严格无损验证（EAGLE-1/2/3 采用的 Multi-round Speculative Sampling）</strong>：在树结构上从根节点向下逐层验证，若当前采样候选 $x_c$ 被拒绝（以 $\min(1, p(x_c)/q(x_c))$ 校验失败），并不立即终止，而是将目标分布更新为归一化残差 $p' \propto \max(0, p - q)$，并继续检查当前节点的<strong>其他兄弟草稿节点</strong>，从而在严格保持目标分布 $p(x)$ 不变的前提下最大化单步接受率。</li>
+<li><strong>有损启发式验证（Medusa 采用的 Typical Acceptance）</strong>：当没有归一化草稿分布 $q(x)$ 或追求极致贪心速度时，Medusa 根据目标分布的香农熵 $H(p) = -\sum_{v} p(v) \log(p(v) + 10^{-5})$ 计算动态阈值（<code>medusa/model/utils.py::evaluate_posterior</code>）：
+$$\tau(p) = \min\left(\epsilon, , \alpha \cdot \exp(-H(p))\right) \quad (\text{默认 } \epsilon = 0.09, , \alpha = 0.3)$$
+当目标模型非常确定（低熵 $H(p) \to 0$）时，$\tau(p) = \epsilon = 0.09$ 保持高门槛；当目标模型本身处于高熵发散状态（多种续写皆合理）时，$\exp(-H(p))$ 变小，自动放宽接受门槛。随后沿每条分支做布尔累积乘积 <code>candidates_accept_length = torch.cumprod(posterior_mask, dim=1).sum(dim=1)</code>，选出接受长度最长（若平局则取对数似然最高）的胜出分支 <code>best_candidate</code>。</li>
+<li><strong>树状 KV Cache 的原地压缩（In-place KV Compaction）</strong>：前向验证时，目标模型把整棵树全部 $L_{\text{tree}}$ 个节点的 KV 向量都写进了 <code>past_key_values_data[..., L_prev : L_prev + L_tree, :]</code>。一旦确定 <code>best_candidate</code> 与接受长度 <code>accept_length</code>，绝不能重新跑一遍 Forward，而是直接执行 <code>update_inference_inputs</code> 中的物理槽位拣选：
+$$\text{select_indices} = \text{retrieve_indices}\left[\text{best_candidate}, , 0 : \text{accept_length} + 1\right] + L_{\text{prev}}$$
+将离散槽位 <code>past_key_values_data[..., select_indices, :]</code> 原地拷贝覆盖到连续区间 <code>[L_prev : L_prev + accept_length + 1]</code>，并将缓存有效长度指针拨回 $L_{\text{prev}} + \text{accept_length} + 1$，其余落选旁支的 KV 垃圾在下轮解码中直接被自然覆写。</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h3 id="4-python-3-标准库实现树状掩码构造typical-验证kv-原地压缩与-ttt-仿真">4. Python 3 标准库实现：树状掩码构造、Typical 验证、KV 原地压缩与 TTT 仿真</h3>
+<p>下面的零依赖 Python 3 标准库代码完整复现并验证了：</p>
+<ol>
+<li><strong><code>FasterDecoding/Medusa</code> 的 <code>generate_medusa_buffers</code> 算法</strong>：从稀疏树路径生成二维偏序掩码 <code>attn_mask</code>、同深共享位置编码 <code>position_ids</code> 与叶子提取矩阵 <code>retrieve_indices</code>；</li>
+<li><strong><code>evaluate_posterior</code> 与 <code>update_inference_inputs</code> 的完整闭环</strong>：基于香农熵自适应阈值评估各分支连续接受长度，并在平局时按对数似然决胜，精确算出胜出路径在 KV Cache 中的物理提取槽位 <code>select_kv_indices</code>；</li>
+<li><strong>独立头模态碰撞与 EAGLE-3 训练时测试（TTT）多步防漂移对比</strong>：量化对比并行独立头 vs 链式 MTP 的多模态合法率，以及单步 Teacher-Forcing（EAGLE-1）vs 闭环 TTT（EAGLE-3）在多步展开下的联合接受率差异。</li>
+</ol>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+from typing import Dict, List, Tuple
+
+
+def generate_medusa_tree_buffers(
+    medusa_choices: List[Tuple[int, ...]], topk: int = 10
+) -&gt; Dict[str, object]:
+    &quot;&quot;&quot;
+    严格对齐 FasterDecoding/Medusa (medusa/model/utils.py::generate_medusa_buffers):
+    给定树路径列表 medusa_choices (如 [(0,), (1,), (0, 0), (0, 1), (1, 0), (0, 0, 0)]),
+    构造单次前向验证所需的 4 个核心缓冲区:
+      1. attn_mask [L_tree, L_tree]: 仅当节点 a 是节点 b 的祖先(或自身/根节点 0)时为 1
+      2. tree_indices [L_tree]: 将展平的候选池 [root_token, head1_topK, head2_topK, ...] 映射为树节点
+      3. position_ids [L_tree]: 树节点相对于当前前缀末尾的深度偏移 (共享相同深度的旋转位置编码 RoPE)
+      4. retrieve_indices [N_leaf, max_depth + 1]: 从右向左提取所有叶子分支对应的完整候选序列索引
+    &quot;&quot;&quot;
+    sorted_choices = sorted(medusa_choices, key=lambda x: (len(x), x))
+    medusa_len = len(sorted_choices) + 1  # +1 对应索引 0 的根节点 (Base LM Head 采样出的当前 token)
+
+    depth_counts: List[int] = []
+    prev_depth = 0
+    for path in sorted_choices:
+        depth = len(path)
+        if depth != prev_depth:
+            depth_counts.append(0)
+        depth_counts[depth - 1] += 1
+        prev_depth = depth
+
+    # 1. 构造 Tree Attention Mask (二维偏序因果掩码)
+    attn_mask = [[1 if r == c else 0 for c in range(medusa_len)] for r in range(medusa_len)]
+    for r in range(medusa_len):
+        attn_mask[r][0] = 1  # 根节点 0 是树中所有节点的公共祖先
+
+    start = 0
+    for i in range(len(depth_counts)):
+        for j in range(depth_counts[i]):
+            cur_choice = sorted_choices[start + j]
+            if len(cur_choice) == 1:
+                continue
+            for c in range(len(cur_choice) - 1):
+                ancestor_idx = sorted_choices.index(cur_choice[: c + 1]) + 1
+                attn_mask[start + j + 1][ancestor_idx] = 1
+        start += depth_counts[i]
+
+    # 2. 构造 tree_indices 与 3. medusa_position_ids
+    tree_indices = [0] * medusa_len
+    position_ids = [0] * medusa_len
+    start = 0
+    for i in range(len(depth_counts)):
+        for j in range(depth_counts[i]):
+            cur_choice = sorted_choices[start + j]
+            tree_indices[start + j + 1] = cur_choice[-1] + topk * i + 1
+            position_ids[start + j + 1] = i + 1
+        start += depth_counts[i]
+
+    # 4. 构造叶子路径检索矩阵 retrieve_indices (过滤已被更深路径包含的内部前缀)
+    retrieve_indices_nest: List[List[int]] = []
+    retrieve_paths: List[Tuple[int, ...]] = []
+    for i in range(len(sorted_choices)):
+        cur_choice = sorted_choices[-i - 1]
+        if cur_choice in retrieve_paths:
+            continue
+        indice = []
+        for c in range(len(cur_choice)):
+            indice.append(sorted_choices.index(cur_choice[: c + 1]))
+            retrieve_paths.append(cur_choice[: c + 1])
+        retrieve_indices_nest.append(indice)
+
+    max_length = max(len(x) for x in retrieve_indices_nest)
+    retrieve_indices: List[List[int]] = []
+    for path in retrieve_indices_nest:
+        # 对齐源码: retrieve_indices + 1, 并在第 0 列拼上根节点索引 0; 空位填 -1 (对应扩展末尾 0)
+        padded = [idx + 1 for idx in path] + [-1] * (max_length - len(path))
+        retrieve_indices.append([0] + padded)
+
+    return {
+        &quot;sorted_choices&quot;: sorted_choices,
+        &quot;attn_mask&quot;: attn_mask,
+        &quot;tree_indices&quot;: tree_indices,
+        &quot;position_ids&quot;: position_ids,
+        &quot;retrieve_indices&quot;: retrieve_indices,
+    }
+
+
+def evaluate_typical_and_select_kv(
+    leaf_candidates: List[List[int]],
+    leaf_target_probs: List[List[List[float]]],
+    retrieve_indices: List[List[int]],
+    prev_input_len: int = 10,
+    posterior_threshold: float = 0.09,
+    posterior_alpha: float = 0.3,
+) -&gt; Dict[str, object]:
+    &quot;&quot;&quot;
+    严格对齐 FasterDecoding/Medusa (evaluate_posterior + update_inference_inputs):
+    1. 计算目标模型在各深度位置的香农熵 H(p) = -sum p * log(p + 1e-5)
+    2. 动态典型性阈值 threshold = min(posterior_threshold, posterior_alpha * exp(-H(p)))
+    3. 通过行向累积乘积 cumprod 统计每条候选分支的连续接受长度 accept_length
+    4. 利用 select_indices = retrieve_indices[best_candidate, :accept_length + 1] + prev_input_len
+       从树状 KV Cache 中提取胜出路径的物理槽位并原地压缩到连续前缀末尾。
+    &quot;&quot;&quot;
+    num_branches = len(leaf_candidates)
+    max_steps = len(leaf_candidates[0]) - 1
+    accept_lengths: List[int] = []
+    branch_log_likelihoods: List[float] = []
+
+    for b in range(num_branches):
+        cum_mask = 1
+        acc_len = 0
+        log_like = 0.0
+        for step in range(max_steps):
+            cand_tok = leaf_candidates[b][step + 1]
+            if cand_tok &lt; 0:  # 遇到短分支填充位 -1 立即终止
+                break
+            probs = leaf_target_probs[b][step]
+            entropy = -sum(p * math.log(p + 1e-5) for p in probs)
+            thresh = min(posterior_threshold, posterior_alpha * math.exp(-entropy))
+            cand_prob = probs[cand_tok]
+            passed = 1 if cand_prob &gt; thresh else 0
+            cum_mask *= passed
+            if cum_mask == 1:
+                acc_len += 1
+                log_like += math.log(cand_prob)
+        accept_lengths.append(acc_len)
+        branch_log_likelihoods.append(log_like)
+
+    max_acc = max(accept_lengths)
+    best_candidates = [b for b, l in enumerate(accept_lengths) if l == max_acc]
+    best_cand = max(best_candidates, key=lambda b: branch_log_likelihoods[b])
+
+    # 对齐 update_inference_inputs 的 KV 槽位压缩公式
+    select_indices = [
+        retrieve_indices[best_cand][k] + prev_input_len for k in range(max_acc + 1)
+    ]
+    return {
+        &quot;accept_lengths&quot;: accept_lengths,
+        &quot;best_candidate&quot;: best_cand,
+        &quot;max_accept_length&quot;: max_acc,
+        &quot;select_kv_indices&quot;: select_indices,
+    }
+
+
+def simulate_eagle3_training_time_test_vs_parallel() -&gt; Dict[str, float]:
+    &quot;&quot;&quot;
+    对比三种草稿范式在多步展开 (Depth K=3) 下的接受率与分布偏移:
+    1. Parallel Independent Heads (Medusa / Gloeckle MTP): 第 2 步无法获知第 1 步采样出的具体 Token,
+       在双峰对称上下文 (如 &quot;left -&gt; A1 B1&quot; 与 &quot;right -&gt; A2 B2&quot; 各占 50%) 下产生跨模态笛卡尔积碰撞;
+    2. EAGLE-1 Teacher-Forced Feature Regression: 训练期只喂入无噪 Ground-Truth 特征 f_t,
+       推理期自回归滚动时每步残差被放大 (Exposure Bias), 导致步长 k&gt;=2 时特征漂移;
+    3. EAGLE-3 Training-Time Test (TTT): 训练期在前向循环中直接将第 k-1 步预测特征 f_hat_{t+k-1}
+       与预测 Token Embedding 拼接送入第 k 步, 消除多步暴露偏差。
+    &quot;&quot;&quot;
+    # 1. 双峰语境下的联合命中率: P(branch1=(A1,B1)) = 0.5, P(branch2=(A2,B2)) = 0.5
+    # 独立头 P_head1(A1)=0.5, P_head1(A2)=0.5; P_head2(B1)=0.5, P_head2(B2)=0.5
+    # 独立头采样出合法序列 (A1,B1) 或 (A2,B2) 的概率仅为 0.5*0.5 + 0.5*0.5 = 0.50 (50% 发生 A1-B2 或 A2-B1 模态碰撞!)
+    # 而链式条件模型 (DeepSeek MTP / EAGLE) 在给定 step1 采样结果后 P(B_i | A_i) = 1.0, 联合合法率 = 1.00
+    independent_valid_prob = 0.5 * 0.5 + 0.5 * 0.5
+    sequential_valid_prob = 0.5 * 1.0 + 0.5 * 1.0
+
+    # 2. 模拟 EAGLE-1 (仅单步 Teacher-Forcing) vs EAGLE-3 (Training-Time Test 多步闭环优化) 的特征漂移误差
+    # 设真实特征动态为 f_{t+1} = 0.9 * f_t + 0.5 * e_{t+1}, 单步基础逼近残差 eps = 0.12
+    # EAGLE-1 未对输入特征扰动做多步闭环训练, 敏感度系数 alpha_err = 1.65;
+    # EAGLE-3 通过 Training-Time Test 展开训练迫使网络收缩扰动雅可比谱半径, alpha_err = 0.45
+    eps = 0.12
+    err_eagle1 = 0.0
+    err_eagle3 = 0.0
+    eagle1_acc_prod = 1.0
+    eagle3_acc_prod = 1.0
+    for step in range(1, 4):
+        err_eagle1 = 1.65 * err_eagle1 + eps
+        err_eagle3 = 0.45 * err_eagle3 + eps
+        # 接受率随特征 L1 偏差指数衰减: alpha_k = exp(-1.8 * err_k)
+        eagle1_acc_prod *= math.exp(-1.8 * err_eagle1)
+        eagle3_acc_prod *= math.exp(-1.8 * err_eagle3)
+
+    return {
+        &quot;independent_valid_prob&quot;: independent_valid_prob,
+        &quot;sequential_valid_prob&quot;: sequential_valid_prob,
+        &quot;eagle1_step3_err&quot;: err_eagle1,
+        &quot;eagle3_step3_err&quot;: err_eagle3,
+        &quot;eagle1_3step_joint_acc&quot;: eagle1_acc_prod,
+        &quot;eagle3_3step_joint_acc&quot;: eagle3_acc_prod,
+    }
+
+
+# --- 执行验证与断言 ---
+# 1. 构建 6 节点非对称稀疏草稿树 (+ 根节点共 7 个节点)
+sample_choices = [(0,), (1,), (0, 0), (0, 1), (1, 0), (0, 0, 0)]
+buffers = generate_medusa_tree_buffers(sample_choices, topk=10)
+attn_mask = buffers[&quot;attn_mask&quot;]
+pos_ids = buffers[&quot;position_ids&quot;]
+ret_idx = buffers[&quot;retrieve_indices&quot;]
+
+# 验证树长度=7, 位置编码按深度分层 [0, 1, 1, 2, 2, 2, 3]
+assert len(attn_mask) == 7
+assert pos_ids == [0, 1, 1, 2, 2, 2, 3]
+# 验证同层兄弟节点互不可见: 节点 1 (path=(0,)) 与节点 2 (path=(1,)) 互不 attend
+assert attn_mask[1][2] == 0 and attn_mask[2][1] == 0
+# 验证节点 6 (path=(0,0,0)) 严格只对祖先 {0(root), 1((0,)), 3((0,0)), 6((0,0,0))} 为 1
+assert attn_mask[6] == [1, 1, 0, 1, 0, 0, 1]
+# 验证叶子分支共有 3 条: (0,0,0)-&gt;[0,1,3,6], (1,0)-&gt;[0,2,5,-1], (0,1)-&gt;[0,1,4,-1]
+assert ret_idx == [[0, 1, 3, 6], [0, 2, 5, -1], [0, 1, 4, -1]]
+
+# 2. 验证 Typical Acceptance 与树状 KV Cache 原地压缩槽位选择 (4 词表玩具分布)
+leaf_cands = [
+    [0, 1, 2, 3],   # 分支 0 (对应 retrieve [0, 1, 3, 6]): 前 2 步命中, 第 3 步被拒
+    [0, 2, 1, -1],  # 分支 1 (对应 retrieve [0, 2, 5, -1]): 第 1 步即被拒
+    [0, 1, 3, -1],  # 分支 2 (对应 retrieve [0, 1, 4, -1]): 前 2 步命中, 且对数似然更高!
+]
+# 构造目标模型在各分支节点输出的概率分布 (4 词表)
+p_low_ent = [0.02, 0.92, 0.04, 0.02]   # 低熵确定分布: H≈0.38, thresh=min(0.09, 0.3*exp(-0.38))=0.09
+p_high_ent = [0.28, 0.22, 0.23, 0.27]  # 高熵平滑分布: H≈1.38, thresh=min(0.09, 0.3*exp(-1.38))=0.075 (放松阈值!)
+p_reject = [0.85, 0.05, 0.05, 0.05]    # 候选 token=3 概率 0.05 &lt; 0.09 被拒
+leaf_probs = [
+    [p_low_ent, p_high_ent, p_reject],
+    [p_reject, p_low_ent, p_reject],
+    [p_low_ent, p_high_ent, p_reject],
+]
+eval_res = evaluate_typical_and_select_kv(
+    leaf_cands, leaf_probs, ret_idx, prev_input_len=10
+)
+# 分支 0 和分支 2 都接受了 2 个草稿 token, 但分支 2 在第 2 步选了 token 3 (p=0.27 &gt; token 2 的 p=0.23), 似然更高而胜出!
+assert eval_res[&quot;accept_lengths&quot;] == [2, 0, 2]
+assert eval_res[&quot;best_candidate&quot;] == 2
+assert eval_res[&quot;select_kv_indices&quot;] == [10, 11, 14]
+
+# 3. 验证并行头碰撞与 EAGLE-3 Training-Time Test 收益
+ttt_res = simulate_eagle3_training_time_test_vs_parallel()
+assert ttt_res[&quot;sequential_valid_prob&quot;] == 1.0 and ttt_res[&quot;independent_valid_prob&quot;] == 0.5
+assert ttt_res[&quot;eagle3_3step_joint_acc&quot;] &gt; ttt_res[&quot;eagle1_3step_joint_acc&quot;] * 2.0
+
+print(f&quot;1. Tree Buffers (7 nodes): pos_ids={pos_ids}, deepest_mask={attn_mask[6]}&quot;)
+print(f&quot;2. Leaf Retrieve Matrix (3 branches): {ret_idx}&quot;)
+print(
+    f&quot;3. Typical Acceptance &amp; KV Compaction: accept_lens={eval_res[&#x27;accept_lengths&#x27;]}, &quot;
+    f&quot;best_branch={eval_res[&#x27;best_candidate&#x27;]}, kv_select_slots={eval_res[&#x27;select_kv_indices&#x27;]}&quot;
+)
+print(
+    f&quot;4. Modality Collision &amp; TTT (Depth=3): Indep_Valid={ttt_res[&#x27;independent_valid_prob&#x27;]:.2f} vs &quot;
+    f&quot;Seq_MTP_Valid={ttt_res[&#x27;sequential_valid_prob&#x27;]:.2f}; &quot;
+    f&quot;EAGLE1_JointAcc={ttt_res[&#x27;eagle1_3step_joint_acc&#x27;]:.3f} vs EAGLE3_TTT_JointAcc={ttt_res[&#x27;eagle3_3step_joint_acc&#x27;]:.3f}&quot;
+)
+print(&quot;All MTP / Medusa / EAGLE-3 tree verification and KV compaction assertions passed!&quot;)
+</code></pre>
+<p>实际运行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">1. Tree Buffers (7 nodes): pos_ids=[0, 1, 1, 2, 2, 2, 3], deepest_mask=[1, 1, 0, 1, 0, 0, 1]
+2. Leaf Retrieve Matrix (3 branches): [[0, 1, 3, 6], [0, 2, 5, -1], [0, 1, 4, -1]]
+3. Typical Acceptance &amp; KV Compaction: accept_lens=[2, 0, 2], best_branch=2, kv_select_slots=[10, 11, 14]
+4. Modality Collision &amp; TTT (Depth=3): Indep_Valid=0.50 vs Seq_MTP_Valid=1.00; EAGLE1_JointAcc=0.142 vs EAGLE3_TTT_JointAcc=0.412
+All MTP / Medusa / EAGLE-3 tree verification and KV compaction assertions passed!
+</code></pre>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“Medusa 的 Typical Acceptance 和标准投机采样（Speculative Sampling）一样，都是数学上严格无损（Lossless）、完全不改变目标模型输出分布的。”</strong>
+事实：<strong>Typical Acceptance 是有损启发式近似（Lossy Approximation），而非严格无损采样！</strong> 标准无损投机采样必须知道草稿分布 $q(x)$，以 $\min(1, p(x)/q(x))$ 的概率接受，并在拒绝时严格从修正残差分布 $\operatorname{norm}(\max(0, p(x) - q(x)))$ 中重采样（见 <a href="llm-0006-speculative-decoding.html">llm-0006</a>）。而 Medusa 的 Typical Acceptance 直接丢弃了 $q(x)$，只要候选 Token 在目标模型下的概率 $p(x) &gt; \min(\epsilon, \alpha \exp(-H(p)))$ 且在树中最长（或似然最大）就直接采纳。这会在一定程度上向草稿头偏好的高频典型模式偏移；若要求数学上 100% 分布无损，必须采用 EAGLE 系列中的树状多轮拒绝采样（Tree-based Multi-round Speculative Sampling）或 Greedy Verification（$T=0$）。</li>
+<li><strong>误区二：“EAGLE-3 之所以比 EAGLE-1/2 快，是因为它把草稿网络换成了更深、参数量更大的多头模型。”</strong>
+事实：EAGLE-3 的草稿网络主体依然保持极为轻量的 <strong>1 层 Transformer Decoder Layer</strong>（甚至因引入草稿小词表 <code>draft_vocab_size</code> 裁剪了 <code>lm_head</code>，单步草稿参数与计算量比 EAGLE-1/2 更小）。EAGLE-3 的核心突破在于<strong>算法与训练范式</strong>：（1）用低中高三层特征拼接替代单一顶层特征；（2）移除锁死表达能力的 Smooth L1 特征回归损失 $\mathcal{L}_{\text{fea}}$；（3）通过训练时测试（Training-Time Test）在训练期展开多步预测特征自回归闭环，消除了推理期多步滚动的特征漂移。</li>
+<li><strong>误区三：“在 Tree Attention 验证中，把草稿树包含的 60 个节点拍平送入目标模型后，给它们分配连续递增的位置编码 <code>[L, L+1, ..., L+59]</code> 即可。”</strong>
+事实：<strong>如果给拍平的树节点分配连续递增的位置编码，验证结果将完全错乱！</strong> 因为在树结构中，位于同一深度 $d$ 的多个兄弟节点（如节点 1 和节点 2 都代表前缀后的第 1 个未来 Token）在语法上处于完全相同的序列位置 $L_{\text{prev}} + d$。如果赋成连续递增的 <code>L+1, L+2</code>，不仅旋转位置编码（RoPE）的相对距离彻底失真，而且验证通过后保留下来的胜出路径还将携带错误的非连续位置相位。正确做法是严格按节点在树中的深度赋位置编码：<code>position_ids[i] = L_prev + depth(i)</code>。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/proudzhu/llm-wiki/blob/34952d3b7f41493743dc7a8e74d30358faa53b7f/wiki/concepts/medusa.md" target="_blank" rel="noopener noreferrer">proudzhu/llm-wiki (<code>wiki/concepts/medusa.md</code>)</a>（固定 commit <code>34952d3</code>）与 <a href="https://github.com/Infrasys-AI/AIInfra/blob/b97c0385ba07a62a717d82a0e7aed2927f12fc35/04Train/03TrainAcceler/04MTP.md" target="_blank" rel="noopener noreferrer">Infrasys-AI/AIInfra (<code>04Train/03TrainAcceler/04MTP.md</code>)</a>（固定 commit <code>b97c038</code>），独立重构拓展。</li>
+<li>Cai et al., <a href="https://arxiv.org/abs/2401.10774" target="_blank" rel="noopener noreferrer">Medusa: Simple LLM Inference Acceleration Framework with Multiple Decoding Heads</a>，ICML 2024，及官方源码 <a href="https://github.com/FasterDecoding/Medusa/blob/e2a5d20c048a9b0a4092e6933c34313687422518/medusa/model/utils.py" target="_blank" rel="noopener noreferrer">FasterDecoding/Medusa (<code>medusa/model/utils.py</code>)</a>（固定 commit <code>e2a5d20</code>）：<code>generate_medusa_buffers</code> 树掩码与位置编码构造、Typical Acceptance 与 <code>update_inference_inputs</code> 原地 KV 槽位压缩。</li>
+<li>Li et al., <a href="https://arxiv.org/abs/2401.15077" target="_blank" rel="noopener noreferrer">EAGLE: Speculative Sampling Requires Rethinking Feature Uncertainty</a>（ICML 2024）、<a href="https://arxiv.org/abs/2406.16858" target="_blank" rel="noopener noreferrer">EAGLE-2: Faster Inference of Language Models with Dynamic Draft Trees</a>（EMNLP 2024）、<a href="https://arxiv.org/abs/2503.01840" target="_blank" rel="noopener noreferrer">EAGLE-3: Scaling up Inference Acceleration of Large Language Models via Training-Time Test</a>（arXiv 2025），及官方源码 <a href="https://github.com/SafeAILab/EAGLE/blob/cb7e0841fe0c206c6ed74a197ad5e2a1f13f5a2b/eagle/traineagle3/cnets.py" target="_blank" rel="noopener noreferrer">SafeAILab/EAGLE (<code>eagle/traineagle3/cnets.py</code>)</a>（固定 commit <code>cb7e084</code>）：特征不确定性消解、三层特征融合、移除 $\mathcal{L}_{\text{fea}}$ 的 Training-Time Test 与 <code>d2t</code>/<code>t2d</code> 草稿词表映射。</li>
+<li>Gloeckle et al., <a href="https://arxiv.org/abs/2404.19737" target="_blank" rel="noopener noreferrer">Better &amp; Faster Large Language Models via Multi-token Prediction</a>，ICML 2024：并行多 Token 预测预训练目标与激活梯度缓存优化。</li>
+<li>DeepSeek-AI, <a href="https://arxiv.org/abs/2412.19437" target="_blank" rel="noopener noreferrer">DeepSeek-V3 Technical Report</a>（§2.2 Multi-Token Prediction, Eq. 21–25）：序列式因果链 MTP 模块、共享词表嵌入与输出头及切片交叉熵训练目标。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-11-09</strong>。仅执行标准库下树状注意力缓冲区构造、Typical Acceptance 与 KV 槽位原地压缩、以及并行头碰撞与 EAGLE-3 TTT 多步误差传递数值验证，未运行多卡 GPU 大模型实机推理压测。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">在生产级推理引擎（如 vLLM、SGLang）中，将 EAGLE-3 或 DeepSeek-V3 MTP 接入 PagedAttention 和 FlashAttention 时，为什么不能直接调用标准的因果注意力内核（<code>causal=True</code>）？高并发大 Batch 下为什么必须要动态收缩草稿树大小 $L_{\text{tree}}$？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：在生产级推理引擎（如 vLLM、SGLang）中，将 EAGLE-3 或 DeepSeek-V3 MTP 接入 PagedAttention 和 FlashAttention 时，为什么不能直接调用标准的因果注意力内核（causal=True）？高并发大 Batch 下为什么必须要动态收缩草稿树大小 $L_{\text{tree}}$？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>非对角稀疏树掩码内核适配</strong>：标准 FlashAttention 的 <code>causal=True</code> 只支持下三角全 1 掩码（即位置 $i$ 可见全部 $j \le i$），而 Tree Attention 在最后的 $L_{\text{tree}}$ 个节点上是一个<strong>稀疏有向无环图（DAG）/ 树状偏序掩码</strong>。如果直接传完整的 $[L_{\text{prev}} + L_{\text{tree}}, L_{\text{prev}} + L_{\text{tree}}]$ 稠密布尔矩阵，在长上下文（如 $L_{\text{prev}} = 64\text{K}$）下光掩码显存就会爆炸。因此，SGLang / FlashInfer 采用<strong>前缀-树分离内核（Prefix-Tree Split Kernel）或位图打包掩码（Bitmask Tree Attention）</strong>：所有树节点对历史前缀 $0 \dots L_{\text{prev}}-1$ 完全可见（无需掩码），仅在最后 $L_{\text{tree}} \times L_{\text{tree}}$（通常 $L_{\text{tree}} \le 64$）的小窗口内通过寄存器级 64-bit 整数位图掩码判断祖先可见性。</li>
+<li><strong>算术强度拐点（Roofline Turning Point）</strong>：单请求解码时 GPU 处于严重访存受限区（Memory-bound），验证 $L_{\text{tree}}=64$ 个树节点的耗时与验证 1 个 Token 几乎相同；但当并发 Batch Size $B$ 增大到数十（如 $B=32$）时，总验证 Token 数变为 $B \times L_{\text{tree}} = 2048$，此时 Tensor Core 算力已被彻底打满，系统进入<strong>计算受限区（Compute-bound）</strong>！此时继续验证庞大的草稿树会让单步 Verify 延迟成倍暴涨。工程上必须根据当前运行 Batch 的总 Token 数动态降级：小 Batch 用深度树（如 $L_{\text{tree}}=48\sim 64$），中等 Batch 退化为链式投机（Chain Drafting, $L_{\text{tree}}=2\sim 4$），超大 Batch 直接关闭投机解码。</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">DeepSeek-V3 在训练序列式 MTP 模块时使用的是真实标签 $t_{i+k}$（Teacher-Forcing），而 EAGLE-3 使用的是训练时测试（Training-Time Test, TTT）。为什么 DeepSeek-V3 不在预训练阶段对整个 671B 主模型 + MTP 开启多步自回归 TTT？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：DeepSeek-V3 在训练序列式 MTP 模块时使用的是真实标签 $t_{i+k}$（Teacher-Forcing），而 EAGLE-3 使用的是训练时测试（Training-Time Test, TTT）。为什么 DeepSeek-V3 不在预训练阶段对整个 671B 主模型 + MTP 开启多步自回归 TTT？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>这是<strong>预训练主干表征优化</strong>与<strong>冻结主干后训练轻量草稿器</strong>的定位差异决定的：</p>
+<ol>
+<li>在 EAGLE-3 中，主模型（Target Model）参数完全冻结（<code>param.requires_grad = False</code>），只有 1 层轻量草稿网络参与训练；展开 7 步 TTT 循环只需对这 1 层 Decoder 跑 7 次前向/反向，计算开销极小。</li>
+<li>而在 DeepSeek-V3 的 14.8T Token 预训练中，MTP 的首要目标是提供密集的多步监督梯度来锤炼 671B 主模型自身的前瞻表征能力，且预训练深度设为 $D=1$（只额外预测 1 个 Token，即总共生成 2 个 Token）。对于 $D=1$ 的单步草稿，推理时输入给 MTP Module 1 的 $\mathbf{h}<em>i^{\text{main}}$ 本就是主模型自己算出的真实顶层隐藏态（不存在草稿特征自回归滚动累积误差），且采样出的第 1 个 Token $\hat{t}</em>{i+1}$ 也是经目标模型分布确认的合法 Token，因此 $D=1$ 下无需多步 TTT 即可保持高达 $85%\sim 90%$ 的二步接受率。</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">当 DeepSeek-V3 或混合架构模型开启投机解码（MTP / EAGLE）并同时启用 Prefix Caching（前缀缓存）时，验证阶段结束后为什么会引发“跨页碎片或尾块重算”问题？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：当 DeepSeek-V3 或混合架构模型开启投机解码（MTP / EAGLE）并同时启用 Prefix Caching（前缀缓存）时，验证阶段结束后为什么会引发“跨页碎片或尾块重算”问题？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>在 PagedAttention 中，KV Cache 按固定块大小（如 <code>block_size = 16</code> 或 <code>64</code> Tokens）计算哈希并注册到全局 Prefix Radix Tree 中。在树状投机验证阶段，引擎需要先在当前序列末尾临时分配能够容纳 $L_{\text{tree}}$ 个草稿节点的物理页槽位；当验证完成、仅接受其中 <code>accept_length + 1</code>（如 3 个）Token 并通过 <code>select_indices</code> 原地拷贝压缩后：</p>
+<ul>
+<li>刚才为其余 $L_{\text{tree}} - (\text{accept_length} + 1)$ 个落选树节点写入的 KV 槽位必须立即释放回滚；</li>
+<li>只有当确认接受的连续 Token 填满整整一个 <code>block_size</code> 页边界时，才能计算该物理块的确定性 Token 哈希并发布到全局 Prefix Cache 树中，严禁在验证尚未完成（含多分支草稿节点）时提前将未决页暴露给其他并发请求共享。</li>
+</ul>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0037 · 单题笔记</span><a href="../questions/llm-0037-mtp-medusa-eagle-tree-speculative.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0037", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
