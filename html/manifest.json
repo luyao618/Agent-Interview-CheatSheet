@@ -1510,6 +1510,17 @@
       "images": 0
     },
     {
+      "id": "llm-0037",
+      "file": "llm-0037-mtp-medusa-eagle-tree-speculative.html",
+      "source": "questions/llm-0037-mtp-medusa-eagle-tree-speculative.md",
+      "source_sha256": "5fbc1841b9478f92f935b738f6d79d51a0feda93a652e5f57a0d996e3466ee1f",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",

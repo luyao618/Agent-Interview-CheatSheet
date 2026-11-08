@@ -4383,6 +4383,29 @@
       "updated": "2026-11-08",
       "answers_count": 1,
       "source": "公开 AI 架构面试题库与系统设计指南扩展改编；Mamba（COLM 2024）、Mamba-2（ICML 2024）、Jamba（ICLR 2025）原论文及官方源码核实（见参考）"
+    },
+    {
+      "id": "llm-0037",
+      "title": "多 Token 预测（MTP）、Medusa 与 EAGLE（1/2/3）是如何通过特征层自回归、训练时测试与树状注意力（Tree Attention）突破自投机解码瓶颈的？",
+      "file": "llm-0037-mtp-medusa-eagle-tree-speculative.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "multi-token-prediction",
+        "speculative-decoding",
+        "medusa",
+        "eagle",
+        "tree-attention",
+        "deepseek-v3"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "updated": "2026-11-09",
+      "answers_count": 1,
+      "source": "公开 AI 系统与推理优化知识库扩展改编；Medusa（ICML 2024）、EAGLE-1/2/3（ICML 2024 / EMNLP 2024 / NeurIPS 2025）、DeepSeek-V3 技术报告及官方源码核实（见参考）"
     }
   ]
 }
