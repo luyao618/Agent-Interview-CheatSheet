@@ -4406,6 +4406,28 @@
       "updated": "2026-11-09",
       "answers_count": 1,
       "source": "公开 AI 系统与推理优化知识库扩展改编；Medusa（ICML 2024）、EAGLE-1/2/3（ICML 2024 / EMNLP 2024 / NeurIPS 2025）、DeepSeek-V3 技术报告及官方源码核实（见参考）"
+    },
+    {
+      "id": "llm-0038",
+      "title": "KV Cache 极低比特量化（KIVI 与 KVQuant）是如何通过键值非对称分组、流式残差窗口、Pre-RoPE 量化与稠密-稀疏离群值隔离实现 2-bit 无损长上下文推理的？",
+      "file": "llm-0038-kv-cache-quantization-kivi-kvquant.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "kv-cache-quantization",
+        "kivi",
+        "kvquant",
+        "pre-rope",
+        "asymmetric-quantization"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "Hugging Face 官方技术博客与公开推理优化题库扩展改编；KIVI（ICML 2024）、KVQuant（NeurIPS 2024）及官方源码核实（见参考）",
+      "updated": "2026-11-10",
+      "answers_count": 1
     }
   ]
 }

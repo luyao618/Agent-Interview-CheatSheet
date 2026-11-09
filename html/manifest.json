@@ -1521,6 +1521,17 @@
       "images": 0
     },
     {
+      "id": "llm-0038",
+      "file": "llm-0038-kv-cache-quantization-kivi-kvquant.html",
+      "source": "questions/llm-0038-kv-cache-quantization-kivi-kvquant.md",
+      "source_sha256": "bfd464599cb0de18ada4d6fd49ce5bfdf0a32e5db842b739dfe946b52ea6ae0c",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",

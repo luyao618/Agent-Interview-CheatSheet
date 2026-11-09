@@ -1,0 +1,1015 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。KV Cache 极低比特量化（KIVI 与 KVQuant）是如何通过键值非对称分组、流式残差窗口、Pre-RoPE 量化与稠密-稀疏离群值隔离实现 2-bit 无损长上下文推理的？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0038-kv-cache-quantization-kivi-kvquant.md">
+  <meta name="source-sha256" content="bfd464599cb0de18ada4d6fd49ce5bfdf0a32e5db842b739dfe946b52ea6ae0c">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>KV Cache 极低比特量化（KIVI 与 KVQuant）是如何通过键值非对称分组、流式残差窗口、Pre-RoPE 量化与稠密-稀疏离群值隔离实现 2-bit 无损长上下文推理的？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0038</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title"><em>KV</em> Cache 极低比特量化（KIVI 与 KVQuant）是如何通过键值非对称分组、流式残差窗口、Pre-RoPE 量化与稠密-稀疏离群值隔离实现 2-bit 无损长上下文推理的？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>在长上下文（如 $128\text{K}\sim 1\text{M}$ Tokens）或大并发 Batch 推理服务中，即便模型权重已被压缩至 4-bit，以 FP16/BF16 存储的动态键值缓存（KV Cache）仍会迅速膨胀至数十乃至上百 GB，不仅限制了系统的最大并发吞吐，更让自回归 Decode 阶段彻底受困于高带宽显存（HBM）的访存带宽墙（Memory-bound）。然而，工程实践发现：如果简单套用传统的对称/非对称按 Token（Per-Token）统一量化，一旦将 KV Cache 压至 <strong>2-bit</strong>，模型在长文本大海捞针（Passkey Retrieval）与困惑度（Perplexity）评测中就会发生灾难性崩塌。为此，学术界与工业界提出了 <strong>KIVI（ICML 2024）</strong> 与 <strong>KVQuant（NeurIPS 2024）</strong> 等极低比特 KV Cache 量化方案，并被集成至 Hugging Face <code>transformers</code>（<code>QuantizedCache</code>）与主流推理引擎中。</p>
+<p>请深入剖析以下三个核心问题：</p>
+<ol>
+<li><strong>Key 与 Value 的非对称分布特性与流式残差窗口（KIVI 核心机制）</strong>：为什么 KIVI 指出“Key Cache 必须按通道（Per-Channel）量化，而 Value Cache 必须按 Token（Per-Token）量化”？既然 Key 按通道量化需要跨多个 Token 统计缩放因子，而在自回归 Decode 阶段新 Token 是逐个生成的，KIVI 是如何通过**分组对齐的 FP16 残差缓存窗口（Residual Cache，$R=128$）**解决流式追加冲突与注意力计算拼接的？</li>
+<li><strong>旋转位置编码（RoPE）对 Key 通道平稳性的破坏与 Pre-RoPE 量化（KVQuant 机制一）</strong>：为什么在施加 RoPE 之后再对 Key 做按通道量化（Post-RoPE Quantization）会导致 2-bit/3-bit 精度显著恶化？请从二维旋转矩阵 $\mathbf{R}_{\Theta, t}$ 的跨位置混叠方程推导原因，并说明 KVQuant 是如何实现 <strong>Pre-RoPE 缓存量化</strong> 与融合内核中的动态在线旋转反量化的？</li>
+<li><strong>非均匀量化（NUQ）、1% 稠密-稀疏离群值隔离与首词保护（KVQuant 机制二）</strong>：在免微调（Tuning-Free）条件下冲击 2-bit 极限时，KVQuant 是如何结合<strong>离线 Fisher 信息加权非均匀码本（Sensitivity-Weighted NUQ）</strong>、<strong>1% 稠密-稀疏分解（Dense-and-Sparse Quantization）</strong>、**注意力汇聚点首词保护（Attention-Sink-Aware FP16 Retention）**以及 <strong>Q-Norm 量化后矩校准</strong>消除分布偏移的？</li>
+</ol>
+<p>本题由公开面试题/系统设计整理扩展改编，不是已核实的企业真题；不采信脱离具体条件的性能收益承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-11-10</span></p><div class="prose"><p><strong>将 KV Cache 无损压缩至 2-bit 的核心，在于顺应 Key 与 Value 在张量维度上的异构离群值几何结构，并消除位置编码旋转混叠与极端离群点对量化网格的拉扯：（1）KIVI 揭示了 Key 张量的高幅值离群值高度集中在少数固定通道（Fixed Channels across Tokens），而 Value 张量无持久通道尖峰但不同 Token 间基线波动剧烈；因此必须对 Key 沿序列维分组做 Per-Channel 量化、对 Value 沿特征维分组做 Per-Token 量化；为解决 Per-Channel Key 无法单 Token 独立量化的自回归流式矛盾，KIVI 维护长度为 $R$（如 $128$，满足 $R \bmod G = 0$）的 FP16 残差窗口，仅当 <code>key_states_full</code> 攒满 $R$ 个 Token 时才按组批量转置打包为 2-bit，而 <code>value_states_full</code> 则在超出 $R$ 时逐个弹出最老 Token 量化；（2）KVQuant 进一步指出，RoPE 的正余弦旋转矩阵 $\mathbf{x}_t' = \mathbf{x}_t \cos(t\theta) + \operatorname{rotate_half}(\mathbf{x}_t)\sin(t\theta)$ 会将固定离群通道的能量随位置 $t$ 周期性混入伙伴通道并产生包络震荡，彻底破坏 Key 通道的跨 Token 平稳性；通过在施加 RoPE 之前（Pre-RoPE）量化并存储 Key，并在 Decode 内核读取反量化时即时乘上 $\cos/\sin$ 相位，可大幅降低量化均方误差；（3）针对残余极端值与 2-bit 量化偏差，KVQuant 引入按向量移除上下各 $0.5%$ 极值的稠密-稀疏存储（CSR/Top-$K$ 稀疏缓冲）、保留前 $F$ 个 Attention Sink Token 为 FP16、基于单样本校准的 K-Means 非均匀查找表（NUQ LUT）以及对齐量化前后均值与标准差的 Q-Norm 仿射修正，在接近零质量损失下实现约 $3.5\times\sim 4.8\times$ 的端到端 KV 显存缩减。</strong></p>
+<p>在展开数学推导与源码级拆解之前，建议先关联本库内已有的相关题目建立全局视角：关于 KV Cache 的基本内存计算公式以及 Prefill（计算受限）与 Decode（访存受限）的算术强度对比，请参阅 <a href="llm-0018-kv-cache-prefill-decode.html">llm-0018</a>；关于模型权重与激活的训练后量化（GPTQ、AWQ 与 SmoothQuant 跨层通道平滑迁移），请参阅 <a href="llm-0035-ptq-gptq-awq-smoothquant.html">llm-0035</a>；关于本地部署量化模型时的总显存预算估算，请参阅 <a href="llm-0016-quantization-local-memory-budget.html">llm-0016</a>；关于从注意力架构源头通过低秩联合压缩削减 KV Cache 的 MLA 机制，请参阅 <a href="llm-0034-mla-multi-head-latent-attention-rope-absorption.html">llm-0034</a>。</p>
+<hr />
+<h3 id="1-kivi-的非对称量化洞察为什么-key-按通道value-按-token流式残差窗口如何运作">1. KIVI 的非对称量化洞察：为什么 Key 按通道、Value 按 Token？流式残差窗口如何运作？</h3>
+<h4 id="1key-与-value-的异构离群值结构及数学误差分析">（1）Key 与 Value 的异构离群值结构及数学误差分析</h4>
+<p>设单层单个 KV Head 的历史缓存张量为 $\mathbf{K}, \mathbf{V} \in \mathbb{R}^{T \times D}$（其中 $T$ 为当前序列长度，$D$ 为单头维度 <code>head_dim</code>，如 $128$）。<strong>KIVI</strong>（Liu et al., ICML 2024）通过对 Llama-2、Mistral、Falcon 等主流模型的各层激活进行逐元素分布统计，发现了键值张量在离群值（Outliers）结构上的根本不对称性：</p>
+<ol>
+<li><strong>Key Cache 的持续性通道离群值（Persistent Channel-wise Outliers）</strong>：
+<ul>
+<li>在 Key 张量 $\mathbf{K}$ 中，存在少数几个特定的通道索引 $c^* \in {0, \dots, D-1}$，其激活幅值在<strong>几乎所有 Token 位置 $t \in [1, T]$ 上都恒定比普通通道高出 $5\times\sim 20\times$</strong>（这与 RoPE 低频维度演化出的长程注意力偏置及线性层权重结构密切相关）。</li>
+<li>如果对 $\mathbf{K}$ 采用按 Token（Per-Token，即沿通道维 $D$ 分组）量化，每个 Token 组内的动态范围 $\Delta_t = \max_c K_{t,c} - \min_c K_{t,c}$ 都会被离群通道 $K_{t,c^*}$ 撑大数十倍！在 2-bit（仅 $2^2 = 4$ 个离散电平 ${0, 1, 2, 3}$）下，量化步长 $s_t = \Delta_t / 3$ 变得极其粗糙，导致其余 $95%$ 的正常通道全部坍缩为同一个电平，注意力相关性分数 $\mathbf{q}_t \mathbf{K}^\top$ 彻底失真。</li>
+<li>反之，如果对 $\mathbf{K}$ 采用<strong>按通道分组量化（Per-Channel Group Quantization，沿 Token 维 $T$ 每 $G$ 个连续 Token 为一组，如 $G=32$ 或 $64$）</strong>，由于同一个通道 $c$ 内部在不同 Token 位置上的数值集中在狭窄区间内，每个通道组的动态范围 $\Delta_{g,c} = \max_{t \in g} K_{t,c} - \min_{t \in g} K_{t,c}$ 极小，2-bit 量化步长得以精细贴合该通道自身的局部波动！</li>
+</ul>
+</li>
+<li><strong>Value Cache 的 Token 级幅值异质性与 Softmax 凸组合效应</strong>：
+<ul>
+<li>在 Value 张量 $\mathbf{V}$ 中，并不存在跨越所有 Token 的固定离群通道，但<strong>不同 Token 之间的整体基线与幅值方差差异巨大</strong>（特别是句首的 Attention Sink Token 或关键实体词，其幅度与普通虚词截然不同），而在同一个 Token 内部各通道幅值相对均衡。</li>
+<li>更重要的是，注意力输出是 Value 行向量的加权凸组合 $\mathbf{o}<em>t = \sum</em>{j=1}^T A_{t,j} \mathbf{v}<em>j$（其中 $\sum_j A</em>{t,j} = 1$）。若对 $\mathbf{V}$ 按通道（跨 Token）量化，某一个高幅值 Token $\mathbf{v}_{j^*}$ 会撑爆同一时间窗口内所有其他普通 Token $\mathbf{v}<em>j$ 的量化步长；当当前步注意力权重 $A</em>{t,j}$ 恰好聚焦在这些普通 Token 上时，重构误差就会被直接放大。因此，<strong>$\mathbf{V}$ 必须采用按 Token 分组量化（Per-Token Group Quantization，沿通道维 $D$ 每 $G$ 个通道为一组）</strong>，把每个 Token 的幅值隔离在自身内部。</li>
+</ul>
+</li>
+</ol>
+<p>在 KIVI 官方源码 <code>jy-yuan/KIVI/quant/new_pack.py</code> 中，$b$-bit 分组非对称量化（Asymmetric Uniform Quantization）的精确公式为：</p>
+<p>$$s = \frac{\max(\mathbf{x}_g) - \min(\mathbf{x}_g)}{2^b - 1}, \quad z = \min(\mathbf{x}_g), \quad q(\mathbf{x}_g) = \operatorname{clamp}\left(\left\lfloor \frac{\mathbf{x}_g - z}{s} \right\rceil, , 0, , 2^b - 1\right), \quad \hat{\mathbf{x}}_g = q(\mathbf{x}_g) \cdot s + z$$</p>
+<p>在位打包（Bit-packing）布局上，<code>quant_and_pack_kcache</code> 将形状为 <code>[B, nh, T, D]</code> 的 Key 沿 Token 维 <code>pack_dim = 2</code>（或在 <code>triton_quantize_and_pack_along_last_dim</code> 中先 <code>.transpose(2, 3)</code> 转置为 <code>[B, nh, D, T]</code> 后沿最后一维 $T$）每 $32 / b = 16$ 个 2-bit 整数压入 1 个 <code>int32</code>；而 <code>quant_and_pack_vcache</code> 则沿通道维 <code>pack_dim = 3</code> 打包为 <code>[B, nh, T, D // 16]</code>。</p>
+<h4 id="2流式残差窗口fp16-residual-cache的分组对齐刷新机制">（2）流式残差窗口（FP16 Residual Cache）的分组对齐刷新机制</h4>
+<p>面试中最常追问的工程难点是：<strong>既然 Key 的 Per-Channel 量化必须沿 Token 维跨 $G$ 个 Token 计算 $\min/\max$，而在自回归 Decode 阶段每步只生成 1 个新 Token $\mathbf{k}_t \in \mathbb{R}^{1 \times D}$，如何避免每步重算或单元素退化？</strong>
+（注：若错误地对每个新生成的单 Token 直接调用 Per-Channel 量化，由于组内只有 1 个元素，必然导致 $\min = \max$，不仅退化为无压缩，且每 Token 都要存一套 FP16 的 $(s, z)$ 元数据，显存反而比原 FP16 更大！）</p>
+<p>结合官方源码 <code>jy-yuan/KIVI/models/llama_kivi.py</code>（<code>LlamaFlashAttention_KIVI.forward</code>），KIVI 设计了容量为 $R$（<code>residual_length = 128</code>，要求 $R \bmod G = 0$，默认 $G = 32$）的 <strong>FP16 残差缓存窗口（Residual Cache）</strong>，其 Key 与 Value 遵循截然不同的异构刷盘状态机：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">KIVI 异构流式 KV 缓存状态机 (设 Group Size G=32, Residual Length R=128, Bit-width b=2):
+
+1. Prefill 阶段 (输入长度 L_prompt = 300):
+   - Key 切分: 前 256 个 Token (300 - (300 % 128) = 256, 整除 R=128) 立即转置并按 Per-Channel (G=32) 打包进 key_states_quant_trans (2-bit);
+               尾部余数 300 % 128 = 44 个 Token 原样保留在 key_states_full (FP16)。
+   - Value 切分: 前 300 - 128 = 172 个 Token 立即按 Per-Token (G=32) 打包进 value_states_quant (2-bit);
+                 最后 R = 128 个 Token 原样保留在 value_states_full (FP16)。
+
+2. Decode 阶段 (每步新增 1 个 Token k_new, v_new):
+   - Step A (拼接与双分支注意力):
+     key_states_full &lt;- cat([key_states_full, k_new], dim=2)
+     att_qkquant = cuda_bmm_fA_qB_outer(q, key_states_quant_trans)   # 融合反量化 GEMV 算历史 2-bit Key
+     att_qkfull  = matmul(q, key_states_full^T)                      # 标准 FP16 GEMV 算近期残差 Key
+     attn_weights = softmax(cat([att_qkquant, att_qkfull], dim=-1) / sqrt(D))
+
+   - Step B (Key 批量整块刷盘 — 仅当 key_states_full 长度恰好达到 R=128 时触发!):
+     if key_states_full.shape[-2] == 128:
+         把这 128 个 FP16 Key 一次性切为 4 个 G=32 的 Per-Channel Group 量化追加到 key_states_quant_trans,
+         并将 key_states_full 重置为 None (清空为 0)!
+
+   - Step C (Value 滑动逐个刷盘 — 每次追加后只要 value_states_full 长度 &gt; R=128 即触发!):
+     value_states_full &lt;- cat([value_states_full, v_new], dim=2)     # 此时长度为 129
+     attn_output = cuda_bmm_fA_qB_outer(W_quant, value_states_quant) + matmul(W_full, value_states_full)
+     if value_states_full.shape[-2] &gt; 128:                           # 恒等于 129 == R + 1
+         弹出最老的 1 个 Token value_states_full[:, :, :1, :] 按 Per-Token 量化追加到 value_states_quant,
+         value_states_full &lt;- value_states_full[:, :, 1:, :]         # 维持残差窗口恒为最新 128 个 Token!
+</code></pre>
+<p>这一设计的精妙之处在于：</p>
+<ul>
+<li><strong>精度红利</strong>：自回归生成具有强烈的局部性（Locality），距离当前位置最近的 $R=128$ 个 Token 通常占据了极高比例的注意力权重。将这些近期 Token 保留为无损 FP16，天然屏蔽了近距离 2-bit 量化噪声。</li>
+<li><strong>硬件对齐与零重算</strong>：所有进入 2-bit 缓存区的 Key 块永远是 $G=32$ 的整数倍，一生只被量化打包一次，后续绝不发生反量化再重新量化的二次舍入损失。</li>
+</ul>
+<hr />
+<h3 id="2-kvquant-机制一为什么必须在-rope-之前pre-rope对-key-缓存做按通道量化">2. KVQuant 机制一：为什么必须在 RoPE 之前（Pre-RoPE）对 Key 缓存做按通道量化？</h3>
+<p>尽管 KIVI 通过 Per-Channel Key 量化大幅改善了精度，但在超长上下文（如 $128\text{K}\sim 1\text{M}$）或更激进的无分组/大分组 Per-Channel 量化下，后旋转量化（Post-RoPE Quantization）仍会出现明显退化。<strong>KVQuant</strong>（Hooper et al., NeurIPS 2024）找出了罪魁祸首：<strong>旋转位置编码（RoPE）破坏了 Key 离群通道的跨位置平稳性！</strong></p>
+<h4 id="1rope-引发的通道混叠与余弦调制数学证明">（1）RoPE 引发的“通道混叠与余弦调制”数学证明</h4>
+<p>在标准 Llama 架构中，线性层输出的未旋转键向量为 $\mathbf{k}_t^{\text{pre}} = \mathbf{W}_K \mathbf{h}_t \in \mathbb{R}^D$。RoPE 将第 $2m$ 维与第 $2m+1$ 维（在 Hugging Face 实现中为第 $m$ 维与第 $m + D/2$ 维，<code>rotate_half</code>）配对，按位置 $t$ 施加二维正交旋转（设角频率 $\theta_m = 10000^{-2m/D}$）：</p>
+<p>$$\begin{bmatrix} k_{t, 2m}^{\text{post}} \ k_{t, 2m+1}^{\text{post}} \end{bmatrix} = \begin{bmatrix} \cos(t\theta_m) &amp; -\sin(t\theta_m) \ \sin(t\theta_m) &amp; \cos(t\theta_m) \end{bmatrix} \begin{bmatrix} k_{t, 2m}^{\text{pre}} \ k_{t, 2m+1}^{\text{pre}} \end{bmatrix}$$</p>
+<p>假设在旋转前的 $\mathbf{k}<em>t^{\text{pre}}$ 中，通道 $2m$ 是一个恒定偏高的显著离群通道（例如跨所有位置 $t$ 稳定在 $k</em>{t, 2m}^{\text{pre}} \approx A + \epsilon_t$，其中常量偏置 $A = 12.0$，局部标准差 $\sigma_\epsilon = 0.1$），而其配对的伙伴通道 $2m+1$ 是一个普通的零均值小幅值通道（$k_{t, 2m+1}^{\text{pre}} \in [-0.3, 0.3]$）：</p>
+<ol>
+<li><strong>如果直接对旋转前的 $\mathbf{k}_t^{\text{pre}}$ 做 Per-Channel 量化（Pre-RoPE Quantization）</strong>：
+<ul>
+<li>通道 $2m$ 的数值区间仅仅是 $[11.8, 12.2]$，宽度 $\Delta^{\text{pre}}_{2m} \approx 0.4$；</li>
+<li>通道 $2m+1$ 的数值区间仅仅是 $[-0.3, 0.3]$，宽度 $\Delta^{\text{pre}}_{2m+1} \approx 0.6$；</li>
+<li>两个通道各自拥有极窄的动态范围，2-bit 量化误差微乎其微！并且由于二维旋转矩阵 $\mathbf{R}(t\theta_m)$ 是<strong>严格正交保范的（Orthogonal / Norm-Preserving，$|\mathbf{R}\mathbf{e}|_2 = |\mathbf{e}|_2$）</strong>，先在 Pre-RoPE 空间量化得到 $\hat{\mathbf{k}}_t^{\text{pre}}$ 再在读取时乘上 $\mathbf{R}(t\theta_m)$，其最终重构误差严格等于旋转前的极小量化误差：
+$$\left| \mathbf{R}(t\theta_m) \mathbf{k}_t^{\text{pre}} - \mathbf{R}(t\theta_m) \hat{\mathbf{k}}_t^{\text{pre}} \right|_2^2 = \left| \mathbf{k}_t^{\text{pre}} - \hat{\mathbf{k}}_t^{\text{pre}} \right|_2^2$$</li>
+</ul>
+</li>
+<li><strong>如果对旋转后的 $\mathbf{k}_t^{\text{post}}$ 做 Per-Channel 量化（Post-RoPE Quantization）</strong>：
+<ul>
+<li>经过旋转后，$k_{t, 2m}^{\text{post}} \approx A \cos(t\theta_m)$，随着位置 $t$ 的推进，该通道的值会在 $[-A, +A] = [-12.0, +12.0]$ 之间剧烈正余弦摆动，动态范围暴涨 $60\times$（$\Delta^{\text{post}}_{2m} \approx 24.0$）！</li>
+<li>更糟糕的是，原本干净的伙伴通道 $2m+1$ 被强行混入了 $A \sin(t\theta_m)$ 分量，其动态范围同样从 $0.6$ 被污染膨胀至 $24.0$！两个通道的 2-bit 量化步长双双劣化数十倍。</li>
+</ul>
+</li>
+</ol>
+<h4 id="2kvquant-的-pre-rope-源码级实现与融合算子设计">（2）KVQuant 的 Pre-RoPE 源码级实现与融合算子设计</h4>
+<p>结合官方源码 <code>SqueezeAILab/KVQuant</code>（<code>deployment/transformers/src/transformers/models/llama/modeling_llama.py</code>），KVQuant 对标准注意力管线做了如下重构：</p>
+<ul>
+<li>在 <code>forward</code> 中，仅对当前步的 Query 向量调用 <code>query_states = apply_rotary_pos_emb_query(query_states, cos, sin, position_ids)</code>；</li>
+<li>而新生成的 <code>key_states</code>（除前 <code>first_few_fp16</code> 个首词外）<strong>不经过 <code>apply_rotary_pos_emb</code></strong>，直接以未旋转形态送入 <code>self.kcache.parallel_pack(key_states)</code>（Prefill）或 <code>vecquant{2,3,4}appendvecKsparse</code>（Decode）压入低比特缓存；</li>
+<li>在 Decode 阶段计算 $\mathbf{q}<em>t \mathbf{K}^\top$ 时，调用融合 CUDA 内核 <code>vecquant{2,3,4}matmul_nuq_perchannel_transposed_rope_mha_batched_fused_opt2</code>：内核在寄存器中将 $b$-bit 索引查表反量化为 $\hat{k}</em>{j, c}^{\text{pre}}$ 后，<strong>直接利用线程持有的历史位置下标 $j$ 与 <code>rope_theta</code> 在片上即时完成旋转并与已旋转的 $q_{t, c}^{\text{post}}$ 累加点积</strong>，无需将旋转后的 FP16 Key 写回 HBM！</li>
+</ul>
+<hr />
+<h3 id="3-kvquant-机制二fisher-非均匀码本nuq1-稠密-稀疏隔离sink-首词保护与-q-norm">3. KVQuant 机制二：Fisher 非均匀码本（NUQ）、1% 稠密-稀疏隔离、Sink 首词保护与 Q-Norm</h3>
+<p>为了在全序列范围（消除每 32 个 Token 存一组 FP16 缩放因子的元数据开销）下实现 2-bit / 3-bit 逼近 FP16 的精度，KVQuant 在 <code>simquant_module_quantizer.py</code> 中进一步集成了四项关键技术：</p>
+<ol>
+<li><strong>离线 Fisher 敏感度加权非均匀量化（Sensitivity-Weighted Non-Uniform Quantization, NUQ）</strong>：
+<ul>
+<li>KV 激活在剔除极端点后呈现典型的钟形非均匀分布（大量数值密集分布在 0 附近，尾部稀疏），均匀网格会把宝贵的量化电平浪费在稀疏尾部。</li>
+<li>KVQuant 利用离线校准集（如 Wikitext-2 的 16 个样本）提取各层 Key/Value 投影层的激活与二阶梯度平方近似的 Fisher 信息矩阵 $F_i = (\partial \mathcal{L} / \partial x_i)^2$，在归一化区间 $[-1, 1]$ 上运行带样本权重 <code>sample_weight = fisher_info</code> 的 <strong>K-Means 聚类（$2^b$ 个簇）</strong>：
+$$\min_{{c_1, \dots, c_{2^b}}} \sum_{i \in \text{inliers}} F_i \cdot \min_{k \in {1, \dots, 2^b}} \left( \tilde{x}_i - c_k \right)^2$$</li>
+<li>聚类所得的 $2^b$ 个质心（Signposts / LUT）在各层间共享（或按通道缩放映射为 <code>lookup_table[head, dim, 2^b]</code>），推理时通过硬件快速查表取代均匀乘加。</li>
+</ul>
+</li>
+<li><strong>1% 稠密-稀疏量化（Dense-and-Sparse Quantization）与中位数重定中心</strong>：
+<ul>
+<li>即使按通道量化 Key 或按 Token 量化 Value，单个向量内部仍会出现约 $0.1%\sim 1%$ 的极端突发离群点（Spike Outliers）。如果直接用含离群点的极值计算区间，2-bit 的 4 个质心仍会被拉偏。</li>
+<li>如 <code>SimQuant.quantize</code> 与 <code>quant_fn_nuq_recon</code> 所示，给定稀疏度阈值 <code>sparsity_threshold = 0.99</code>（即隔离 $1%$ 离群值：上界分位数 $t = 1 - (1 - 0.99)/2 = 99.5%$，下界 $0.5%$），KVQuant 先将超出分位数阈值的离群点位置 <code>outlier_mask</code> 识别出来，在计算内点（Inliers）的 <code>maxval</code> 与 <code>minval</code> 前，<strong>先将离群位置临时替换为通道中位数 <code>data_trimmed[outlier_mask] = med[outlier_mask]</code></strong>，再算出紧凑的内点中心 <code>offset = (maxval + minval) / 2</code> 与半宽 <code>rangeval = (maxval - minval) / 2</code>。</li>
+<li>落入 $[-1, 1]$ 的 $99%$ 稠密内点以 2-bit/3-bit 打包存入 <code>kcache</code>/<code>vcache</code>；而溢出的 $1%$ 稀疏离群点则在减去最近端点的量化值（如 <code>upper_outliers - lut[..., numvals - 1]</code>）后，以稀疏坐标格式（CSR 或每 Token 固定上限 <code>topK</code> 缓冲 <code>outliers</code> + <code>outlier_indices</code>）单独以 FP16 精确存储，并在 SpMV 内核中累加回注意力输出。</li>
+</ul>
+</li>
+<li><strong>注意力汇聚点首词保护（Attention-Sink-Aware Quantization, <code>first_few_fp16</code>）</strong>：
+<ul>
+<li>如 StreamingLLM 所示，自回归模型在训练期因因果掩码形成了一种结构性偏置：会将海量无处安放的冗余注意力权重倾倒在序列最开头的 $1\sim 4$ 个 Token（尤其是 BOS 首词，即 Attention Sink）上，且首词在经过层归一化与投影后呈现出与后续所有普通 Token 完全异质的超大激活范数。</li>
+<li>KVQuant 在 <code>modeling_llama.py</code> 中引入 <code>first_few_fp16</code>（通常设为 $1$ 或 $4$）：不仅在离线校准计算通道分位数与 K-Means 时直接屏蔽前 $F$ 个 Token（防止首词扭曲全序列的通道缩放因子），而且在推理期单独开辟 <code>self.kcache_fp16</code> 与 <code>self.vcache_fp16</code> 原样保留前 $F$ 个 Token 为 FP16！</li>
+</ul>
+</li>
+<li><strong>2-bit Q-Norm（Quantization-Normalization 量化后矩匹配校准）</strong>：
+<ul>
+<li>在极低位宽（2-bit）下，非均匀量化后的离散质心集合 $Q = \operatorname{LUT}(\tilde{\mathbf{x}})$ 相比原连续内点分布 $\tilde{\mathbf{x}}$ 会发生系统性的方差收缩与均值漂移（Distribution Shift），在深层网络逐层累积后引发输出退化。</li>
+<li>KVQuant 在 <code>SimQuant.quantize</code>（第 533–549 行）中统计内点量化前的真实均值 $m_1$、标准差 $\sigma_1$ 与量化后的均值 $m_2$、标准差 $\sigma_2$，计算线性校准系数并直接折叠进二级查找表 <code>lookup_table2</code> 中（运行期零额外算力开销）：
+$$\text{normscale} = \frac{\sigma_1}{\sigma_2}, \quad \text{normoffset} = m_1 - m_2 \cdot \frac{\sigma_1}{\sigma_2}, \quad \hat{Q}_{\text{Q-Norm}} = Q \cdot \text{normscale} + \text{normoffset}$$</li>
+</ul>
+</li>
+</ol>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align:left">对比维度</th>
+<th style="text-align:left">Hugging Face 基础按 Token 量化</th>
+<th style="text-align:left">KIVI（ICML 2024）</th>
+<th style="text-align:left">KVQuant（NeurIPS 2024）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Key 量化粒度与阶段</strong></td>
+<td style="text-align:left">Post-RoPE 按 Token 分组（2-bit 崩塌）</td>
+<td style="text-align:left"><strong>Post-RoPE 按通道分组</strong>（沿序列每 $G=32$ 切组）</td>
+<td style="text-align:left"><strong>Pre-RoPE 按通道全序列共享缩放</strong>（读取时在线旋转）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Value 量化粒度</strong></td>
+<td style="text-align:left">按 Token 分组</td>
+<td style="text-align:left"><strong>按 Token 分组</strong>（沿通道每 $G=32$ 切组）</td>
+<td style="text-align:left"><strong>按 Token 动态缩放</strong>（共享离线非均匀码本 LUT）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>数据网格与校准需求</strong></td>
+<td style="text-align:left">均匀仿射 Min-Max（免校准）</td>
+<td style="text-align:left"><strong>均匀仿射 Min-Max（100% 免校准、确定性）</strong></td>
+<td style="text-align:left"><strong>Fisher 加权 K-Means 非均匀码本 NUQ + Q-Norm</strong>（需轻量单样本校准）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>近期/特殊 Token 保护</strong></td>
+<td style="text-align:left">无（或简单滑动窗）</td>
+<td style="text-align:left"><strong>尾部 $R=128$ 个 Token 全精度残差缓存（Residual Cache）</strong></td>
+<td style="text-align:left"><strong>头部 $F=1\sim 4$ 个 Attention Sink 首词 FP16 保护</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>极端突发离群值处理</strong></td>
+<td style="text-align:left">无隔离（直接拉大组内 <code>scale</code>）</td>
+<td style="text-align:left">依赖 $G=32$ 局部小分组限制影响范围</td>
+<td style="text-align:left"><strong>1% 稠密-稀疏分解（Dense-and-Sparse，FP16 CSR / Top-$K$ 旁路）</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>单元素有效平均位宽（2-bit）</strong></td>
+<td style="text-align:left">$2.50\text{ bits}$（$G=64$）</td>
+<td style="text-align:left"><strong>约 $3.00\text{ bits}$</strong>（$G=32$ 含 FP16 $(s,z)$ + 残差窗摊薄）</td>
+<td style="text-align:left"><strong>约 $2.20\sim 2.35\text{ bits}$</strong>（含 $1%$ FP16 稀疏索引与按 Token 缩放）</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h3 id="4-python-3-标准库实现kivi-异构流式残差缓存与-kvquant-pre-rope--稀疏-q-norm-仿真">4. Python 3 标准库实现：KIVI 异构流式残差缓存与 KVQuant Pre-RoPE / 稀疏 Q-Norm 仿真</h3>
+<p>下面的零依赖 Python 3 标准库代码从底层复现并验证了：</p>
+<ol>
+<li><strong>KIVI 键值非对称分组误差对比</strong>：在含持续通道离群值的 Key 与含 Token 基线突变的 Value 上，对比 <code>per_channel</code> 与 <code>per_token</code> 2-bit 量化的重构均方误差（MSE）；</li>
+<li><strong>KIVI 流式残差缓存窗口（<code>LlamaFlashAttention_KIVI</code>）状态机</strong>：精确模拟逐 Token 解码中 Key 的分组对齐整块刷盘（每满 $R$ 步触发）与 Value 的 FIFO 逐 Token 弹出刷盘（超出 $R$ 后每步触发）；</li>
+<li><strong>KVQuant Pre-RoPE vs Post-RoPE 量化与正交保范定理</strong>：证明 RoPE 旋转后的通道混叠如何令 Post-RoPE Per-Channel 量化误差激增百倍，以及 Pre-RoPE 量化后在线旋转的误差恒等性；</li>
+<li><strong>KVQuant 1% 稠密-稀疏隔离 + 中位数重定中心 + 2-bit NUQ + Q-Norm 矩校准</strong>：验证稀疏离群值剥离与 Q-Norm 方差恢复的递进降噪收益。</li>
+</ol>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+from typing import Dict, List, Tuple
+
+
+def affine_group_quant_mse(
+    mat: List[List[float]], group_size: int, bits: int, axis: str
+) -&gt; Tuple[List[List[float]], float]:
+    &quot;&quot;&quot;
+    对形状为 [T, D] 的矩阵按指定维度执行分组非对称 Min-Max 量化:
+      - axis == &#x27;per_channel&#x27;: 沿 Token 维 T 分组 (每组 [G, 1], 同通道共享 scale/mn)
+      - axis == &#x27;per_token&#x27;:   沿通道维 D 分组 (每组 [1, G], 同 Token 共享 scale/mn)
+    严格对齐 jy-yuan/KIVI (quant/new_pack.py):
+      scale = (mx - mn) / (2^bits - 1), q = clamp(round((x - mn) / scale), 0, 2^bits - 1)
+    &quot;&quot;&quot;
+    T = len(mat)
+    D = len(mat[0])
+    max_int = (1 &lt;&lt; bits) - 1
+    recon = [[0.0] * D for _ in range(T)]
+
+    if axis == &quot;per_channel&quot;:
+        assert T % group_size == 0, &quot;Per-channel grouping requires T % group_size == 0&quot;
+        for c in range(D):
+            for g_start in range(0, T, group_size):
+                grp = [mat[t][c] for t in range(g_start, g_start + group_size)]
+                mn, mx = min(grp), max(grp)
+                scale = (mx - mn) / max_int if mx &gt; mn else 1.0
+                for offset, x in enumerate(grp):
+                    q = max(0, min(max_int, int(round((x - mn) / scale)))) if mx &gt; mn else 0
+                    recon[g_start + offset][c] = q * scale + mn
+    elif axis == &quot;per_token&quot;:
+        assert D % group_size == 0, &quot;Per-token grouping requires D % group_size == 0&quot;
+        for t in range(T):
+            for g_start in range(0, D, group_size):
+                grp = mat[t][g_start : g_start + group_size]
+                mn, mx = min(grp), max(grp)
+                scale = (mx - mn) / max_int if mx &gt; mn else 1.0
+                for offset, x in enumerate(grp):
+                    q = max(0, min(max_int, int(round((x - mn) / scale)))) if mx &gt; mn else 0
+                    recon[t][g_start + offset] = q * scale + mn
+    else:
+        raise ValueError(f&quot;Unknown axis: {axis}&quot;)
+
+    mse = sum(
+        (mat[t][c] - recon[t][c]) ** 2 for t in range(T) for c in range(D)
+    ) / (T * D)
+    return recon, mse
+
+
+def simulate_kivi_streaming_residual_cache(
+    K_stream: List[List[float]],
+    V_stream: List[List[float]],
+    group_size: int = 4,
+    residual_length: int = 8,
+    bits: int = 2,
+) -&gt; Dict[str, object]:
+    &quot;&quot;&quot;
+    严格对齐 jy-yuan/KIVI (models/llama_kivi.py::LlamaFlashAttention_KIVI):
+    模拟逐 Token 解码流中 Key 与 Value 残差缓冲区的异构刷盘生命周期:
+      - Key Cache (Per-Channel): 累积到 key_full 长度 == residual_length 时整块转置刷盘并清空 key_full
+      - Value Cache (Per-Token): 每次追加后若 value_full 长度 &gt; residual_length, 立即弹出最老 1 个 Token 量化
+    &quot;&quot;&quot;
+    assert residual_length % group_size == 0
+    k_quant_groups: List[List[List[float]]] = []
+    k_full: List[List[float]] = []
+    v_quant_tokens: List[List[float]] = []
+    v_full: List[List[float]] = []
+
+    k_flush_steps: List[int] = []
+    v_flush_steps: List[int] = []
+
+    for step, (k_tok, v_tok) in enumerate(zip(K_stream, V_stream), start=1):
+        # 1. Key 流式更新: 先进入 FP16 残差池, 满 R 时整块按 Per-Channel 量化并清空
+        k_full.append(k_tok)
+        if len(k_full) == residual_length:
+            k_recon_blk, _ = affine_group_quant_mse(
+                k_full, group_size=group_size, bits=bits, axis=&quot;per_channel&quot;
+            )
+            k_quant_groups.append(k_recon_blk)
+            k_full = []
+            k_flush_steps.append(step)
+
+        # 2. Value 流式更新: 先进入 FP16 残差池, 超出 R 时弹出最老 1 个 Token 按 Per-Token 量化
+        v_full.append(v_tok)
+        if len(v_full) &gt; residual_length:
+            oldest_v = [v_full.pop(0)]
+            v_recon_tok, _ = affine_group_quant_mse(
+                oldest_v, group_size=group_size, bits=bits, axis=&quot;per_token&quot;
+            )
+            v_quant_tokens.append(v_recon_tok[0])
+            v_flush_steps.append(step)
+
+    return {
+        &quot;k_quant_blocks&quot;: len(k_quant_groups),
+        &quot;k_full_remaining&quot;: len(k_full),
+        &quot;v_quant_count&quot;: len(v_quant_tokens),
+        &quot;v_full_remaining&quot;: len(v_full),
+        &quot;k_flush_steps&quot;: k_flush_steps,
+        &quot;v_flush_steps_head&quot;: v_flush_steps[:3],
+    }
+
+
+def apply_rope_2d_pairs(vec: List[float], pos: int, theta_base: float = 10000.0) -&gt; List[float]:
+    &quot;&quot;&quot;对偶数维向量应用标准二维旋转位置编码 RoPE&quot;&quot;&quot;
+    d = len(vec)
+    out = [0.0] * d
+    for i in range(0, d, 2):
+        freq = 1.0 / (theta_base ** (i / d))
+        angle = pos * freq
+        cos_a, sin_a = math.cos(angle), math.sin(angle)
+        x0, x1 = vec[i], vec[i + 1]
+        out[i] = x0 * cos_a - x1 * sin_a
+        out[i + 1] = x0 * sin_a + x1 * cos_a
+    return out
+
+
+def compare_pre_rope_vs_post_rope_key_quant(
+    K_pre: List[List[float]], group_size: int = 4, bits: int = 2
+) -&gt; Dict[str, float]:
+    &quot;&quot;&quot;
+    对齐 SqueezeAILab/KVQuant:
+    对比 Post-RoPE (旋转后按通道量化) 与 Pre-RoPE (旋转前按通道量化, 读取时再施加 RoPE) 的重构 MSE。
+    在 K_pre 中通道 0 具有恒定显著幅值 (~12.0), 伙伴通道 1 为小幅值噪声 (~0.2)。
+    旋转后通道 0 与通道 1 发生正余弦混叠, 破坏通道跨位置的平稳性。
+    &quot;&quot;&quot;
+    T = len(K_pre)
+    D = len(K_pre[0])
+    K_post_true = [apply_rope_2d_pairs(K_pre[t], pos=t) for t in range(T)]
+
+    # 方案 A (Post-RoPE 量化): 直接对旋转后的 K_post_true 做 Per-Channel 量化
+    _, mse_post_rope = affine_group_quant_mse(
+        K_post_true, group_size=group_size, bits=bits, axis=&quot;per_channel&quot;
+    )
+
+    # 方案 B (KVQuant Pre-RoPE 量化): 先对平稳的 K_pre 做 Per-Channel 量化, 再施加正交旋转 RoPE
+    K_pre_recon, mse_pre_raw = affine_group_quant_mse(
+        K_pre, group_size=group_size, bits=bits, axis=&quot;per_channel&quot;
+    )
+    K_pre_then_rope = [apply_rope_2d_pairs(K_pre_recon[t], pos=t) for t in range(T)]
+    mse_pre_rope = sum(
+        (K_post_true[t][c] - K_pre_then_rope[t][c]) ** 2 for t in range(T) for c in range(D)
+    ) / (T * D)
+
+    return {
+        &quot;mse_post_rope&quot;: mse_post_rope,
+        &quot;mse_pre_rope&quot;: mse_pre_rope,
+        &quot;mse_pre_raw&quot;: mse_pre_raw,
+        &quot;error_reduction_ratio&quot;: mse_post_rope / mse_pre_rope,
+    }
+
+
+def dense_and_sparse_qnorm_quant(
+    vec: List[float], lut: List[float], outlier_ratio: float = 0.125
+) -&gt; Dict[str, float]:
+    &quot;&quot;&quot;
+    严格对齐 SqueezeAILab/KVQuant (simquant_module_quantizer.py::quant_fn_nuq_recon + SimQuant.quantize):
+    1. 隔离两端极端离群值 (Dense-and-Sparse), 用中位数替换离群位置后再计算内点区间 [min, max]
+    2. 将内点归一化到 [-1, 1] 并查表映射到最近邻非均匀质心 LUT
+    3. 执行 Q-Norm 矩匹配校准: normscale = stdev_inlier / stdev_q, normoffset = m_inlier - m_q * normscale
+    &quot;&quot;&quot;
+    n = len(vec)
+    k_half = max(1, int(round(n * outlier_ratio / 2.0)))
+    indexed = sorted(enumerate(vec), key=lambda x: x[1])
+    outlier_idx = {idx for idx, _ in indexed[:k_half]} | {idx for idx, _ in indexed[-k_half:]}
+
+    # 1. Naive 非稀疏量化 (被极端离群值撑爆动态范围)
+    mn_naive, mx_naive = min(vec), max(vec)
+    off_naive, rng_naive = (mx_naive + mn_naive) / 2.0, (mx_naive - mn_naive) / 2.0
+    recon_naive = []
+    for x in vec:
+        x_norm = (x - off_naive) / rng_naive
+        q_c = min(lut, key=lambda c: abs(x_norm - c))
+        recon_naive.append(q_c * rng_naive + off_naive)
+    mse_naive = sum((a - b) ** 2 for a, b in zip(vec, recon_naive)) / n
+
+    # 2. KVQuant Dense-and-Sparse + Q-Norm
+    sorted_vals = [v for _, v in indexed]
+    median_val = sorted_vals[n // 2]
+    trimmed = [median_val if i in outlier_idx else vec[i] for i in range(n)]
+    mn_in, mx_in = min(trimmed), max(trimmed)
+    off_in, rng_in = (mx_in + mn_in) / 2.0, (mx_in - mn_in) / 2.0
+
+    inlier_indices = [i for i in range(n) if i not in outlier_idx]
+    aug_inliers = [(vec[i] - off_in) / rng_in for i in inlier_indices]
+    q_inliers = [min(lut, key=lambda c: abs(a - c)) for a in aug_inliers]
+
+    m1 = sum(aug_inliers) / len(aug_inliers)
+    std1 = math.sqrt(sum((a - m1) ** 2 for a in aug_inliers) / len(aug_inliers))
+    m2 = sum(q_inliers) / len(q_inliers)
+    std2 = math.sqrt(sum((q - m2) ** 2 for q in q_inliers) / len(q_inliers))
+    normscale = std1 / std2
+    normoffset = -m2 * normscale + m1
+
+    recon_sparse_no_qnorm = [0.0] * n
+    recon_sparse_qnorm = [0.0] * n
+    for i in range(n):
+        if i in outlier_idx:
+            # 稀疏分支: FP16 精确保留离群值
+            recon_sparse_no_qnorm[i] = vec[i]
+            recon_sparse_qnorm[i] = vec[i]
+        else:
+            a = (vec[i] - off_in) / rng_in
+            q_c = min(lut, key=lambda c: abs(a - c))
+            recon_sparse_no_qnorm[i] = q_c * rng_in + off_in
+            q_cal = q_c * normscale + normoffset
+            recon_sparse_qnorm[i] = q_cal * rng_in + off_in
+
+    mse_sparse_no_qnorm = sum((a - b) ** 2 for a, b in zip(vec, recon_sparse_no_qnorm)) / n
+    mse_sparse_qnorm = sum((a - b) ** 2 for a, b in zip(vec, recon_sparse_qnorm)) / n
+    return {
+        &quot;mse_naive&quot;: mse_naive,
+        &quot;mse_sparse_no_qnorm&quot;: mse_sparse_no_qnorm,
+        &quot;mse_sparse_qnorm&quot;: mse_sparse_qnorm,
+        &quot;normscale&quot;: normscale,
+        &quot;normoffset&quot;: normoffset,
+    }
+
+
+# --- 执行验证与断言 ---
+# 1. 构造具有典型异构特征的 Key [T=8, D=8] 与 Value [T=8, D=8]
+# Key: 通道 0 和 4 是跨所有 Token 恒定偏高的离群通道 (~18.0 和 ~-14.0)
+K_mat = [
+    [
+        18.0 + 0.08 * (t % 3) if c == 0 else (-14.0 - 0.08 * (t % 2) if c == 4 else 0.45 * math.cos(t * 0.7 + c * 1.1))
+        for c in range(8)
+    ]
+    for t in range(8)
+]
+# Value: 无固定离群通道, 但不同 Token 间基线偏移剧烈变化, 同 Token 内各通道波动平缓
+token_offsets = [12.0, -8.5, 6.2, -11.0, 9.5, -7.0, 10.5, -9.2]
+V_mat = [
+    [token_offsets[t] + 0.35 * math.sin(t * 1.3 + c * 0.8) for c in range(8)]
+    for t in range(8)
+]
+
+_, k_mse_per_channel = affine_group_quant_mse(K_mat, group_size=4, bits=2, axis=&quot;per_channel&quot;)
+_, k_mse_per_token = affine_group_quant_mse(K_mat, group_size=4, bits=2, axis=&quot;per_token&quot;)
+_, v_mse_per_channel = affine_group_quant_mse(V_mat, group_size=4, bits=2, axis=&quot;per_channel&quot;)
+_, v_mse_per_token = affine_group_quant_mse(V_mat, group_size=4, bits=2, axis=&quot;per_token&quot;)
+
+# 验证 KIVI 核心发现: Key 按通道量化远优于按 Token 量化; Value 按 Token 量化远优于按通道量化
+assert k_mse_per_channel &lt; k_mse_per_token * 0.02
+assert v_mse_per_token &lt; v_mse_per_channel * 0.01
+
+# 2. 验证 KIVI 流式残差窗口 (T=18 步, G=4, R=8)
+K_stream_18 = [K_mat[t % 8] for t in range(18)]
+V_stream_18 = [V_mat[t % 8] for t in range(18)]
+stream_res = simulate_kivi_streaming_residual_cache(
+    K_stream_18, V_stream_18, group_size=4, residual_length=8, bits=2
+)
+# Key 在 step 8 和 step 16 触发整块刷盘 (共 2 块 = 16 Tokens), 剩余 2 个在 key_full
+assert stream_res[&quot;k_flush_steps&quot;] == [8, 16]
+assert stream_res[&quot;k_quant_blocks&quot;] == 2 and stream_res[&quot;k_full_remaining&quot;] == 2
+# Value 从 step 9 到 step 18 每步弹出 1 个最老 Token 刷盘 (共 10 个), 剩余 8 个满载在 value_full
+assert stream_res[&quot;v_quant_count&quot;] == 10 and stream_res[&quot;v_full_remaining&quot;] == 8
+assert stream_res[&quot;v_flush_steps_head&quot;] == [9, 10, 11]
+
+# 3. 验证 KVQuant Pre-RoPE vs Post-RoPE 量化误差及旋转正交保范性
+rope_res = compare_pre_rope_vs_post_rope_key_quant(K_mat, group_size=4, bits=2)
+# 正交旋转不改变欧氏距离: Pre-RoPE 量化后再旋转的 MSE 严格等于旋转前的量化 MSE
+assert abs(rope_res[&quot;mse_pre_rope&quot;] - rope_res[&quot;mse_pre_raw&quot;]) &lt; 1e-12
+assert rope_res[&quot;error_reduction_ratio&quot;] &gt; 500.0
+
+# 4. 验证 KVQuant Dense-and-Sparse 离群值隔离与 2-bit NUQ + Q-Norm
+sample_vec = [
+    -14.5, -0.82, -0.55, -0.38, -0.24, -0.15, -0.08, -0.02,
+    0.04, 0.11, 0.19, 0.29, 0.44, 0.61, 0.88, 16.2
+]
+nuq_lut_2bit = [-0.90, -0.25, 0.25, 0.90]
+ds_res = dense_and_sparse_qnorm_quant(sample_vec, nuq_lut_2bit, outlier_ratio=0.125)
+assert ds_res[&quot;mse_sparse_no_qnorm&quot;] &lt; ds_res[&quot;mse_naive&quot;] * 0.01
+assert ds_res[&quot;mse_sparse_qnorm&quot;] &lt; ds_res[&quot;mse_sparse_no_qnorm&quot;]
+
+print(
+    f&quot;1. KIVI Asymmetry (2-bit, G=4): K_MSE(per_ch={k_mse_per_channel:.5f} vs per_tok={k_mse_per_token:.3f}); &quot;
+    f&quot;V_MSE(per_tok={v_mse_per_token:.5f} vs per_ch={v_mse_per_channel:.3f})&quot;
+)
+print(
+    f&quot;2. Streaming Residual (T=18, R=8): K_flushes={stream_res[&#x27;k_flush_steps&#x27;]} (rem={stream_res[&#x27;k_full_remaining&#x27;]}), &quot;
+    f&quot;V_quant={stream_res[&#x27;v_quant_count&#x27;]} (rem={stream_res[&#x27;v_full_remaining&#x27;]})&quot;
+)
+print(
+    f&quot;3. Pre-RoPE vs Post-RoPE Key Quant: PostRoPE_MSE={rope_res[&#x27;mse_post_rope&#x27;]:.4f}, &quot;
+    f&quot;PreRoPE_MSE={rope_res[&#x27;mse_pre_rope&#x27;]:.5f} ({rope_res[&#x27;error_reduction_ratio&#x27;]:.1f}x lower error)&quot;
+)
+print(
+    f&quot;4. Dense-and-Sparse + Q-Norm: Naive_MSE={ds_res[&#x27;mse_naive&#x27;]:.3f} -&gt; &quot;
+    f&quot;Sparse_MSE={ds_res[&#x27;mse_sparse_no_qnorm&#x27;]:.5f} -&gt; QNorm_MSE={ds_res[&#x27;mse_sparse_qnorm&#x27;]:.5f}&quot;
+)
+print(&quot;All KIVI and KVQuant 2-bit KV cache quantization assertions passed!&quot;)
+</code></pre>
+<p>实际运行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">1. KIVI Asymmetry (2-bit, G=4): K_MSE(per_ch=0.00138 vs per_tok=0.109); V_MSE(per_tok=0.00102 vs per_ch=2.058)
+2. Streaming Residual (T=18, R=8): K_flushes=[8, 16] (rem=2), V_quant=10 (rem=8)
+3. Pre-RoPE vs Post-RoPE Key Quant: PostRoPE_MSE=1.1117, PreRoPE_MSE=0.00138 (805.5x lower error)
+4. Dense-and-Sparse + Q-Norm: Naive_MSE=8.362 -&gt; Sparse_MSE=0.01661 -&gt; QNorm_MSE=0.01613
+All KIVI and KVQuant 2-bit KV cache quantization assertions passed!
+</code></pre>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“KIVI 的 Key 按通道量化可以在自回归 Decode 时每生成 1 个新 Token 就立即按通道量化追加到 2-bit 缓存中。”</strong>
+事实：<strong>如果每生成 1 个 Token 就单独对它做一次 Per-Channel 量化，整个算法会彻底失效！</strong> 因为单步新生成的 Key 形状为 <code>[1, D]</code>，沿 Token 维切分出的每个通道组里只有 $1$ 个标量元素，此时组内最大值恒等于最小值（$\max = \min$），不仅算出的量化值全为 $0$、真实值全部退化保存在 FP16 零点 <code>mn</code> 中（毫无压缩效果），而且每个 Token 都要额外存一套 FP16 的 <code>(scale, mn)</code>。这正是 VeloxQuant-MLX Issue #162 曾踩过的真实工程陷阱。正确做法必须遵循 KIVI Algorithm 1：新 Token 先以 FP16 存入 <code>key_states_full</code> 残差窗口，攒满 <code>residual_length</code>（如 $128 = 4 \times 32$）个 Token 后，才一次性切分为 $G=32$ 的通道组批量量化打包。</li>
+<li><strong>误区二：“只要把 KV Cache 量化成 2-bit，无论在什么算子实现下都能立刻降低运行时峰值显存（Peak Memory）并带来 $4\times$ 以上的推理加速。”</strong>
+事实：<strong>存储压缩（Storage Compression）不等于峰值工作集下降或端到端加速！</strong> 如果框架在计算注意力前先把整段 2-bit 历史 KV Cache 一次性反量化回完整的 FP16 张量 <code>[B, nh, T, D]</code> 再送入标准 SDPA / FlashAttention，那么：第一，反量化出的临时 FP16 张量依然会撑起相同的运行时峰值显存；第二，全部 HBM 带宽省下的时间都会被额外的反量化 Kernel 读写抵消。只有编写<strong>融合反量化矩阵向量乘内核（Fused Dequantization-GEMV / FlashAttention Kernel，如 KIVI 的 <code>cuda_bmm_fA_qB_outer</code> 与 KVQuant 的 <code>vecquant2matmul_..._fused</code>）</strong>，将 2-bit 打包字从 HBM 直接读入 GPU 寄存器并在寄存器内即时反量化点积，才能真正兑现峰值显存削减与访存加速。</li>
+<li><strong>误区三：“KVQuant 的 Pre-RoPE Key 量化之所以更准，是因为旋转前 Key 向量里没有离群值。”</strong>
+事实：<strong>恰恰相反，旋转前的 Key 向量里依然存在幅度高达 $10\times$ 以上的显著离群值！</strong> 但旋转前（Pre-RoPE）的离群值<strong>牢牢固定在少数几个特定通道上，且同一通道跨不同 Token 位置的数值极其平稳（方差极小）</strong>，因此非常适合 Per-Channel 量化；而一旦施加了位置相关的 RoPE 旋转矩阵 $\mathbf{R}(t\theta_m)$，高幅值离群通道就会随位置 $t$ 以 $\cos(t\theta_m)$ 和 $\sin(t\theta_m)$ 的规律发生正负剧烈震荡，并把大振幅混叠传染给原本平缓的配对通道，从而摧毁了 Per-Channel 量化的静态通道假设。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/huggingface/blog/blob/2edbebbfa0cfc5d37bf66fd2d46899f26f815575/zh/kv-cache-quantization.md" target="_blank" rel="noopener noreferrer">huggingface/blog (<code>zh/kv-cache-quantization.md</code>)</a>（固定 commit <code>2edbebbfa</code>）与 <a href="https://github.com/rajveer43/VeloxQuant-MLX/blob/7b1bc180df83038a2e165f473ca36261ca80e4d8/docs-site/docs/algorithms/kivi.md" target="_blank" rel="noopener noreferrer">rajveer43/VeloxQuant-MLX (<code>docs-site/docs/algorithms/kivi.md</code>)</a>（固定 commit <code>7b1bc18</code>），独立重构拓展。</li>
+<li>Liu et al., <a href="https://arxiv.org/abs/2402.02750" target="_blank" rel="noopener noreferrer">KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache</a>，ICML 2024，及官方源码 <a href="https://github.com/jy-yuan/KIVI/blob/876b4d2d08e3b1d5f70d0969c299d8c7c42ddfb6/models/llama_kivi.py" target="_blank" rel="noopener noreferrer">jy-yuan/KIVI (<code>models/llama_kivi.py</code> &amp; <code>quant/new_pack.py</code>)</a>（固定 commit <code>876b4d2</code>）：Key 按通道与 Value 按 Token 非对称 2-bit 量化、32-bit 整型位打包及 <code>residual_length</code> 分组对齐流式残差窗口实现。</li>
+<li>Hooper et al., <a href="https://arxiv.org/abs/2401.18079" target="_blank" rel="noopener noreferrer">KVQuant: Towards 10 Million Context Length LLM Inference with KV Cache Quantization</a>，NeurIPS 2024，及官方源码 <a href="https://github.com/SqueezeAILab/KVQuant/blob/57a238357f0ffe50084670fcd5781c9848f80ea2/benchmarking/kvquant/simquant_module_quantizer.py" target="_blank" rel="noopener noreferrer">SqueezeAILab/KVQuant (<code>benchmarking/kvquant/simquant_module_quantizer.py</code> &amp; <code>deployment/transformers/src/transformers/models/llama/modeling_llama.py</code>)</a>（固定 commit <code>57a2383</code>）：Pre-RoPE 按通道 Key 量化、Fisher 敏感度加权非均匀码本（NUQ）、1% 稠密-稀疏离群值隔离、<code>first_few_fp16</code> 首词保护与 Q-Norm 校准。</li>
+<li>Xiao et al., <a href="https://arxiv.org/abs/2309.17453" target="_blank" rel="noopener noreferrer">Efficient Streaming Language Models with Attention Sinks</a>，ICLR 2024：Attention Sink 现象与首词高幅值激活机制。</li>
+<li>Ashkboos et al., <a href="https://arxiv.org/abs/2404.00456" target="_blank" rel="noopener noreferrer">QuaRot: Outlier-Free 4-Bit Inference in Rotated LLMs</a>，NeurIPS 2024：基于 Hadamard 正交旋转抹平 Key 通道离群值的对比方案。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-11-10</strong>。仅执行标准库下非对称分组量化、流式残差窗口状态机、Pre-RoPE 正交旋转误差与稠密-稀疏 Q-Norm 数值验证，未运行多卡 GPU 百万上下文实机推理压测。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">请精确核算 KIVI（2-bit，$G=32$，$R=128$）与 KVQuant（2-bit NUQ + 1% Sparse）在长序列下的真实有效位宽（Effective Bits per Element）与压缩比——为什么 2-bit KV 量化在真实系统中的显存压缩比不是理论上的 $16 / 2 = 8.0\times$？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：请精确核算 KIVI（2-bit，$G=32$，$R=128$）与 KVQuant（2-bit NUQ + 1% Sparse）在长序列下的真实有效位宽（Effective Bits per Element）与压缩比——为什么 2-bit KV 量化在真实系统中的显存压缩比不是理论上的 $16 / 2 = 8.0\times$？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>KIVI-2bit 的元数据与残差窗口摊薄开销</strong>：
+<ul>
+<li>在已量化区域，每 $G=32$ 个元素（占 $32 \times 2 = 64\text{ bits}$）需要额外存储 $1$ 个 FP16 的缩放因子 <code>scale</code>（$16\text{ bits}$）与 $1$ 个 FP16 的零点 <code>mn</code>（$16\text{ bits}$），合共 $32\text{ bits}$ 元数据开销。因此，仅量化区的单元素有效位宽为：
+$$b_{\text{eff, quant}} = 2 + \frac{16 + 16}{32} = 3.0\text{ bits/element} \quad \implies \quad \text{理论渐近压缩比} = \frac{16}{3.0} \approx 5.33\times$$
+（若 <code>scale</code>/<code>mn</code> 存为 FP8 或 $G=64$，则有效位宽为 $2.5\text{ bits}$，渐近压缩比为 $6.40\times$）。</li>
+<li>若计入尾部尚未刷盘的 FP16 残差窗口（平均长度为 $R = 128$ 个 Token），对于总长 $T$ 的序列，实际压缩比为 $\frac{16 T}{3.0 (T - R) + 16 R}$。例如当 $T=2048, R=128$ 时，整体压缩比约为 $4.19\times$；当 $T \le 128$ 时，所有 Token 都留在残差窗口中，实际压缩比为 $1.0\times$！</li>
+</ul>
+</li>
+<li><strong>KVQuant-2bit 的稀疏索引与查找表开销</strong>：
+<ul>
+<li>KVQuant 按通道共享 Key 的缩放因子（摊薄至 $T \gg 1000$ 时接近 $0\text{ bit}$），对 Value 每个 Token 存 1 个 FP16 缩放与偏移（摊薄到 $D_{\text{model}}=4096$ 个通道仅占 $32 / 4096 \approx 0.008\text{ bits}$）；</li>
+<li>其主要额外开销来自 <strong>$1%$ 稀疏离群值</strong>：每个离群点需要存储 $1$ 个 FP16 数值（$16\text{ bits}$）和 $1$ 个 16-bit 坐标索引（CSR <code>col_indices</code>，约 $16\text{ bits}$），折合到每个普通元素增加 $1% \times (16 + 16) = 0.32\text{ bits}$。因此有效位宽约为 $2.32\text{ bits}$，整体压缩比可达 $16 / 2.32 \approx 6.89\times$。</li>
+</ul>
+</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">在 vLLM / SGLang 等采用 PagedAttention 的生产引擎中，集成 KIVI 或 Pre-RoPE KVQuant 会遇到哪些块表（Block Table）对齐与 Prefix Caching 冲突？该如何设计？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：在 vLLM / SGLang 等采用 PagedAttention 的生产引擎中，集成 KIVI 或 Pre-RoPE KVQuant 会遇到哪些块表（Block Table）对齐与 Prefix Caching 冲突？该如何设计？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>KIVI 分组大小 $G$ 与物理页大小 <code>block_size</code> 的耦合</strong>：
+<ul>
+<li>在 PagedAttention 中，KV Cache 被切分为离散的物理块（如 <code>block_size = 16</code> 或 <code>32</code> Tokens）。由于 KIVI 的 Key Cache 需要沿 Token 维每 $G$ 个连续 Token 共享一套 <code>(scale, mn)</code> 并打包进同一个 <code>int32</code>（16 个 2-bit 元素恰好填满 1 个 <code>int32</code>），工程上必须将物理页大小设为 <strong><code>block_size</code> 是 $\max(G, 16)$ 的整数倍（如 <code>block_size = 32</code> 且 $G = 32$）</strong>！</li>
+<li>这样，当一个物理页被写满并脱离残差窗口时，刚好触发一次页内自包含的 Per-Channel 量化打包，不会出现同一个 <code>int32</code> 打包字横跨两个非连续物理页的情况。</li>
+</ul>
+</li>
+<li><strong>Pre-RoPE 缓存对 Prefix Caching 与上下文复用的天然增益</strong>：
+<ul>
+<li>在传统 Post-RoPE PagedAttention 中，缓存的 Key 已经焊死了绝对位置编码 $\mathbf{R}(t\theta)$，一旦长对话发生历史滑窗截断（如 StreamingLLM 丢弃中间段）或跨请求复用不同偏移的段落，原本必须重算 Key Projection。而 KVQuant 缓存的是<strong>位置无关的 Pre-RoPE Key</strong>，重定位到新位置 $t'$ 时只需在注意力内核中传入新的位置偏移 $t'$ 动态计算 $\cos(t'\theta), \sin(t'\theta)$，天然支持零重算的键值位置平移！</li>
+</ul>
+</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">除了 KIVI 的“按通道分组”和 KVQuant 的“Pre-RoPE + 稀疏剥离”，还有没有办法把 Key 的通道离群值直接抹平，从而让 Key 也能像 Value 一样做简单的 Per-Token 量化（如 QuaRot / QoQ / SKVQ）？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：除了 KIVI 的“按通道分组”和 KVQuant 的“Pre-RoPE + 稀疏剥离”，还有没有办法把 Key 的通道离群值直接抹平，从而让 Key 也能像 Value 一样做简单的 Per-Token 量化（如 QuaRot / QoQ / SKVQ）？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>有！这正是后续 <strong>QuaRot</strong>（Ashkboos et al., 2024）、<strong>QServe/QoQ</strong> 与 <strong>SKVQ</strong>（Duanmu et al., COLM 2024）的演进方向：</p>
+<ul>
+<li><strong>Hadamard 随机正交旋转（QuaRot）</strong>：在 RoPE 之后（或对 $W_Q, W_K$），同时对 Query 和 Key 右乘一个分块快速 Walsh-Hadamard 正交变换矩阵 $\mathbf{H}$（满足 $\mathbf{H}\mathbf{H}^\top = \mathbf{I}$，可在 $O(D \log D)$ 时间内无乘法完成）：
+$$\mathbf{q}_t' \left(\mathbf{k}_j'\right)^\top = (\mathbf{q}_t \mathbf{H}) (\mathbf{k}_j \mathbf{H})^\top = \mathbf{q}_t (\mathbf{H}\mathbf{H}^\top) \mathbf{k}_j^\top = \mathbf{q}_t \mathbf{k}_j^\top$$
+Hadamard 变换会将少数离群通道的尖峰能量均匀摊平到所有 $D$ 个通道中，使旋转后的 Key 近似服从各向同性高斯分布，从而允许 Key 直接使用硬件友好的 Per-Token 量化，免去了 KIVI 复杂的残差转置刷盘逻辑。</li>
+<li><strong>通道重排与裁剪（SKVQ）</strong>：离线统计各通道的动态范围后，将幅度相近的 Key 通道置换重排（Channel Reordering）到同一个通道组 <code>[1, G]</code> 内，并把同样的置换矩阵融合进 Query 投影权重中，同样能用 Per-Token 分组实现高精度的 2-bit Key 压缩。</li>
+</ul>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0038 · 单题笔记</span><a href="../questions/llm-0038-kv-cache-quantization-kivi-kvquant.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0038", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
