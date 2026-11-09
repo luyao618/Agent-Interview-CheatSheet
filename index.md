@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：198** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：199** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -43,7 +43,7 @@
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
-| 🧠 大模型基础与原理 | 28 | [查看 ↓](#-大模型基础与原理) |
+| 🧠 大模型基础与原理 | 29 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 45 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 44 | [查看 ↓](#-工程化部署性能成本) |
@@ -53,7 +53,7 @@
 
 ## 🧠 大模型基础与原理
 
-<sub>分类 ID：`llm` ｜ 共 28 题</sub>
+<sub>分类 ID：`llm` ｜ 共 29 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -85,6 +85,7 @@
 | 26 | [大模型训练后量化（PTQ）中，GPTQ、AWQ 与 SmoothQuant 是如何分别通过 Hessian 二阶误差补偿、显著激活通道保护与跨层离群值平滑迁移解决精度崩塌的？](questions/llm-0035-ptq-gptq-awq-smoothquant.md) | 🔴 困难 |
 | 27 | [选择性状态空间模型（Mamba / Mamba-2）是如何通过输入依赖离散化、硬件感知并行扫描与结构化状态空间对偶（SSD）突破线性时间建模瓶颈的，为什么工业界偏爱 Attention-SSM 混合架构？](questions/llm-0036-mamba-selective-ssm-ssd-hybrid.md) | 🔴 困难 |
 | 28 | [多 Token 预测（MTP）、Medusa 与 EAGLE（1/2/3）是如何通过特征层自回归、训练时测试与树状注意力（Tree Attention）突破自投机解码瓶颈的？](questions/llm-0037-mtp-medusa-eagle-tree-speculative.md) | 🔴 困难 |
+| 29 | [KV Cache 极低比特量化（KIVI 与 KVQuant）是如何通过键值非对称分组、流式残差窗口、Pre-RoPE 量化与稠密-稀疏离群值隔离实现 2-bit 无损长上下文推理的？](questions/llm-0038-kv-cache-quantization-kivi-kvquant.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 
