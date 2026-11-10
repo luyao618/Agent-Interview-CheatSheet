@@ -4428,6 +4428,29 @@
       "source": "Hugging Face 官方技术博客与公开推理优化题库扩展改编；KIVI（ICML 2024）、KVQuant（NeurIPS 2024）及官方源码核实（见参考）",
       "updated": "2026-11-10",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0039",
+      "title": "KV Cache 稀疏驱逐与结构化预算分配（StreamingLLM、H2O、SnapKV 与 PyramidKV）是如何通过注意力汇聚点保护、重要词元识别与层级金字塔预算突破长上下文内存瓶颈的？",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "kv-cache-eviction",
+        "attention-sink",
+        "streamingllm",
+        "h2o",
+        "snapkv",
+        "pyramidkv"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开注意力机制与推理优化题库（WiA-Attention / KVCache-Factory）扩展改编；StreamingLLM（ICLR 2024）、H2O（NeurIPS 2023）、SnapKV（NeurIPS 2024）、PyramidKV（2024）及官方源码核实（见参考）",
+      "file": "llm-0039-kv-cache-eviction-streamingllm-h2o-snapkv-pyramidkv.md",
+      "language": "zh",
+      "updated": "2026-11-11",
+      "answers_count": 1
     }
   ]
 }
