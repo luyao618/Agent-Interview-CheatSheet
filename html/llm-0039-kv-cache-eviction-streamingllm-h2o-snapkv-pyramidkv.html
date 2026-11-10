@@ -1,0 +1,999 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。KV Cache 稀疏驱逐与结构化预算分配（StreamingLLM、H2O、SnapKV 与 PyramidKV）是如何通过注意力汇聚点保护、重要词元识别与层级金字塔预算突破长上下文内存瓶颈的？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0039-kv-cache-eviction-streamingllm-h2o-snapkv-pyramidkv.md">
+  <meta name="source-sha256" content="067420808b9db11395c09906a84ad782c74118e154cb480990822f2b416e5c42">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>KV Cache 稀疏驱逐与结构化预算分配（StreamingLLM、H2O、SnapKV 与 PyramidKV）是如何通过注意力汇聚点保护、重要词元识别与层级金字塔预算突破长上下文内存瓶颈的？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0039</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title"><em>KV</em> Cache 稀疏驱逐与结构化预算分配（StreamingLLM、H2O、SnapKV 与 PyramidKV）是如何通过注意力汇聚点保护、重要词元识别与层级金字塔预算突破长上下文内存瓶颈的？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>在长序列自回归推理与持续多轮流式对话中，全量键值缓存（Full KV Cache）的显存占用随序列长度 $T$ 呈 $O(T)$ 线性增长。当 $T$ 突破数万乃至百万 Token 时，KV Cache 不仅极易触发显存溢出（OOM），更会让自回归 Decode 阶段每步的 HBM 访存量线性膨胀。除了降低单元素位宽的 KV 量化外，另一条正交且无需修改模型权重的路线是<strong>KV Cache 稀疏驱逐与压缩（KV Cache Eviction / Token Pruning）</strong>：将缓存容量严格限制在固定预算 $B \ll T$ 内，动态丢弃冗余历史 Token。这一方向经历了从 <strong>StreamingLLM（ICLR 2024）</strong>、<strong>H2O（NeurIPS 2023）</strong> 到 <strong>SnapKV（NeurIPS 2024）</strong> 与 <strong>PyramidKV（2024）</strong> 的系统性演进。</p>
+<p>请深入剖析以下三个核心问题：</p>
+<ol>
+<li><strong>朴素滑动窗口崩塌机理与 StreamingLLM 的双核设计</strong>：为什么当生成长度超出滑动窗口 $W$ 时，即便只从 KV Cache 中驱逐序列最开头的第 1 个 Token（<code>pos=0</code>），模型困惑度（Perplexity）也会立即发生数量级暴增？什么是 <strong>Attention Sink（注意力汇聚点）</strong>？为什么 StreamingLLM 在保留前 $S$ 个 Sink Token 与最近 $W$ 个窗口 Token 后，还必须对缓存内的 Key 与当前 Query 执行<strong>缓存内相对位置重编码（In-Cache RoPE Position Shifting）</strong>？</li>
+<li><strong>从位置盲目驱逐到内容感知驱逐（H2O vs SnapKV）</strong>：StreamingLLM 为什么无法完成跨窗口的长文档问答与大海捞针（Needle-in-a-Haystack）？**H2O（Heavy-Hitter Oracle）<strong>是如何利用累积注意力识别重要词元（Heavy Hitters）的，它在长 Prompt 下存在什么</strong>因果位置累积偏置（Causal Length Bias）<strong>与 FlashAttention 兼容性瓶颈？<strong>SnapKV</strong> 又是如何通过</strong>尾部观测窗口投票（Observation Window Voting）+ 一维局部池化聚类（1D Pooling Clustering）**在 Prefill 阶段一次性精确捕获完整的关键语义簇的？</li>
+<li><strong>跨层信息漏斗与 GQA 分组粒度对齐（PyramidKV 机制与工程陷阱）</strong>：为什么对 Transformer 所有层分配完全相同的 KV 预算（Uniform Allocation）是次优的？<strong>PyramidKV</strong> 是如何根据浅层注意力广泛弥散、深层注意力高度聚焦的“信息漏斗（Information Funnel）”规律计算每层金字塔预算的？在分组查询注意力（GQA）模型中，为什么在 <code>repeat_kv</code> 之后按每个 Query Head 独立选 Top-$K$ 会导致压缩后的 KV 显存意外膨胀 $G$ 倍？应如何在 KV Head 粒度下做组内分数归约（Group Score Reduction）？</li>
+</ol>
+<p>本题由公开面试题/系统设计整理扩展改编，不是已核实的企业真题；不采信脱离具体条件的性能收益承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-11-11</span></p><div class="prose"><p><strong>KV Cache 稀疏驱逐的核心，是在固定显存预算 $B$ 下同时守住“Softmax 数值锚点”、“长程任务相关语义簇”与“跨层/跨头结构对齐”：（1）由于 Softmax 强制要求所有位置注意力权重之和恒等于 $1$（$\sum_j A_{t,j} = 1$），当当前 Token 无需关注任何历史上下文时，自回归模型在预训练中自发学会将多余注意力倾倒在序列最开头的 $1\sim 4$ 个固定可见 Token（Attention Sinks）上以实现“近似零值空转”；朴素滑动窗口一旦驱逐首词，分母高幅值指数项 $\exp(z_0)$ 消失会导致冗余概率失控回流至局部窗口并引发级联特征坍缩；StreamingLLM 通过永久钉住前 $S=4$ 个 Sink Token 配合长度 $W$ 的滑动窗口，并在施加 RoPE 前将保留的 KV 重映射为缓存内连续相对下标 $[0, 1, \dots, S+W-1]$，以 $O(S+W)$ 恒定显存实现无限流式生成；（2）为克服 StreamingLLM 丢弃中间历史导致的“长程失忆”，H2O 维护前缀累积注意力 $\sum_{i=1}^t A_{i,j}$ 动态保留 Heavy Hitters，但全矩阵累加不仅面临早期 Token 被重复计分 $(L-j)$ 次的因果偏置，且难以直接融合进不落盘 $L \times L$ 注意力矩阵的 FlashAttention；SnapKV 则仅利用 Prompt 末尾长度为 $W_{\text{obs}}$（如 $32\sim 64$）的指令观测窗口计算局部注意力矩阵 $\mathbf{A}<em>{[-W</em>{\text{obs}}:, :-W_{\text{obs}}]}$，并在选 Top-$K$ 前沿序列维施加核大小 $k=5/7$ 的 1D 平均/最大池化，防止只抽走孤立锚点词而截断相邻关键数字或实体；（3）PyramidKV 进一步顺应 Transformer 浅层广泛聚合全局上下文、深层高度收敛至少数汇聚点的信息漏斗特性，按等差金字塔调度将更多预算倾斜给浅层、大幅削减深层预算；而在 GQA 架构中，必须在 <code>repeat_kv</code> 展开前（或临时展开算分后）将同一 KV 组内 $G$ 个 Query Head 的注意力得分按 <code>mean</code>/<code>max</code>/<code>sum</code> 归约为单份 <code>[B, n_kv_heads, L]</code> 评分再执行 gather，否则每个 Query Head 选出互异的 Token 集合将迫使缓存退化回 $n_q$ 份，彻底抵消 GQA 的 $G$ 倍显存收益。</strong></p>
+<p>在展开数学推导与源码级拆解之前，建议先关联本库内已有的相关题目建立完整知识坐标系：关于 KV Cache 的基础内存增长公式以及 Prefill（算力受限）与 Decode（访存带宽受限）的算术强度差异，请参阅 <a href="llm-0018-kv-cache-prefill-decode.html">llm-0018</a>；关于从单元素位宽维度将 KV Cache 压缩至 2-bit 的 KIVI 与 KVQuant 机制（可与本题的 Token 驱逐正交叠加），请参阅 <a href="llm-0038-kv-cache-quantization-kivi-kvquant.html">llm-0038</a>；关于从注意力架构源头通过低秩联合压缩削减 KV 维度的 MLA 机制，请参阅 <a href="llm-0034-mla-multi-head-latent-attention-rope-absorption.html">llm-0034</a>；关于 Agent 工程层面的轨迹上下文压缩策略，请参阅 <a href="agent-0043-kv-cache-friendly-context-compression.html">agent-0043</a>；关于长上下文窗口与外部 RAG 检索的适用边界对比，请参阅 <a href="rag-0016-long-context-vs-rag.html">rag-0016</a>。</p>
+<hr />
+<h3 id="1-为什么删掉第-1-个-token-模型就会崩streamingllm-的-attention-sink-与缓存内位置重映射">1. 为什么删掉第 1 个 Token 模型就会崩？StreamingLLM 的 Attention Sink 与缓存内位置重映射</h3>
+<h4 id="1attention-sink-的-softmax-归一化数学本质与滑动窗口崩塌推导">（1）Attention Sink 的 Softmax 归一化数学本质与滑动窗口崩塌推导</h4>
+<p>设第 $t$ 步解码的查询向量为 $\mathbf{q}_t \in \mathbb{R}^d$，历史键值向量为 ${(\mathbf{k}<em>j, \mathbf{v}<em>j)}</em>{j=0}^t$，注意力 logit 为 $z</em>{t,j} = \frac{\mathbf{q}_t \mathbf{k}_j^\top}{\sqrt{d}}$。标准 Softmax 注意力输出为：</p>
+<p>$$\mathbf{o}<em>t = \sum</em>{j=0}^t A_{t,j} \mathbf{v}<em>j, \quad A</em>{t,j} = \frac{\exp(z_{t,j})}{\sum_{m=0}^t \exp(z_{t,m})} \quad \implies \quad \sum_{j=0}^t A_{t,j} \equiv 1$$</p>
+<p><strong>StreamingLLM</strong>（Xiao et al., ICLR 2024）通过逐层统计 Llama-2、MPT、Falcon 与 Pythia 的注意力分布，揭示了一个反直觉现象：在除第 0、1 层外的几乎所有中深层注意力头中，<strong>序列最开头的 $1\sim 4$ 个初始 Token（即便只是毫无语义的起始符 <code>&lt;s&gt;</code> 或换行符）恒定吸收了高达 $40%\sim 80%$ 的注意力权重</strong>。其根本成因在于：</p>
+<ol>
+<li><strong>Softmax 缺乏“零输出（No-Op）”逃生通道</strong>：在多头注意力的数十个头中，许多注意力头在特定时间步 $t$ 并没有匹配到任何有价值的历史特征（即对所有 $j \in [1, t]$，内积 $z_{t,j}$ 都很小且彼此接近）。然而，Softmax 在数学上强制所有权重的总和必须等于 $1$。</li>
+<li><strong>因果掩码下的全局可见性与低范数 Value 垃圾桶</strong>：由于训练期采用下三角因果掩码（Causal Mask），序列最开头的极少数 Token（$j \in {0, \dots, S-1}$）是<strong>唯一对后续所有位置 $t \ge S$ 均 100% 可见的全局公共锚点</strong>。因此，模型在预训练中自发演化出一种隐式机制：将初始 Token 的 Key 投影出在特定方向上的极大正偏置（使得 $z_{t,0} \gg z_{t,j}$），同时将其 Value 向量 $\mathbf{v}<em>0$ 演化为极小范数或近似正交于下游输出投影 $\mathbf{W}<em>O$ 的零均值偏置。这样，当某个头无需提取信息时，只需令 $\exp(z</em>{t,0})$ 主导 Softmax 分母，即可让 $A</em>{t,0} \to 1, , A_{t, j&gt;0} \to 0$，等效于让该注意力头安全“空转”。</li>
+<li><strong>驱逐首词后的分母坍缩与级联失真</strong>：
+假设原始全量缓存（或含 Sink 缓存）的分母为 $Z_{\text{sink}} = \sum_{s=0}^{S-1} \exp(z_{t,s})$，近期滑动窗口 $\mathcal{W} = {t-W+1, \dots, t}$ 的分母为 $Z_{\text{win}} = \sum_{j \in \mathcal{W}} \exp(z_{t,j})$。当该注意力头处于“空转”状态时，$Z_{\text{sink}} \gg Z_{\text{win}}$（例如 $Z_{\text{sink}} / Z_{\text{win}} \approx 9$），此时滑动窗口内任意普通 Token $j \in \mathcal{W}$ 分到的权重仅为：
+$$A_{t,j}^{\text{with-sink}} = \frac{\exp(z_{t,j})}{Z_{\text{sink}} + Z_{\text{win}}} \approx 0.1 \times \frac{\exp(z_{t,j})}{Z_{\text{win}}}$$
+一旦朴素滑动窗口在 $t = W$ 时将 $j=0, \dots, S-1$ 驱逐出缓存，$Z_{\text{sink}}$ 瞬间归零！原本仅占 $10%$ 的窗口内各无关 Token 权重被迫暴涨 $\frac{Z_{\text{sink}} + Z_{\text{win}}}{Z_{\text{win}}} \approx 10\times$：
+$$A_{t,j}^{\text{naive-window}} = \frac{\exp(z_{t,j})}{Z_{\text{win}}} = \left(1 + \frac{Z_{\text{sink}}}{Z_{\text{win}}}\right) A_{t,j}^{\text{with-sink}}$$
+大量不相关的历史 Value 向量 $\mathbf{v}_j$ 被强行按高权重混入残差流，经过层归一化与数十层放大后，输出分布彻底崩坏为乱码。</li>
+</ol>
+<h4 id="2为什么必须执行缓存内相对位置重编码in-cache-rope-position-shifting">（2）为什么必须执行缓存内相对位置重编码（In-Cache RoPE Position Shifting）？</h4>
+<p>许多候选人以为 StreamingLLM 只需在标准 KV Cache 上切片保留 <code>[0:S]</code> 与 <code>[T-W:T]</code> 即可。<strong>事实上，如果直接复用旋转后的历史 Key 缓存，只要生成步数 $t$ 超过预训练上下文长度 $L_{\text{train}}$（如 Llama-2 的 $4096$），模型依然会崩溃！</strong></p>
+<p>结合官方源码 <code>mit-han-lab/streaming-llm</code>（<code>streaming_llm/kv_cache.py::StartRecentKVCache</code> 与 <code>streaming_llm/pos_shift/modify_llama.py</code>），StreamingLLM 采用了<strong>Pre-RoPE 缓存 + 缓存内连续位置重映射</strong>架构：</p>
+<ul>
+<li><strong>问题根源</strong>：如果在把 Key 存入缓存前就已经按全局绝对位置 $t$ 乘上了旋转位置编码 $\mathbf{R}_{\Theta, t}$，那么在第 $t = 10000$ 步时，保留的 Sink Token 处于位置 $[0, 1, 2, 3]$，而近期窗口 Token 处于位置 $[8980, \dots, 9999]$。此时：
+<ol>
+<li>当前 Query（位置 $10000$）与 Sink Token（位置 $0$）之间的相对位置距离高达 $\Delta = 10000 \gg L_{\text{train}}$，远超 RoPE 训练时见过的相位差分布；</li>
+<li>位置 $3$ 与位置 $8980$ 之间出现了长达 $8976$ 个位置的巨大断层（Position Gap），破坏了注意力头对连续局部几何相位的假设。</li>
+</ol>
+</li>
+<li><strong>源码级解法（<code>llama_pos_shift_attention_forward</code>）</strong>：
+<ol>
+<li><strong>缓存未旋转的 Key（Pre-RoPE Caching）</strong>：在拼接与驱逐 <code>past_key_value</code> 之前，<strong>不对 <code>key_states</code> 施加 RoPE</strong>，确保 <code>StartRecentKVCache</code> 中存储的永远是不带位置相位的原始线性投影向量 $\mathbf{k}^{\text{pre}}$；</li>
+<li><strong>按缓存物理槽位重赋连续位置 ID</strong>：设驱逐裁剪后当前缓存内的总 Token 数为 $C = \min(t, S + W)$（其中槽位 $0 \dots S-1$ 为 Sink，槽位 $S \dots C-1$ 为滑动窗口）。在每步计算注意力前，动态生成连续的缓存内位置索引 <code>key_position_ids = torch.arange(kv_seq_len)</code>（即 $[0, 1, \dots, C-1]$）对整个缓存的 Key 施加 RoPE，并将当前步的 Query 位置设为 $C-1$（或追加前的 $C$）：
+$$\tilde{\mathbf{k}}<em>idx = \mathbf{R}</em>{\Theta, , idx} , \mathbf{k}_{\text{global}(idx)}^{\text{pre}} \quad (idx \in {0, 1, \dots, C-1}), \quad \tilde{\mathbf{q}}<em>t = \mathbf{R}</em>{\Theta, , C-1} , \mathbf{q}<em>t^{\text{pre}}$$
+如此一来，无论对话持续到第 $10^5$ 步还是第 $10^7$ 步，模型看到的相對位置差永远严格被钳制在 $[0, S+W-1] \subset [0, L</em>{\text{train}}]$ 的训练分布甜点区内！</li>
+</ol>
+</li>
+</ul>
+<blockquote>
+<p><strong>生产改进提示（Pre-trained Dedicated Sink Token）</strong>：StreamingLLM 论文还证明，虽然免训练版通常需要 $S=4$ 个初始 Token 才能稳定充当汇聚点，但如果在预训练阶段就在所有语料最开头显式拼接 <strong>1 个专用的可学习占位符（Learnable Sink Token <code>&lt;sink&gt;</code>）</strong>，那么推理时仅需 $S=1$ 个 Token 就能完美吸收全部冗余注意力。这也是后来 OpenAI <code>gpt-oss</code> 等现代架构引入每头可学习标量偏置（Learnable Softmax Sink Bias，即在 Softmax 分母中直接加上 $\exp(b_h)$ 虚拟 Sink 项）的理论源头。</p>
+</blockquote>
+<hr />
+<h3 id="2-从位置盲目保留到语义重要性保留h2o-与-snapkv-的机制博弈">2. 从位置盲目保留到语义重要性保留：H2O 与 SnapKV 的机制博弈</h3>
+<p>StreamingLLM 的致命局限在于：<strong>它实现的是“无限流式生成（Infinite Streaming Generation）”，而非“无限长上下文理解（Infinite Context Understanding）”</strong>。一旦某个包含关键事实的 Token（如第 $500$ 步提到的密码或合同条款）滑出长度为 $W$ 的近期窗口，它就会被无情丢弃，模型彻底丧失长距离召回能力。为了在固定预算 $B$ 下保住长距离关键信息，<strong>H2O</strong> 与 <strong>SnapKV</strong> 分别代表了“全序列累积贪心驱逐”与“尾部观测窗口聚类投票”两代范式。</p>
+<h4 id="1h2oheavy-hitter-oracle累积注意力评分与两大工程瓶颈">（1）H2O（Heavy-Hitter Oracle）：累积注意力评分与两大工程瓶颈</h4>
+<p><strong>H2O</strong>（Zhang et al., NeurIPS 2023）观察到：训练良好的 LLM 注意力矩阵具有高度的稀疏性与幂律分布（Power-Law Distribution）——除局部近邻外，超过 $90%$ 的长程注意力权重都集中投射在极少数关键语义词（如核心实体、动词、句首锚点，称为 <strong>Heavy Hitters, $\text{H}_2$</strong>）上。</p>
+<ul>
+<li><strong>评分与驱逐公式</strong>：
+在官方源码 <code>FMInference/H2O</code>（<code>h2o_hf/utils_hh/modify_llama.py::LlamaAttention_heavy_hitter</code>）中，缓存预算 $B = B_{\text{heavy}} + B_{\text{recent}}$ 被一分为二：永远保留最近的 $B_{\text{recent}}$ 个局部 Token，而对更早的历史候选集 $j \in {0, \dots, t - B_{\text{recent}} - 1}$，维护从第 $0$ 步到当前第 $t$ 步的<strong>累积注意力得分（Cumulative Attention Score）</strong>：
+$$s_j^{\text{H2O}}(t) = \sum_{i=j}^t A_{i, j}$$
+每当缓存超出预算 $B$ 时，保留 $s_j^{\text{H2O}}(t)$ 排名前 $B_{\text{heavy}}$ 的历史 Token（天然包含了得分极高的 Attention Sinks），驱逐其余低分 Token。</li>
+<li><strong>H2O 在超长 Prompt 下的两大硬伤</strong>：
+<ol>
+<li><strong>因果长度偏置（Causal Length Bias / Position Bias）</strong>：由于下三角因果掩码的限制，位置 $j=0$ 的 Token 参与了全部 $L$ 行注意力的累加（求和项数为 $L$），而位置 $j = 0.8 L$ 的后期 Token 仅参与了 $0.2 L$ 行累加！即使某个出现在文档中后段的“关键针（Needle）”在被提问时极其重要，在长文档前缀阅读阶段它尚未被高频关注，且累加次数先天处于劣势，极易在 Prefill 阶段被早期刷满存在感的普通高频词挤出 Top-$B_{\text{heavy}}$。</li>
+<li><strong>与 FlashAttention 的内存墙冲突</strong>：标准 FlashAttention 通过在线 Softmax 分块归约避免了在 HBM 中实例化 $O(L^2)$ 的完整注意力矩阵 $\mathbf{A} \in \mathbb{R}^{L \times L}$。而原始 H2O 为了计算全局列和 $\sum_{i=1}^L A_{i,j}$，要么被迫回退到实例化完整 $L \times L$ 矩阵（在 $L=128\text{K}$ 时直接 OOM），要么需要执行两遍扫描并修改底层 CUDA 归约算子。</li>
+</ol>
+</li>
+</ul>
+<h4 id="2snapkvllm-早已知道你在找什么尾部观测窗口投票--1d-池化聚类">（2）SnapKV：“LLM 早已知道你在找什么”——尾部观测窗口投票 + 1D 池化聚类</h4>
+<p><strong>SnapKV</strong>（Li et al., NeurIPS 2024）洞察到一个关键规律：在长文档问答、大海捞针或代码补全中，用户的<strong>核心查询意图通常集中在 Prompt 最末尾的一小段 Token</strong>（且即便指令在开头，末尾 Token 的注意力模式也已高度对齐后续解码阶段的生成需求）。因此，根本不需要计算昂贵且带有位置偏置的全矩阵 $L \times L$ 注意力！</p>
+<p>结合官方源码 <code>FasterDecoding/SnapKV</code> 与 <code>Zefan-Cai/KVCache-Factory</code>（<code>pyramidkv/pyramidkv_utils.py::SnapKVCluster.update_kv</code>），SnapKV 在 Prefill 结束时执行一次性四步流水线：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">SnapKV Prefill 阶段一次性无损压缩流水线 (设总长 L, 观测窗口 W_obs = 64, 目标总容量 B = 320, 池化核 k = 5):
+
+[前缀候选区 Prefix Candidates: 0 ... L - W_obs - 1]  |  [尾部观测窗口 Observation Window: L - W_obs ... L - 1]
+                        ▲                                                      │
+                        └────── Step 1: 仅用最后 W_obs 个 Query 与全量 Key 计算局部注意力 ──┘
+                                attn_weights = softmax(Q[:, :, -W_obs:, :] @ K^T / sqrt(d))  # 形状仅 [B, H, W_obs, L] !
+
+Step 2 (窗口投票求和):
+  将 W_obs 个观测 Token 对前缀候选区 [0 : L - W_obs] 的注意力权重沿 Query 维求和:
+  vote_scores[b, h, j] = sum_{i = L - W_obs}^{L - 1} A[b, h, i, j],   j in [0, L - W_obs - 1]
+
+Step 3 (1D 局部池化聚类 — 保护完整语义短语!):
+  对 vote_scores 施加 1D 平均池化或最大池化 (stride=1, padding=k // 2, 保持长度不变):
+  pooled_scores = avg_pool1d(vote_scores, kernel_size=k, padding=k // 2, stride=1)
+
+Step 4 (Top-K 收集与窗口拼接):
+  indices = topk(pooled_scores, k = B - W_obs)          # 选出得分最高的 B - W_obs 个前缀位置
+  K_compressed = cat([gather(K_prefix, indices), K_obs_window], dim=2)   # 最终长度恒为 B!
+  V_compressed = cat([gather(V_prefix, indices), V_obs_window], dim=2)
+</code></pre>
+<ul>
+<li><strong>为什么 Step 3 的 <code>avg_pool1d</code> / <code>max_pool1d</code> 是大海捞针不丢词的灵魂？</strong>
+在真实自然语言中，一个关键事实通常由连续的多个 Token 共同构成（例如 <code>&quot;The secret passcode is 7392&quot;</code> 包含 6 个 Token）。然而，注意力头在检索时往往只会在其中的<strong>1 个核心锚点词</strong>（如 <code>&quot;passcode&quot;</code> 或 <code>&quot;is&quot;</code>）上打出极高的尖峰注意力，而紧挨着它的具体数值 <code>&quot;7392&quot;</code> 在当前步的注意力得分可能并不突出，只等生成到下一词时才通过局部偏移被读取。
+如果像 H2O 那样直接对原始单点得分取 <code>topk</code>，模型只会把孤立的 <code>&quot;passcode&quot;</code> 选入缓存，而把紧邻的 <code>&quot;7392&quot;</code> 删掉，导致回答时看得到锚点却读不出答案！SnapKV 通过一维卷积池化：
+$$\tilde{s}<em>j = \frac{1}{k} \sum</em>{u = -\lfloor k/2 \rfloor}^{\lfloor k/2 \rfloor} s_{j+u}^{\text{vote}}$$
+将核心尖峰 Token 的高分平滑扩散给左右相邻的 $\lfloor k/2 \rfloor$ 个邻居，从而把<strong>整个连续的语义短语簇（Cluster）连根拔起、完整保留进 KV Cache</strong>！</li>
+<li><strong>复杂度对比</strong>：SnapKV 仅需额外计算形状为 $[W_{\text{obs}}, L]$（如 $64 \times 128\text{K}$）的极窄切片注意力，空间与计算复杂度均为 $O(W_{\text{obs}} \cdot L) = O(L)$，因此主干 Prefill 可以 100% 跑在原生高速 FlashAttention-2 上！</li>
+</ul>
+<hr />
+<h3 id="3-pyramidkv-层级金字塔预算与-gqa-缓存粒度陷阱">3. PyramidKV 层级金字塔预算与 GQA 缓存粒度陷阱</h3>
+<h4 id="1pyramidkv顺应跨层信息漏斗的等差金字塔预算调度">（1）PyramidKV：顺应跨层“信息漏斗”的等差金字塔预算调度</h4>
+<p>无论是 H2O 还是 SnapKV，默认都采用<strong>跨层均匀预算（Uniform Allocation）</strong>，即给第 $0$ 层到第 $M-1$ 层分配完全相同的缓存容量 $B$。<strong>PyramidKV</strong>（Cai et al., 2024）通过分析各层注意力熵（Attention Entropy）指出，Transformer 在处理长上下文时遵循明显的**信息漏斗（Information Funnel）**结构：</p>
+<ul>
+<li><strong>底层（Shallow Layers，$l \to 0$）</strong>：注意力分布极其平坦、接近均匀分布，模型正在跨全文广泛扫描并混合局部词法特征，此时如果强行裁剪到极小预算，会造成不可逆的底层信息丢失；</li>
+<li><strong>中层（Middle Layers）</strong>：开始在段落与句子内部形成局部语义聚类；</li>
+<li><strong>深层（Deep Layers，$l \to M-1$）</strong>：信息已被高度浓缩到极少数核心 Token 与 Attention Sink 上，前几十个高分 Token 就占据了 $98%$ 以上的注意力质量，保留大量长尾 Token 纯属浪费显存。</li>
+</ul>
+<p>因此，在总显存预算不变的前提下，PyramidKV 将预算从深层抽调给浅层，构建<strong>下宽上窄的金字塔预算调度</strong>。在官方源码 <code>Zefan-Cai/KVCache-Factory</code>（<code>pyramidkv/pyramidkv_utils.py::PyramidKVCluster.update_kv</code>）中，给定目标平均总容量 <code>max_capacity_prompt</code>（记为 $B_{\text{avg}}$）、尾部观测窗口 <code>window_size</code>（记为 $W$）、形状超参数 $\beta$（默认 $\beta = 20$）与总层数 $M$（<code>num_hidden_layers</code>），各层前缀保留容量 $b_l^{\text{prefix}}$ 的精确计算公式为：</p>
+<p>$$\begin{aligned}
+b_{\text{base}} &amp;= B_{\text{avg}} - W \
+b_{\min} &amp;= \left\lfloor \frac{b_{\text{base}}}{\beta} \right\rfloor, \qquad b_{\max} = 2 , b_{\text{base}} - b_{\min} \
+\text{steps} &amp;= \left\lfloor \frac{b_{\max} - b_{\min}}{M - 1} \right\rfloor, \qquad b_l^{\text{prefix}} = b_{\max} - l \cdot \text{steps} \quad (l \in {0, 1, \dots, M-1})
+\end{aligned}$$</p>
+<p>（注：当提示词较短使得 $b_{\max} \ge L - W$ 时，源码会将上界钳制为 $b_{\max} = L - W$ 并对称重算 $b_{\min} = 2 b_{\text{base}} - b_{\max}$）。由于 $b_{\min} + b_{\max} = 2 b_{\text{base}}$，所有层的平均前缀容量 $\frac{1}{M}\sum_{l=0}^{M-1} b_l^{\text{prefix}} \approx b_{\text{base}}$，<strong>在不增加任何额外总显存的条件下，显著提升了极低预算（如仅保留 $64\sim 128$ Tokens）下的长文档召回率</strong>。</p>
+<h4 id="2工程高危陷阱gqa-模型下的-repeat_kv-粒度膨胀与组内归约">（2）工程高危陷阱：GQA 模型下的 <code>repeat_kv</code> 粒度膨胀与组内归约</h4>
+<p>在 Llama-3-8B（$n_q = 32$ 个 Query Heads，$n_{kv} = 8$ 个 KV Heads，组大小 $G = n_q / n_{kv} = 4$）等采用分组查询注意力（GQA）的现代模型中，落地 H2O / SnapKV / PyramidKV 时存在一个极具隐蔽性的工程陷阱（详见 <code>KVCache-Factory</code> Issue #49 与官方审计报告 <code>docs/gqa_cache_layout.md</code>）：</p>
+<ul>
+<li><strong>错误做法（<code>query_head</code> 粒度：先 <code>repeat_kv</code> 再压缩）</strong>：
+早期许多开源实现照搬 Hugging Face <code>LlamaAttention</code> 的写法，在进入 <code>kv_cluster.update_kv</code> 之前，先调用了 <code>key_states = repeat_kv(key_states, G)</code> 将 KV 从 $8$ 个头复制展开成了 $32$ 个头，然后对 $32$ 个 Query Head 各自独立执行 <code>attn_cache.topk(B)</code> 与 <code>gather</code>。
+由于同一组内的 $4$ 个 Query Head 关注的历史 Token 位置并不完全相同，gather 出来的 $32$ 个头拥有各自独立的 Token 子集，再也无法折叠回 $8$ 个 KV Head！结果存入 <code>past_key_value</code> 的张量形状变成了 <code>[bsz, 32, B, head_dim]</code> 而非 <code>[bsz, 8, B, head_dim]</code>——<strong>无意中把压缩后的 KV Cache 显存撑大了整整 $G = 4$ 倍，彻底抵消了 GQA 架构的核心收益！</strong></li>
+<li><strong>正确做法（<code>kv_head</code> 粒度：临时展开算分 + 组内归约 <code>_reduce_group_scores</code> + 未展开 gather）</strong>：
+如 <code>pyramidkv_utils.py</code> 中的 <code>_grouped_window_attn_cache</code> 与 <code>_reduce_group_scores</code> 所示，正确的工程管线必须遵循：
+<ol>
+<li>传入 <code>update_kv</code> 的 <code>key_states</code> 与 <code>value_states</code> 保持未复制的原生形状 <code>[bsz, n_kv_heads, L, head_dim]</code>；</li>
+<li>仅在计算观测窗口注意力矩阵时，临时生成局部变量 <code>key_rep = repeat_kv(key_states, groups)</code> 与 <code>query_states</code> 相乘并求得每个 Query Head 的投票分 $\mathbf{s}^{\text{q}} \in \mathbb{R}^{B_{\text{batch}} \times n_q \times (L - W)}$；</li>
+<li><strong>在池化与 <code>topk</code> 之前，将同一 KV 组内 $G$ 个 Query Head 的分数重塑为 <code>[bsz, n_kv_heads, G, L - W]</code> 并沿组维度执行归约（Group Reduction）</strong>：
+$$s_{h_{kv}, j}^{\text{kv}} = \operatorname{ Agg }<em>{g=0}^{G-1} \left( s</em>{h_{kv} \cdot G + g, , j}^{\text{q}} \right), \quad \operatorname{Agg} \in {\text{mean}, , \text{max}, , \text{sum}}$$</li>
+<li>对归约后的 <code>[bsz, n_kv_heads, L - W]</code> 执行 1D 池化与 <code>topk</code>，直接从未展开的 <code>key_states</code>（$8$ 个头）上 <code>gather</code> 出被选中的 Token，使缓存严格保持 <code>[bsz, n_kv_heads, B, head_dim]</code> 的紧凑布局！</li>
+</ol>
+</li>
+</ul>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align:left">对比维度</th>
+<th style="text-align:left">StreamingLLM（ICLR 2024）</th>
+<th style="text-align:left">H2O（NeurIPS 2023）</th>
+<th style="text-align:left">SnapKV（NeurIPS 2024）</th>
+<th style="text-align:left">PyramidKV（2024）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>保留结构组成</strong></td>
+<td style="text-align:left">前 $S$ 个 Sink + 最近 $W$ 个窗口</td>
+<td style="text-align:left">累积高分 Heavy Hitters + 最近 $W$ 个窗口</td>
+<td style="text-align:left">尾部观测窗投票聚类前缀 + 最近 $W_{\text{obs}}$ 个窗口</td>
+<td style="text-align:left">与 SnapKV 相同，但<strong>跨层预算呈金字塔递减</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>重要性评分信号</strong></td>
+<td style="text-align:left">纯位置规则（无需计算注意力分数）</td>
+<td style="text-align:left">全序列因果累积注意力 $\sum_{i=j}^t A_{i,j}$</td>
+<td style="text-align:left">末尾观测窗口局部注意力 $\sum_{i=L-W}^L A_{i,j}$ + <strong>1D 池化</strong></td>
+<td style="text-align:left">同 SnapKV（支持结合余弦相似度 Pivot/Weighted Merge）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Prefill 额外开销与 FA2 兼容性</strong></td>
+<td style="text-align:left">$O(1)$ 零开销，完全兼容（需修改 RoPE 位置传入）</td>
+<td style="text-align:left">原始需 $O(L^2)$ 全矩阵列和，存在因果长度偏置，破坏原生 FA2</td>
+<td style="text-align:left"><strong>仅需计算 $[W_{\text{obs}}, L]$ 极窄尾窗，主干 100% 兼容 FlashAttention-2</strong></td>
+<td style="text-align:left">与 SnapKV 相同，$O(W_{\text{obs}} \cdot L)$ 极低开销</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>长文档大海捞针（NIAH）表现</strong></td>
+<td style="text-align:left"><strong>极差</strong>（针一旦滑出窗口 $W$ 即彻底丢失）</td>
+<td style="text-align:left">中等（早期高频词易挤占名额，且单点选词易割裂多词短语）</td>
+<td style="text-align:left"><strong>极强</strong>（尾窗精准定位提问目标，1D 池化完整保留短语簇）</td>
+<td style="text-align:left"><strong>在极小预算（如 $B=64/128$）下比均匀分配的 SnapKV 进一步提升</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>核心适用场景</strong></td>
+<td style="text-align:left">无需回忆早期细节的<strong>无限多轮流式对话 / 实时语音伴侣</strong></td>
+<td style="text-align:left">中短 Prompt、长 Decode 持续动态演化的生成任务</td>
+<td style="text-align:left"><strong>长文档 QA、代码库分析、RAG 检索长上下文 Prefill 压缩</strong></td>
+<td style="text-align:left"><strong>显存极度受限下的超长上下文 Prefill 与 Decode 加速</strong></td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h3 id="4-python-3-标准库实现streamingllm-位置重编码h2o-vs-snapkv-池化捕获与-pyramidkv--gqa-仿真">4. Python 3 标准库实现：StreamingLLM 位置重编码、H2O vs SnapKV 池化捕获与 PyramidKV / GQA 仿真</h3>
+<p>下面的零依赖 Python 3 标准库代码从底层复现并验证了：</p>
+<ol>
+<li><strong>StreamingLLM 的 Attention Sink 保持与缓存内 RoPE 位置重映射（<code>StartRecentKVCache</code> + <code>pos_shift</code>）</strong>：证明相对位置重编码如何将最大旋转距离恒定钳制在缓存容量 $C$ 内；</li>
+<li><strong>H2O vs SnapKV（无池化 vs 1D 池化）在大海捞针短语上的对决</strong>：在含 3-Token 关键短语（<code>[5]=&quot;passcode&quot;, [6]=&quot;is&quot;, [7]=&quot;7392&quot;</code>）的因果注意力矩阵上，复现为什么 H2O 与无池化投票会因早期 Sink 霸榜和单点尖峰而漏掉密码值 <code>[7]</code>，而 SnapKV 的 1D 池化能将核心峰值扩散至邻居，完整保住 <code>[5, 6, 7]</code>；</li>
+<li><strong>PyramidKV 跨层等差金字塔预算调度（<code>PyramidKVCluster</code>）</strong>：验证浅层高预算、深层低预算分配与总预算守恒；</li>
+<li><strong>GQA 模型下的 <code>kv_head</code> 组内归约 vs <code>query_head</code> 独立选择</strong>：验证组内均值聚合如何在达成跨头共识的同时消除 $G$ 倍显存膨胀。</li>
+</ol>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+from typing import Dict, List, Tuple
+
+
+def apply_rope_1d(vec: List[float], pos: int, base: float = 10000.0) -&gt; List[float]:
+    &quot;&quot;&quot;对偶数维向量施加二维旋转位置编码 RoPE&quot;&quot;&quot;
+    d = len(vec)
+    out = [0.0] * d
+    for i in range(0, d, 2):
+        theta = 1.0 / (base ** (i / d))
+        ang = pos * theta
+        c, s = math.cos(ang), math.sin(ang)
+        out[i] = vec[i] * c - vec[i + 1] * s
+        out[i + 1] = vec[i] * s + vec[i + 1] * c
+    return out
+
+
+def softmax(logits: List[float]) -&gt; List[float]:
+    m = max(logits)
+    exps = [math.exp(x - m) for x in logits]
+    s = sum(exps)
+    return [e / s for e in exps]
+
+
+def avg_pool_1d_same(scores: List[float], kernel_size: int = 3) -&gt; List[float]:
+    &quot;&quot;&quot;对齐 FasterDecoding/SnapKV: F.avg_pool1d(..., kernel_size=k, padding=k//2, stride=1)&quot;&quot;&quot;
+    pad = kernel_size // 2
+    padded = [0.0] * pad + scores + [0.0] * pad
+    n = len(scores)
+    return [sum(padded[i : i + kernel_size]) / kernel_size for i in range(n)]
+
+
+def simulate_streaming_llm(
+    K_unrotated: List[List[float]],
+    q_unrotated: List[float],
+    start_size: int = 2,
+    recent_size: int = 4,
+    use_in_cache_pos_shift: bool = True,
+) -&gt; Dict[str, object]:
+    &quot;&quot;&quot;
+    严格对齐 mit-han-lab/streaming-llm (StartRecentKVCache + modify_llama.py):
+    - 保留前 start_size 个 Attention Sink 与最后 recent_size 个滑动窗口 Token
+    - use_in_cache_pos_shift=True 时: Key 按缓存内连续下标 [0..C-1] 旋转, Query 按 C 旋转
+    - use_in_cache_pos_shift=False 时: 使用原始绝对全局位置旋转 (当 t &gt;&gt; L_train 时超出训练分布)
+    &quot;&quot;&quot;
+    seq_len = len(K_unrotated)
+    cache_size = start_size + recent_size
+    assert seq_len &gt; cache_size
+
+    kept_global_indices = list(range(start_size)) + list(range(seq_len - recent_size, seq_len))
+    d = len(q_unrotated)
+
+    if use_in_cache_pos_shift:
+        k_positions = list(range(cache_size))
+        q_pos = cache_size
+    else:
+        k_positions = kept_global_indices
+        q_pos = seq_len
+
+    q_rot = apply_rope_1d(q_unrotated, q_pos)
+    k_rots = [
+        apply_rope_1d(K_unrotated[g_idx], pos)
+        for g_idx, pos in zip(kept_global_indices, k_positions)
+    ]
+    logits = [
+        sum(q_rot[c] * k_vec[c] for c in range(d)) / math.sqrt(d) for k_vec in k_rots
+    ]
+    weights = softmax(logits)
+    sink_mass = sum(weights[:start_size])
+    return {
+        &quot;kept_global_indices&quot;: kept_global_indices,
+        &quot;k_positions&quot;: k_positions,
+        &quot;q_pos&quot;: q_pos,
+        &quot;max_relative_distance&quot;: q_pos - min(k_positions),
+        &quot;sink_mass&quot;: sink_mass,
+        &quot;weights&quot;: weights,
+    }
+
+
+def compare_h2o_vs_snapkv_selection(
+    attn_matrix: List[List[float]],
+    window_size: int = 3,
+    max_capacity_prompt: int = 6,
+    kernel_size: int = 3,
+) -&gt; Dict[str, object]:
+    &quot;&quot;&quot;
+    对比同一注意力矩阵 A [L, L] 下:
+    1. H2O (FMInference/H2O): 全序列累积注意力 sum_{i=0}^{L-1} A[i, j]
+    2. SnapKV 无池化投票: 仅用尾部观测窗口 sum_{i=L-W}^{L-1} A[i, j]
+    3. SnapKV 完整管线 (FasterDecoding/SnapKV): 尾部观测窗口投票 + 1D 池化聚类
+    &quot;&quot;&quot;
+    L = len(attn_matrix)
+    prefix_len = L - window_size
+    prefix_budget = max_capacity_prompt - window_size
+
+    # 1. H2O 全序列因果累积得分
+    h2o_scores = [
+        sum(attn_matrix[q_idx][k_idx] for q_idx in range(L))
+        for k_idx in range(prefix_len)
+    ]
+    h2o_top_prefix = sorted(
+        sorted(range(prefix_len), key=lambda idx: h2o_scores[idx], reverse=True)[:prefix_budget]
+    )
+
+    # 2. SnapKV 尾部观测窗口原始投票 vs 1D 池化后得分
+    snapkv_raw_votes = [
+        sum(attn_matrix[q_idx][k_idx] for q_idx in range(L - window_size, L))
+        for k_idx in range(prefix_len)
+    ]
+    snapkv_unpooled_top = sorted(
+        sorted(range(prefix_len), key=lambda idx: snapkv_raw_votes[idx], reverse=True)[:prefix_budget]
+    )
+    snapkv_pooled = avg_pool_1d_same(snapkv_raw_votes, kernel_size=kernel_size)
+    snapkv_top_prefix = sorted(
+        sorted(range(prefix_len), key=lambda idx: snapkv_pooled[idx], reverse=True)[:prefix_budget]
+    )
+
+    return {
+        &quot;h2o_scores&quot;: h2o_scores,
+        &quot;h2o_top_prefix&quot;: h2o_top_prefix,
+        &quot;snapkv_raw_votes&quot;: snapkv_raw_votes,
+        &quot;snapkv_unpooled_top&quot;: snapkv_unpooled_top,
+        &quot;snapkv_pooled&quot;: snapkv_pooled,
+        &quot;snapkv_top_prefix&quot;: snapkv_top_prefix,
+    }
+
+
+def compute_pyramidkv_layer_schedule(
+    num_hidden_layers: int = 8,
+    max_capacity_prompt: int = 64,
+    window_size: int = 16,
+    beta: int = 4,
+    q_len: int = 512,
+) -&gt; List[int]:
+    &quot;&quot;&quot;
+    严格对齐 Zefan-Cai/KVCache-Factory (pyramidkv_utils.py::PyramidKVCluster.update_kv):
+      min_num = (max_capacity_prompt - window_size) // beta
+      max_num = (max_capacity_prompt - window_size) * 2 - min_num
+      steps   = (max_num - min_num) // (num_hidden_layers - 1)
+      layer_prefix_budget(l) = max_num - l * steps
+    &quot;&quot;&quot;
+    base_prefix = max_capacity_prompt - window_size
+    min_num = base_prefix // beta
+    max_num = base_prefix * 2 - min_num
+    if max_num &gt;= q_len - window_size:
+        max_num = q_len - window_size
+        min_num = base_prefix * 2 - max_num
+    steps = (max_num - min_num) // (num_hidden_layers - 1)
+    return [max_num - layer_idx * steps for layer_idx in range(num_hidden_layers)]
+
+
+def gqa_group_reduced_selection(
+    group_query_scores: List[List[float]],
+    budget: int = 2,
+    agg_mode: str = &quot;mean&quot;,
+) -&gt; Tuple[List[List[int]], List[int]]:
+    &quot;&quot;&quot;
+    对齐 Zefan-Cai/KVCache-Factory (_reduce_group_scores + _select_topk_kv):
+    对比 query_head 粒度 (每个 Query Head 各自选 Top-K, 破坏 GQA 共享导致显存膨胀 G 倍)
+    与 kv_head 粒度 (先对组内 G 个 Query Head 的分数按 mean/max/sum 聚合, 再统一选 1 份 Top-K)。
+    &quot;&quot;&quot;
+    G = len(group_query_scores)
+    prefix_len = len(group_query_scores[0])
+
+    per_qhead_indices = [
+        sorted(sorted(range(prefix_len), key=lambda j: group_query_scores[g][j], reverse=True)[:budget])
+        for g in range(G)
+    ]
+
+    reduced_scores = []
+    for j in range(prefix_len):
+        col = [group_query_scores[g][j] for g in range(G)]
+        if agg_mode == &quot;mean&quot;:
+            reduced_scores.append(sum(col) / G)
+        elif agg_mode == &quot;max&quot;:
+            reduced_scores.append(max(col))
+        elif agg_mode == &quot;sum&quot;:
+            reduced_scores.append(sum(col))
+        else:
+            raise ValueError(f&quot;Unsupported agg_mode: {agg_mode}&quot;)
+
+    kv_head_indices = sorted(
+        sorted(range(prefix_len), key=lambda j: reduced_scores[j], reverse=True)[:budget]
+    )
+    return per_qhead_indices, kv_head_indices
+
+
+# --- 1. 验证 StreamingLLM Sink 保留与 In-Cache RoPE 位置重映射 ---
+seq_len_sim = 12
+K_stream = [
+    [3.2, 0.1, 2.8, -0.2] if t &lt; 2 else [0.4 * math.cos(t * 0.5), 0.3 * math.sin(t * 0.5), -0.2, 0.25]
+    for t in range(seq_len_sim)
+]
+q_cur = [0.5, 0.1, 0.4, -0.1]
+
+res_shifted = simulate_streaming_llm(K_stream, q_cur, start_size=2, recent_size=4, use_in_cache_pos_shift=True)
+res_unshifted = simulate_streaming_llm(K_stream, q_cur, start_size=2, recent_size=4, use_in_cache_pos_shift=False)
+
+assert res_shifted[&quot;kept_global_indices&quot;] == [0, 1, 8, 9, 10, 11]
+assert res_shifted[&quot;k_positions&quot;] == [0, 1, 2, 3, 4, 5] and res_shifted[&quot;q_pos&quot;] == 6
+assert res_shifted[&quot;max_relative_distance&quot;] == 6
+assert res_unshifted[&quot;max_relative_distance&quot;] == 12
+assert res_shifted[&quot;sink_mass&quot;] &gt; 0.40
+
+# --- 2. 验证 H2O (因果长度偏置割裂短语) vs SnapKV (尾部窗口投票 + 1D 池化捕获完整针短语) ---
+# 构造 L=12 的下三角因果注意力矩阵:
+#   - 位置 0, 1: Attention Sinks (每步吸收固定背景注意力)
+#   - 位置 5, 6, 7: 埋藏在上下文中段的 3-Token 关键实体短语 (&quot;Needle&quot;: [5]=&quot;passcode&quot;, [6]=&quot;is&quot;, [7]=&quot;7392&quot;)
+#   - 位置 9, 10, 11: 尾部的 Question 观测窗口 (W=3), 强烈触发对核心锚点 j=6 的检索
+L_sim = 12
+W_sim = 3
+A_sim = [[0.0] * L_sim for _ in range(L_sim)]
+for i in range(L_sim):
+    for j in range(i + 1):
+        if i &gt;= L_sim - W_sim:
+            # 尾部问题窗口 (i=9,10,11): 强烈关注核心针锚点 j=6 (0.56) 与紧邻上下文 j=5,7 (0.06)
+            if j == 6:
+                A_sim[i][j] = 0.56
+            elif j in (5, 7):
+                A_sim[i][j] = 0.06
+            elif j in (0, 1):
+                A_sim[i][j] = 0.09
+            else:
+                A_sim[i][j] = 0.14 / max(1, i - 3)
+        else:
+            # 前缀阅读阶段 (i&lt;9): 注意力集中在句首 Sink (j=0,1) 与早期段落首词 (j=2)
+            if j in (0, 1):
+                A_sim[i][j] = 0.36 if i &gt; 0 else 1.0
+            elif j == 2:
+                A_sim[i][j] = 0.20
+            else:
+                A_sim[i][j] = 0.08 / max(1, i - 1)
+    row_s = sum(A_sim[i][: i + 1])
+    for j in range(i + 1):
+        A_sim[i][j] /= row_s
+
+evict_cmp = compare_h2o_vs_snapkv_selection(A_sim, window_size=3, max_capacity_prompt=6, kernel_size=3)
+# H2O 选出前缀 Top-3: 被累计 12 次的 Sink [0, 1] 挤占名额, 仅保住孤立词 [6], 丢失密码值 [7]!
+assert evict_cmp[&quot;h2o_top_prefix&quot;] == [0, 1, 6]
+# 若 SnapKV 不做 1D 池化: 同样只选出 [0, 1, 6], 丢失紧邻的 [5] 和 [7]!
+assert evict_cmp[&quot;snapkv_unpooled_top&quot;] == [0, 1, 6]
+# SnapKV 经 1D 池化后: 核心峰值 j=6 将高分扩散给相邻词 j=5, 7, 完整保住整个 3-Token Needle 短语 [5, 6, 7]!
+assert evict_cmp[&quot;snapkv_top_prefix&quot;] == [5, 6, 7]
+
+# --- 3. 验证 PyramidKV 金字塔预算分配 ---
+pyr_budgets = compute_pyramidkv_layer_schedule(
+    num_hidden_layers=8, max_capacity_prompt=64, window_size=16, beta=4, q_len=512
+)
+uniform_prefix_budget = 64 - 16  # 48
+assert pyr_budgets == [84, 74, 64, 54, 44, 34, 24, 14]
+assert pyr_budgets[0] == 6.0 * pyr_budgets[-1]  # 浅层 0 预算 (84) 是深层 7 预算 (14) 的 6 倍
+
+# --- 4. 验证 GQA 组内归约 (kv_head vs query_head 粒度) ---
+gqa_scores = [
+    [0.45, 0.05, 0.35, 0.05, 0.05, 0.05],  # Q-head 0 关注 pos 0, 2
+    [0.42, 0.38, 0.05, 0.05, 0.05, 0.05],  # Q-head 1 关注 pos 0, 1
+    [0.40, 0.05, 0.05, 0.36, 0.09, 0.05],  # Q-head 2 关注 pos 0, 3
+    [0.08, 0.05, 0.05, 0.44, 0.33, 0.05],  # Q-head 3 关注 pos 3, 4
+]
+qhead_sets, kvhead_set = gqa_group_reduced_selection(gqa_scores, budget=2, agg_mode=&quot;mean&quot;)
+assert len({tuple(s) for s in qhead_sets}) == 4
+assert kvhead_set == [0, 3]
+
+print(
+    f&quot;1. StreamingLLM: kept_global={res_shifted[&#x27;kept_global_indices&#x27;]} -&gt; &quot;
+    f&quot;in_cache_pos={res_shifted[&#x27;k_positions&#x27;]}, q_pos={res_shifted[&#x27;q_pos&#x27;]} &quot;
+    f&quot;(max_dist={res_shifted[&#x27;max_relative_distance&#x27;]} vs unshifted={res_unshifted[&#x27;max_relative_distance&#x27;]})&quot;
+)
+print(
+    f&quot;2. Eviction Prefix Top-3: H2O={evict_cmp[&#x27;h2o_top_prefix&#x27;]} vs &quot;
+    f&quot;SnapKV_unpooled={evict_cmp[&#x27;snapkv_unpooled_top&#x27;]} vs &quot;
+    f&quot;SnapKV_pooled={evict_cmp[&#x27;snapkv_top_prefix&#x27;]} (preserves full needle [5,6,7])&quot;
+)
+print(
+    f&quot;3. PyramidKV 8-Layer Prefix Schedule: {pyr_budgets} &quot;
+    f&quot;(mean={sum(pyr_budgets)/len(pyr_budgets):.1f} vs uniform={uniform_prefix_budget})&quot;
+)
+print(
+    f&quot;4. GQA KV-Head Reduction (G=4): per_query_head={qhead_sets} -&gt; &quot;
+    f&quot;kv_head_consensus={kvhead_set} (4x memory reduction)&quot;
+)
+print(&quot;All StreamingLLM, H2O, SnapKV, and PyramidKV eviction assertions passed!&quot;)
+</code></pre>
+<p>实际运行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">1. StreamingLLM: kept_global=[0, 1, 8, 9, 10, 11] -&gt; in_cache_pos=[0, 1, 2, 3, 4, 5], q_pos=6 (max_dist=6 vs unshifted=12)
+2. Eviction Prefix Top-3: H2O=[0, 1, 6] vs SnapKV_unpooled=[0, 1, 6] vs SnapKV_pooled=[5, 6, 7] (preserves full needle [5,6,7])
+3. PyramidKV 8-Layer Prefix Schedule: [84, 74, 64, 54, 44, 34, 24, 14] (mean=49.0 vs uniform=48)
+4. GQA KV-Head Reduction (G=4): per_query_head=[[0, 2], [0, 1], [0, 3], [3, 4]] -&gt; kv_head_consensus=[0, 3] (4x memory reduction)
+All StreamingLLM, H2O, SnapKV, and PyramidKV eviction assertions passed!
+</code></pre>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“StreamingLLM 既然能让 Llama-2 处理长达 400 万 Token 的文本流且不崩，说明它可以用来对一整本百万字小说做全文细节问答（长上下文理解）。”</strong>
+事实：<strong>“无限流式推理（Infinite Streaming）”完全不等于“无限长上下文记忆（Infinite Context Understanding）”！</strong> StreamingLLM 的物理缓存大小恒定为 $S + W$（例如 $4 + 4092 = 4096$）。它之所以在 400 万 Token 上困惑度不崩，是因为保留的 4 个 Sink Token 稳住了 Softmax 分母，且语言建模的局部困惑度主要由最近的 $W$ 个词决定。但任何在 $t - W$ 之前滑出窗口的事实细节都已经从显存中被彻底抹除，模型绝对无法回答窗口之外的历史细节。若需跨全文检索事实，必须使用 SnapKV / PyramidKV、Quest 动态选页或外部 RAG。</li>
+<li><strong>误区二：“在实现 StreamingLLM 时，只需在标准 Hugging Face <code>past_key_values</code>（已乘过 RoPE）上切片保留前 4 个和后 $W$ 个 Token 就能无限生成。”</strong>
+事实：<strong>如果在 RoPE 旋转之后再做缓存切片（Post-RoPE Eviction），一旦生成总步数 $t$ 超过模型预训练最大长度 $L_{\text{train}}$，输出依然会彻底乱码！</strong> 因为此时缓存中 Sink Token 的旋转角停留在位置 $0\sim 3$，而新生成 Token 的旋转角已经增长到 $t &gt; L_{\text{train}}$，两者内积中的相对旋转角 $(t - 0)\theta$ 远远超出了模型训练期见过的相位范围。正确实现必须在旋转前（Pre-RoPE）缓存 Key，并在每步注意力计算时按缓存内连续槽位 $[0, 1, \dots, S+W-1]$ 动态重赋 RoPE 位置。</li>
+<li><strong>误区三：“在 GQA 模型（如 Llama-3）上接入 SnapKV 或 H2O 时，直接对 <code>repeat_kv</code> 展开后的 32 个注意力头分别求 Top-$K$ 裁剪，就能按压缩比例降低显存。”</strong>
+事实：<strong>在 <code>repeat_kv</code> 之后按每个 Query Head 独立裁剪，会让压缩后的 KV Cache 显存无端暴涨 $G = n_q / n_{kv}$ 倍（在 Llama-3-8B 上暴涨 4 倍）！</strong> 比如原本 8 个 KV Head 存 2048 个 Token 占用的空间，如果在展开成 32 个 Query Head 后各自独立选出 512 个不同的 Token，由于 32 个头的索引集合互不相同，缓存只能以 32 个头的形式存储（$32 \times 512 = 8 \times 2048$），导致“压缩 4 倍后显存竟然一分钱没省”！必须在 <code>topk</code> 之前对同一组内 $G$ 个 Query Head 的注意力得分做组内归约（<code>mean</code> / <code>max</code> / <code>sum</code>），在 <code>kv_head</code> 粒度上选出唯一共识索引集。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/wxqnl/WiA--What-is-Attention/blob/e3ce79fbc81df4a105176ba2ac1cf8b775eaae7a/Attention/StreamingLLM.md" target="_blank" rel="noopener noreferrer">wxqnl/WiA--What-is-Attention (<code>Attention/StreamingLLM.md</code>)</a>（固定 commit <code>e3ce79f</code>）与 <a href="https://github.com/Jackie2049/perpetual-learning/blob/d723604718016521bb016607ba05858edabdc8fe/notebook/fundamentals/attention-sink-streamingllm-deep-dive.md" target="_blank" rel="noopener noreferrer">Jackie2049/perpetual-learning (<code>notebook/fundamentals/attention-sink-streamingllm-deep-dive.md</code>)</a>（固定 commit <code>d723604</code>），独立重构并扩展源码级对比。</li>
+<li>Xiao et al., <a href="https://arxiv.org/abs/2309.17453" target="_blank" rel="noopener noreferrer">Efficient Streaming Language Models with Attention Sinks (StreamingLLM)</a>，ICLR 2024，及官方源码 <a href="https://github.com/mit-han-lab/streaming-llm/blob/2e5042606d69933d88fbf909bd77907456b9b4dd/streaming_llm/pos_shift/modify_llama.py" target="_blank" rel="noopener noreferrer">mit-han-lab/streaming-llm (<code>streaming_llm/kv_cache.py</code> &amp; <code>streaming_llm/pos_shift/modify_llama.py</code>)</a>（固定 commit <code>2e50426</code>）：Attention Sink 成因、Pre-RoPE <code>StartRecentKVCache</code> 与缓存内相对位置重编码实现。</li>
+<li>Zhang et al., <a href="https://arxiv.org/abs/2306.14048" target="_blank" rel="noopener noreferrer">H2O: Heavy-Hitter Oracle for Efficient Generative Inference of Large Language Models</a>，NeurIPS 2023，及官方源码 <a href="https://github.com/FMInference/H2O/blob/ac75c2a8a9e76832b2a4139b9363373b56336bfb/h2o_hf/utils_hh/modify_llama.py" target="_blank" rel="noopener noreferrer">FMInference/H2O (<code>h2o_hf/utils_hh/modify_llama.py</code>)</a>（固定 commit <code>ac75c2a</code>）：累积注意力评分与 Heavy-Hitter + Recent 双预算驱逐状态机。</li>
+<li>Li et al., <a href="https://arxiv.org/abs/2404.14469" target="_blank" rel="noopener noreferrer">SnapKV: LLM Knows What You Are Looking for Before Generation</a>，NeurIPS 2024，及官方源码 <a href="https://github.com/FasterDecoding/SnapKV/tree/e216ddc84c5bd210378cbdbbba12ba02102aa640" target="_blank" rel="noopener noreferrer">FasterDecoding/SnapKV</a>（固定 commit <code>e216ddc</code>）：尾部观测窗口投票与 1D 池化聚类保护机制。</li>
+<li>Cai et al., <a href="https://arxiv.org/abs/2406.02069" target="_blank" rel="noopener noreferrer">PyramidKV: Dynamic KV Cache Compression based on Pyramidal Information Funneling</a>，2024，及官方统一评测与实现库 <a href="https://github.com/Zefan-Cai/KVCache-Factory/blob/68cd9551a63fedf362ddb0edb008badd04c24996/pyramidkv/pyramidkv_utils.py" target="_blank" rel="noopener noreferrer">Zefan-Cai/KVCache-Factory (<code>pyramidkv/pyramidkv_utils.py</code> &amp; <code>docs/gqa_cache_layout.md</code>)</a>（固定 commit <code>68cd955</code>）：跨层等差金字塔预算公式、GQA <code>kv_head</code> 组内分数归约（<code>_reduce_group_scores</code>）与相似度加权合并（<code>merge_kv</code>）。</li>
+<li>Tang et al., <a href="https://arxiv.org/abs/2406.10774" target="_blank" rel="noopener noreferrer">Quest: Query-Aware Sparsity for Efficient Long-Context LLM Inference</a>，ICML 2024：多轮问答下保留全量 KV 并通过页面极值包围盒动态选择 Top-$K$ 页面的对比方案。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-11-11</strong>。仅执行标准库下 StreamingLLM 缓存内 RoPE 重映射、H2O 与 SnapKV 池化选词对比、PyramidKV 金字塔预算及 GQA 组内归约数值验证，未运行多卡长上下文基准压测。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">在多轮长对话（Multi-turn Conversation）或先给长文档、随后用户连续追问不同细节的场景下，直接把被 SnapKV / H2O 驱逐掉的 KV 永久物理删除会带来什么致命问题？工程上（如 Quest / ArkVale / ShadowKV）是如何把“永久驱逐（Permanent Eviction）”改造为“动态选择性召回（Query-Aware Page Selection）”的？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：在多轮长对话（Multi-turn Conversation）或先给长文档、随后用户连续追问不同细节的场景下，直接把被 SnapKV / H2O 驱逐掉的 KV 永久物理删除会带来什么致命问题？工程上（如 Quest / ArkVale / ShadowKV）是如何把“永久驱逐（Permanent Eviction）”改造为“动态选择性召回（Query-Aware Page Selection）”的？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>永久删除在多轮问答中的致命盲区</strong>：
+SnapKV 在第 1 轮 Prefill 结束时，是根据**第 1 轮的问题（如“总结第三章的财务数据”）**作为尾部观测窗口来筛选前缀 KV 的。如果此时把第一章、第二章未命中的 KV 物理删除，当用户在第 2 轮突然追问“第一章提到的法务免责条款是什么？”时，相关 Token 早在第 1 轮结束时就被永久销毁了，模型必然发生失忆或幻觉！</li>
+<li><strong>从“物理删除”到“全量驻留/卸载 + 页级动态稀疏选择（Quest）”</strong>：
+为支持任意多轮切换关注焦点，<strong>Quest（Query-Aware Sparsity, Tang et al., ICML 2024）</strong> 与 <strong>ShadowKV</strong> 提出了**不物理删除历史 KV，但每步解码只按需加载 Top-$K$ 物理页（Pages）**的架构：
+<ul>
+<li>将 KV Cache 按固定页大小（如 <code>page_size = 16</code> Tokens）切块，并为每一页维护两个极轻量的元数据向量：通道逐元素最大值 $\mathbf{k}<em>{\max}^{(p)} = \max</em>{t \in p} \mathbf{k}<em>t \in \mathbb{R}^d$ 与最小值 $\mathbf{k}</em>{\min}^{(p)} = \min_{t \in p} \mathbf{k}_t \in \mathbb{R}^d$（仅占原页大小的 $2 / 16 = 12.5%$）；</li>
+<li>在每步 Decode 生成新查询 $\mathbf{q}<em>t$ 时，利用坐标符号匹配快速估算 $\mathbf{q}<em>t$ 在每个页面 $p$ 内可能取得的最大注意力上界分数：
+$$\hat{s}<em>p(\mathbf{q}<em>t) = \sum</em>{c=1}^d \max!\left(q</em>{t,c} \cdot k</em>{\max, c}^{(p)}, ; q</em>{t,c} \cdot k_{\min, c}^{(p)}\right)$$</li>
+<li>仅将 $\hat{s}_p(\mathbf{q}_t)$ 排名前 $K$ 的页面从 HBM（或 CPU 内存）读入 SRAM 计算真实注意力。这样既在 Decode 阶段享受了与 KV 驱逐完全相同的 HBM 带宽加速，又在多轮对话中 100% 保留了随时找回任意历史段落的能力。</li>
+</ul>
+</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">PyramidKV 为不同层分配了不同大小的 KV 预算，而 AdaKV（Feng et al., 2024）和 HeadKV 进一步在同一层内部为不同的注意力头（Attention Heads）分配了非均匀预算。这样做在 GPU 底层算子层面会引发什么张量形状难题？该如何高效实现？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：PyramidKV 为不同层分配了不同大小的 KV 预算，而 AdaKV（Feng et al., 2024）和 HeadKV 进一步在同一层内部为不同的注意力头（Attention Heads）分配了非均匀预算。这样做在 GPU 底层算子层面会引发什么张量形状难题？该如何高效实现？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>不规则张量（Ragged Tensor）导致的 Batch 矩阵乘失效</strong>：
+在标准 Transformer 或同层等预算的 SnapKV / PyramidKV 中，同一层所有注意力头保留的 Token 数量完全相同（皆为 $b_l$），因此缓存可以直接存为规整的四维张量 <code>[bsz, num_kv_heads, b_l, head_dim]</code>，直接调用标准批处理 SDPA。
+然而，同一层内不同注意力头的功能高度分化：少数“检索头（Retrieval Heads）”需要较大的缓存预算来跨越长距离捞取事实，而大量“局部语法头（Local/Induction Heads）”只需极小的窗口预算。当 <strong>AdaKV</strong> 在单层总预算 $\sum_{h=1}^H b_{l,h} = H \cdot b_l$ 下按各头注意力质量动态分配预算时，不同头保留的长度 $b_{l,1} \neq b_{l,2} \neq \dots \neq b_{l,H}$ 变得参差不齐，无法再拼成标准四维矩形张量（若用 Padding 补齐到 $\max_h b_{l,h}$，则完全丧失了节省显存和带宽的意义）。</li>
+<li><strong>基于扁平化存储与 <code>flash_attn_varlen_func</code> 的零填充解法</strong>：
+如 <code>KVCache-Factory</code> 中的 <code>DynamicCacheSplitHeadFlatten</code> 与 <code>AdaKVCluster.update_kv</code> 所示，工程上将同一层所有头的 KV 沿着头与序列维度展平拼接为一个紧凑的二维张量 <code>flat_kv</code>（形状为 <code>[\sum_h b_{l,h}, head_dim]</code>），并维护前缀和偏移数组 <code>cu_seqlens_k = [0, b_{l,1}, b_{l,1}+b_{l,2}, ...]</code>（长度为 $H+1$）与 <code>cu_seqlens_q = [0, 1, 2, ..., H]</code>。在 Decode 阶段，将“$H$ 个不同长度的注意力头”伪装成“Batch 大小为 $H$ 的变长序列（Varlen Sequences）”，直接调用 FlashAttention-2 原生的 <code>flash_attn_varlen_func</code> 内核即可在零 Padding 浪费下一次性完成并行计算！</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">除了直接把低分 Token 从缓存中丢弃（Hard Eviction），有没有办法把被驱逐 Token 的信息“吸收合并”到保留下来的 Token 中（如 CAM / LOOK-M / KVMerger）？合并时需要遵守什么数学约束？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：除了直接把低分 Token 从缓存中丢弃（Hard Eviction），有没有办法把被驱逐 Token 的信息“吸收合并”到保留下来的 Token 中（如 CAM / LOOK-M / KVMerger）？合并时需要遵守什么数学约束？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>有！如 <code>KVCache-Factory</code>（<code>pyramidkv_utils.py::merge_kv</code>）实现的 <strong>Pivot Merge（LOOK-M）</strong> 与 <strong>Weighted Merge</strong>：</p>
+<ol>
+<li>在选出保留集 $\mathcal{I}<em>{\text{keep}}$ 与待驱逐集 $\mathcal{I}</em>{\text{drop}}$ 后，计算每个待驱逐键向量 $\mathbf{k}<em>u \in \mathcal{I}</em>{\text{drop}}$ 与所有保留键向量 $\mathbf{k}<em>v \in \mathcal{I}</em>{\text{keep}}$ 之间的余弦相似度：
+$$v^*(u) = \arg\max_{v \in \mathcal{I}_{\text{keep}}} \frac{\mathbf{k}_u \cdot \mathbf{k}_v}{|\mathbf{k}_u|_2 |\mathbf{k}_v|<em>2}, \quad \text{sim}<em>u = \max</em>{v \in \mathcal{I}</em>{\text{keep}}} \cos(\mathbf{k}_u, \mathbf{k}_v)$$</li>
+<li>利用 <code>scatter_add_</code> 将每个待驱逐 Token $(u)$ 按相似度权重 $w_u = \frac{\text{sim}_u + 1}{2}$ 归并到与其最相似的保留锚点 $v^<em>(u)$ 上：
+$$\tilde{\mathbf{k}}_v = \frac{\mathbf{k}<em>v + \sum</em>{u: v^</em>(u)=v} w_u \mathbf{k}<em>u}{1 + \sum</em>{u: v^<em>(u)=v} w_u}, \qquad \tilde{\mathbf{v}}_v = \frac{\mathbf{v}<em>v + \sum</em>{u: v^</em>(u)=v} w_u \mathbf{v}<em>u}{1 + \sum</em>{u: v^*(u)=v} w_u}$$</li>
+<li><strong>关键约束</strong>：合并只能在**已经施加了 RoPE 之后（Post-RoPE）**的同空间向量上进行，或者仅合并语义高度冗余的同段落相邻词；同时，最近观测窗口 $\mathcal{W}_{\text{recent}}$ 与句首 Attention Sink 严禁被异常远距离噪声污染，从而在极低预算下兼顾精确召回与全局摘要感知。</li>
+</ol>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0039 · 单题笔记</span><a href="../questions/llm-0039-kv-cache-eviction-streamingllm-h2o-snapkv-pyramidkv.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0039", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
