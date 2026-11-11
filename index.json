@@ -4451,6 +4451,29 @@
       "language": "zh",
       "updated": "2026-11-11",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0040",
+      "title": "LoRA 进阶演进（DoRA、PiSSA、rsLoRA 与 LoRA+）是如何通过权重幅度-方向解耦、主奇异值分解初始化、秩稳定缩放与非对称学习率突破参数高效微调瓶颈的？",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "peft",
+        "dora",
+        "pissa",
+        "rslora",
+        "loraplus",
+        "corda"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开 PEFT 与大模型微调面试题库（ARIS-in-AI-Offer / Awesome-AGI）扩展改编；DoRA（ICML 2024）、PiSSA（NeurIPS 2024）、rsLoRA（2023）、LoRA+（ICML 2024）及 Hugging Face PEFT 源码核实（见参考）",
+      "file": "llm-0040-dora-pissa-rslora-loraplus-peft.md",
+      "language": "zh",
+      "updated": "2026-11-12",
+      "answers_count": 1
     }
   ]
 }

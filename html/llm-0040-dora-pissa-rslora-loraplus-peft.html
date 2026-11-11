@@ -1,0 +1,1074 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。LoRA 进阶演进（DoRA、PiSSA、rsLoRA 与 LoRA+）是如何通过权重幅度-方向解耦、主奇异值分解初始化、秩稳定缩放与非对称学习率突破参数高效微调瓶颈的？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0040-dora-pissa-rslora-loraplus-peft.md">
+  <meta name="source-sha256" content="d18765c1e28d41c4e6db4be640317229ccf85621a82f086be0c00ccd50fd9c0c">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>LoRA 进阶演进（DoRA、PiSSA、rsLoRA 与 LoRA+）是如何通过权重幅度-方向解耦、主奇异值分解初始化、秩稳定缩放与非对称学习率突破参数高效微调瓶颈的？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0040</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title"><em>LoRA</em> 进阶演进（DoRA、PiSSA、rsLoRA 与 LoRA+）是如何通过权重幅度-方向解耦、主奇异值分解初始化、秩稳定缩放与非对称学习率突破参数高效微调瓶颈的？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>在参数高效微调（PEFT）中，经典 LoRA（$\mathbf{W}' = \mathbf{W}_0 + \frac{\alpha}{r}\mathbf{B}\mathbf{A}$）凭借低显存开销与可合并的零推理延迟成为工业界标准。然而在代码生成、数学推理与专业领域知识注入等复杂任务中，经典 LoRA 与全量微调（Full Fine-Tuning, FT）之间仍存在显著的能力差距（Capacity Gap）与收敛瓶颈：包括幅度与方向更新强耦合、随机-零初始化导致早期梯度落入噪声子空间、高秩（Large $r$）下梯度坍缩，以及大维度下 $\mathbf{A}/\mathbf{B}$ 两矩阵特征学习尺度失衡。围绕这四大短板，学术界与开源社区演进出了 <strong>DoRA（ICML 2024）</strong>、<strong>PiSSA（NeurIPS 2024）</strong>、<strong>rsLoRA（2023）</strong> 与 <strong>LoRA+（ICML 2024）</strong> 等核心变体，并均已集成进 Hugging Face <code>peft</code> 官方库。</p>
+<p>请深入剖析以下三个核心问题：</p>
+<ol>
+<li><strong>权重幅度-方向解耦（DoRA 机制与算子细节）</strong>：全量微调与经典 LoRA 在权重矩阵的“幅度（Magnitude）”与“方向（Direction）”更新轨迹上有何本质差异？**DoRA（Weight-Decomposed Low-Rank Adaptation）**是如何将预训练权重按输出通道分解为可训练幅度向量 $\mathbf{m}$ 与低秩方向增量 $\Delta \mathbf{V} = \mathbf{B}\mathbf{A}$ 的？为什么在反向传播与 Hugging Face <code>peft</code> 实现中必须将分母方向范数 $|\mathbf{V} + \frac{\alpha}{r}\mathbf{B}\mathbf{A}|_c$ 从计算图中剥离（<code>.detach()</code>）？在执行 <code>merge()</code> 与 <code>unmerge()</code> 时为什么必须缓存原始未合并范数？</li>
+<li><strong>主奇异子空间初始化与热插拔转换（PiSSA vs 随机初始化）</strong>：为什么经典 LoRA 的高斯随机 $\mathbf{A}_0$ 与全零 $\mathbf{B}_0$ 初始化在训练初期收敛缓慢？**PiSSA（Principal Singular Values and Singular Vectors Adaptation）**是如何通过对 $\mathbf{W}_0$ 做奇异值分解（SVD），将前 $r$ 个主奇异分量放入可训练的 $\mathbf{B}_0, \mathbf{A}<em>0$ 并冻结残差矩阵 $\mathbf{W}</em>{\text{res}}$ 的？由于 PiSSA 修改了基座权重 $\mathbf{W}<em>0 \to \mathbf{W}</em>{\text{res}}$，训练完成后如何通过 <strong>秩翻倍转换（<code>subtract_mutated_init</code>，$r \to 2r$）</strong> 将其无损还原为直接挂载在原始基座 $\mathbf{W}_0$ 上的标准 LoRA 适配器？</li>
+<li><strong>高秩缩放坍缩与非对称优化动力学（rsLoRA 与 LoRA+）</strong>：为什么当把 LoRA 的秩 $r$ 从 $8$ 增大到 $256$ 或 $512$ 时，经典缩放因子 $\gamma_r = \frac{\alpha}{r}$ 会引发梯度消失与有效学习率坍缩？<strong>rsLoRA</strong> 为什么证明应当改用 $\gamma_r = \frac{\alpha}{\sqrt{r}}$？此外，在网络宽度 $d \to \infty$ 的算子尺度分析下，为什么给 $\mathbf{A}$ 和 $\mathbf{B}$ 设相同的学习率会导致特征学习退化？<strong>LoRA+</strong> 是如何通过设置非对称学习率 $\eta_B = \lambda \eta_A$（$\lambda \gg 1$）加速收敛的？</li>
+</ol>
+<p>本题由公开面试题/系统设计整理扩展改编，不是已核实的企业真题；不采信脱离具体条件的性能收益承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-11-12</span></p><div class="prose"><p><strong>LoRA 进阶演进的本质，是从“空间参数化解耦”、“初始优化子空间对齐”与“高秩/宽网络尺度缩放”三个正交维度消除低秩微调对全量微调的逼近误差：（1）DoRA 针对经典 LoRA 幅度变化 $\Delta M$ 与方向变化 $\Delta D$ 呈强正相关耦合、难以像全量微调那样做“大方向微调伴随小幅度或负幅度微调”的结构缺陷，借鉴 Weight Normalization 将权重按输出通道分解为 $\mathbf{W}' = \operatorname{diag}(\mathbf{m}) (\mathbf{V}+\Delta \mathbf{V}) / |\mathbf{V}+\Delta \mathbf{V}|_r$，并在反向传播时对分母范数做停止梯度（<code>weight_norm.detach()</code>）以消除高维雅可比耦合与额外激活显存开销，推理前仍可无损折算回单一矩阵实现零延迟；（2）PiSSA 针对经典 LoRA 在训练起点 $\mathbf{B}_0=\mathbf{0}$ 处梯度受随机矩阵 $\mathbf{A}_0$ 支配而漫游在平坦奇异尾部的问题，对 $\mathbf{W}_0$ 做 SVD 提取前 $r$ 个最大奇异值与奇异向量初始化 $\mathbf{B}_0, \mathbf{A}<em>0$，同时令冻结基座保存残差 $\mathbf{W}</em>{\text{res}} = \mathbf{W}_0 - s \mathbf{B}_0 \mathbf{A}_0$，并在微调后通过分块拼接 $\mathbf{A}' = [\mathbf{A}; \mathbf{A}<em>0] \in \mathbb{R}^{2r \times d</em>{\text{in}}}$、$\mathbf{B}' = [\mathbf{B}, -\mathbf{B}<em>0] \in \mathbb{R}^{d</em>{\text{out}} \times 2r}$ 将增量 $\Delta \mathbf{W} = s(\mathbf{B}\mathbf{A} - \mathbf{B}_0\mathbf{A}<em>0)$ 无损转换为挂载在原始 $\mathbf{W}<em>0$ 上的秩 $2r$ 标准 LoRA；（3）rsLoRA 证明由中心极限定理，$r$ 个独立秩-1 分量之和 $\sum</em>{k=1}^r \mathbf{b}<em>k \mathbf{a}<em>k^\top$ 的方差与 $r$ 成正比、标准差与 $\sqrt{r}$ 成正比，唯有取 $\gamma_r = \alpha/\sqrt{r}$ 才能在 $r \to \infty$ 时维持前向激活与反向梯度的非退化 $O(1)$ 尺度；而 LoRA+ 基于无限宽神经网络（$\mu\text{P}$）尺度理论指出，降维矩阵 $\mathbf{A} \in \mathbb{R}^{r \times d</em>{\text{in}}}$ 与升维矩阵 $\mathbf{B} \in \mathbb{R}^{d</em>{\text{out}} \times r}$ 在输入维度 $d</em>{\text{in}} \gg r$ 下存在天然的算子范数不对称，必须令 $\eta_B = \lambda \eta_A$（典型 $\lambda \in [8, 16]$）才能让 $\mathbf{A}\mathbf{x}$ 与 $\mathbf{B}$ 同步对输出产生 $\Theta(1)$ 的有效特征更新。</strong></p>
+<p>在深入推导之前，建议先结合题库内已有的相关题目建立系统视图：关于经典 LoRA 的低秩矩阵分解基础、可训练参数计算与零延迟合并原理，请参阅 <a href="llm-0001-lora-fine-tuning.html">llm-0001</a>；关于何时应选择 Prompt、RAG、PEFT 微调还是全量继续预训练的工程决策边界，请参阅 <a href="llm-0014-prompt-rag-finetuning-choice.html">llm-0014</a>；关于 Base 模型通过 Chat Template 与 SFT 对齐的完整链路，请参阅 <a href="llm-0009-base-chat-template-sft.html">llm-0009</a>；关于在 SFT 之后如何进一步通过 DPO 或 PPO 进行偏好对齐，请参阅 <a href="llm-0021-dpo-vs-ppo-preference-optimization.html">llm-0021</a>；关于训练后量化（GPTQ / AWQ / SmoothQuant）与部署显存预算估算，请参阅 <a href="llm-0035-ptq-gptq-awq-smoothquant.html">llm-0035</a> 与 <a href="llm-0016-quantization-local-memory-budget.html">llm-0016</a>。</p>
+<hr />
+<h3 id="1-doraweight-decomposed-low-rank-adaptation幅度-方向解耦与算子级剖析">1. DoRA（Weight-Decomposed Low-Rank Adaptation）：幅度-方向解耦与算子级剖析</h3>
+<h4 id="1为什么经典-lora-在复杂任务上弱于全量微调幅度与方向的耦合分析">（1）为什么经典 LoRA 在复杂任务上弱于全量微调？幅度与方向的耦合分析</h4>
+<p>设线性层权重为 $\mathbf{W} \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$（遵循 PyTorch <code>nn.Linear.weight</code> 的 <code>[out_features, in_features]</code> 布局，每一行 $\mathbf{w}<em>i^\top \in \mathbb{R}^{1 \times d</em>{\text{in}}}$ 代表第 $i$ 个输出神经元的权重向量）。对于任意权重矩阵 $\mathbf{W}$，我们可以将其逐行（Per-Output Channel）唯一分解为<strong>幅度向量（Magnitude Vector）</strong> $\mathbf{m} \in \mathbb{R}^{d_{\text{out}}}$ 与<strong>单位方向矩阵（Unit Direction Matrix）</strong> $\mathbf{D} \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$：</p>
+<p>$$m_i = |\mathbf{w}<em>i|<em>2 = \sqrt{\sum</em>{j=1}^{d</em>{\text{in}}} W_{i,j}^2}, \qquad \mathbf{d}_i = \frac{\mathbf{w}_i}{|\mathbf{w}_i|_2}, \qquad \mathbf{W} = \operatorname{diag}(\mathbf{m}) \mathbf{D}$$</p>
+<p><strong>DoRA</strong>（Liu et al., ICML 2024）定义了微调后权重 $\mathbf{W}_t$ 相对于预训练权重 $\mathbf{W}_0$ 的平均幅度变化量 $\Delta M_t$ 与平均方向变化量 $\Delta D_t$（基于余弦距离）：</p>
+<p>$$\Delta M_t = \frac{1}{d_{\text{out}}} \sum_{i=1}^{d_{\text{out}}} \left| m_{t,i} - m_{0,i} \right|, \qquad \Delta D_t = \frac{1}{d_{\text{out}}} \sum_{i=1}^{d_{\text{out}}} \left( 1 - \frac{\langle \mathbf{w}<em>{t,i}, \mathbf{w}</em>{0,i} \rangle}{|\mathbf{w}_{t,i}|<em>2 |\mathbf{w}</em>{0,i}|_2} \right)$$</p>
+<p>通过对各个训练检查点的回归斜率统计，DoRA 揭示了一个根本差异：</p>
+<ul>
+<li><strong>全量微调（Full Fine-Tuning）呈现出负相关或微小幅度调整下的精细方向旋转</strong>：预训练权重的范数分布本身已经高度适应下游激活尺度，因此全量微调往往在保持幅度变化 $\Delta M_t$ 较小（甚至略微减小）的同时，灵活地大幅旋转权重方向 $\Delta D_t$；</li>
+<li><strong>经典 LoRA 呈现出强正比例耦合（Proportional Coupling）</strong>：由于经典 LoRA 直接做加法 $\mathbf{W}_{\text{LoRA}} = \mathbf{W}_0 + s \mathbf{B}\mathbf{A}$，低秩增量 $s\mathbf{B}\mathbf{A}$ 必须同时承担“改变向量长度”和“旋转向量角度”两项任务。在梯度下降中，要让方向发生显著旋转，往往不可避免地把权重范数 $|\mathbf{w}_i|_2$ 一并推高（反之亦然），导致优化器在低秩子空间中难以独立执行纯粹的方向微调。</li>
+</ul>
+<h4 id="2dora-的前向传播公式停止梯度detach与-hugging-face-peft-实现">（2）DoRA 的前向传播公式、停止梯度（<code>detach</code>）与 Hugging Face PEFT 实现</h4>
+<p>为了解耦幅度与方向，DoRA 冻结方向基底 $\mathbf{V} = \mathbf{W}<em>0 \in \mathbb{R}^{d</em>{\text{out}} \times d_{\text{in}}}$，仅用低秩旁路 $\Delta \mathbf{V} = \mathbf{B}\mathbf{A}$ 更新<strong>方向分子</strong>，同时引入一个仅有 $d_{\text{out}}$ 个标量的可训练参数向量 $\mathbf{m} \in \mathbb{R}^{d_{\text{out}}}$（初始化为 $m_i^{(0)} = |\mathbf{w}_{0,i}|_2$，而 $\mathbf{B}_0 = \mathbf{0}$，保证 $t=0$ 时 $\mathbf{W}'^{(0)} \equiv \mathbf{W}_0$）：</p>
+<p>$$\mathbf{W}'_{\text{DoRA}} = \operatorname{diag}(\mathbf{m}) , \frac{\mathbf{V} + s \Delta \mathbf{V}}{|\mathbf{V} + s \Delta \mathbf{V}|_r} = \operatorname{diag}!\left(\frac{\mathbf{m}}{|\mathbf{W}_0 + s \mathbf{B}\mathbf{A}|_r}\right) (\mathbf{W}_0 + s \mathbf{B}\mathbf{A})$$</p>
+<p>其中 $|\cdot|_r$ 表示沿输入维度（<code>dim=1</code>）求每一行的 $L_2$ 范数，缩放系数 $s = \frac{\alpha}{r}$（或 rsLoRA 的 $\frac{\alpha}{\sqrt{r}}$）。</p>
+<p>结合 Hugging Face <code>peft</code> 官方源码（<code>src/peft/tuners/lora/dora.py::DoraLinearLayer</code> 与 <code>src/peft/tuners/lora/variants.py::DoraLinearVariant</code>），DoRA 在工程实现中有三个必考细节：</p>
+<ol>
+<li><strong>为什么分母范数 $|\mathbf{V} + s\Delta \mathbf{V}|_r$ 必须调用 <code>.detach()</code>（DoRA 论文 Section 4.3）？</strong>
+若对分母中的 $|\mathbf{V}'|_r$ 正常求导（其中 $\mathbf{V}' = \mathbf{V} + s\Delta \mathbf{V}$），则对第 $i$ 行方向增量的梯度为投影算子：
+$$\frac{\partial \mathcal{L}}{\partial \mathbf{v}'_i} = \frac{m_i}{|\mathbf{v}'_i|_2} \left( \mathbf{I} - \frac{\mathbf{v}'_i {\mathbf{v}'_i}^\top}{|\mathbf{v}'_i|<em>2^2} \right) \frac{\partial \mathcal{L}}{\partial \mathbf{w}'<em>i}$$
+这不仅要求在反向传播图里保留尺寸高达 $[d</em>{\text{out}}, d</em>{\text{in}}]$ 的完整中间权重张量 $\mathbf{V}'$（导致训练激活显存暴增约 $20%\sim 30%$），还会引入复杂的跨通道雅可比耦合。DoRA 论文 Section 4.3 证明：<strong>在前向传播中动态重算 <code>weight_norm = ||W_0 + s * (B @ A).detach()||_r</code>，但将其通过 <code>weight_norm = weight_norm.detach()</code> 视为常数剥离出反向计算图</strong>，此时梯度简化为纯净的逐通道缩放：
+$$\frac{\partial \mathcal{L}}{\partial \mathbf{v}'_i} = \frac{m_i}{\operatorname{sg}(|\mathbf{v}'_i|_2)} \frac{\partial \mathcal{L}}{\partial \mathbf{w}'_i}, \qquad \frac{\partial \mathcal{L}}{\partial m_i} = \frac{\langle \frac{\partial \mathcal{L}}{\partial \mathbf{w}'_i}, , \mathbf{v}'_i \rangle}{\operatorname{sg}(|\mathbf{v}'_i|_2)}$$
+这一设计在不损失任何微调精度的前提下，将 DoRA 的反向显存开销拉回到与普通 LoRA 几乎一致的水平！</li>
+<li><strong>如何在不实例化合并矩阵的前提下高效计算 <code>forward</code>？</strong>
+在 <code>DoraLinearLayer.forward</code> 中，基座层已经算出了无偏置主路输出 $\mathbf{h}<em>{\text{base}} = \mathbf{x} \mathbf{W}<em>0^\top$，旁路算出了 $\mathbf{h}</em>{\text{lora}} = (\mathbf{x} \mathbf{A}^\top) \mathbf{B}^\top$。令逐输出通道的幅度-范数比向量为 $\boldsymbol{\rho} = \frac{\mathbf{m}}{\operatorname{sg}(|\mathbf{W}<em>0 + s \mathbf{B}\mathbf{A}|<em>r)} \in \mathbb{R}^{d</em>{\text{out}}}$（源码中的 <code>mag_norm_scale</code>），则总输出可写为基底输出加上增量修正项 <code>result_dora</code>：
+$$\mathbf{h}</em>{\text{DoRA}} = \boldsymbol{\rho} \odot (\mathbf{h}</em>{\text{base}} + s \mathbf{h}<em>{\text{lora}}) = \mathbf{h}</em>{\text{base}} + \underbrace{(\boldsymbol{\rho} - \mathbf{1}) \odot \mathbf{h}<em>{\text{base}} + \boldsymbol{\rho} \odot (s \mathbf{h}</em>{\text{lora}})}_{\text{PEFT 源码中的 }\texttt{result_dora}}$$
+从而复用了基座的矩阵乘结果（包括 4-bit QDoRA 反量化算子输出），避免了重复执行高维矩阵乘法。</li>
+<li><strong>为什么 <code>DoraLinearVariant.unmerge</code> 必须读取缓存的 <code>weight_norm</code> 而不能现场重算？</strong>
+在 <code>merge_safe</code> 时，合并后的权重为 $\mathbf{W}<em>{\text{merged}} = \operatorname{diag}(\boldsymbol{\rho}) (\mathbf{W}<em>0 + s\mathbf{B}\mathbf{A})$。注意此时 $\mathbf{W}</em>{\text{merged}}$ 每一行的 $L_2$ 范数已经变成了 $|\mathbf{w}</em>{\text{merged}, i}|<em>2 \equiv m_i$，而不再是合并前的 $|\mathbf{w}</em>{0,i} + s(\mathbf{B}\mathbf{A})_i|<em>2$！如果在执行 <code>unmerge()</code> 时直接对 $\mathbf{W}</em>{\text{merged}}$ 求行范数来恢复 $\mathbf{W}_0$，得到的比值将恒等于 $m_i / m_i = 1$，从而无法除掉 $\boldsymbol{\rho}$ 缩放因子，导致还原出的基座权重彻底损坏。因此 <code>peft</code> 源码在 <code>merge</code> 时强制执行 <code>module._cache_store(f&quot;{active_adapter}-weight_norm&quot;, weight_norm)</code>，并在 <code>unmerge</code> 时弹出该缓存值执行精确逆运算：
+$$\mathbf{W}<em>0 = \operatorname{diag}(\boldsymbol{\rho}^{-1}) \mathbf{W}</em>{\text{merged}} - s \mathbf{B}\mathbf{A}$$</li>
+</ol>
+<hr />
+<h3 id="2-pissa-与-corda从盲目随机起点到主奇异子空间协方差感知初始化">2. PiSSA 与 CorDA：从盲目随机起点到主奇异子空间/协方差感知初始化</h3>
+<h4 id="1经典-lora-早期梯度的噪声子空间陷阱与-pissa-的主奇异值分解">（1）经典 LoRA 早期梯度的“噪声子空间陷阱”与 PiSSA 的主奇异值分解</h4>
+<p>在经典 LoRA 中，$\mathbf{A}_0 \sim \mathcal{N}(0, \sigma^2)$（或 Kaiming Uniform），$\mathbf{B}_0 = \mathbf{0}$。在训练第 $0$ 步（$t=0$），设损失对线性层输出 $\mathbf{h}$ 的梯度为 $\mathbf{G}_h = \frac{\partial \mathcal{L}}{\partial \mathbf{h}}$，则对 $\mathbf{A}$ 与 $\mathbf{B}$ 的首步梯度分别为：</p>
+<p>$$\left.\frac{\partial \mathcal{L}}{\partial \mathbf{A}}\right|_{t=0} = s \mathbf{B}_0^\top \mathbf{G}<em>h^\top \mathbf{X} = \mathbf{0}, \qquad \left.\frac{\partial \mathcal{L}}{\partial \mathbf{B}}\right|</em>{t=0} = s \mathbf{G}_h^\top \mathbf{X} \mathbf{A}_0^\top$$</p>
+<p>可以看到：不仅 $\mathbf{A}$ 在第一步完全静止，而且 $\mathbf{B}$ 的首步更新方向被随机矩阵 $\mathbf{A}_0$ 强行投影到了一个与预训练权重主特征方向几乎正交的 $r$ 维随机子空间上。由于预训练大模型权重的奇异值谱呈陡峭的长尾衰减，随机方向大概率落在奇异值极小的平坦噪声尾部，导致早期梯度模长极小、收敛缓慢且易陷入局部次优解。</p>
+<p><strong>PiSSA（Principal Singular Values and Singular Vectors Adaptation，Meng et al., NeurIPS 2024）</strong> 的核心思想是：<strong>与改善从 0 开始学习的随机旁路不同，直接把预训练权重 $\mathbf{W}<em>0$ 中最核心的前 $r$ 个主奇异分量（Principal Components）剥离出来放进可训练的 $\mathbf{B}, \mathbf{A}$ 中，而把次要的剩余奇异分量留在冻结的残差矩阵 $\mathbf{W}</em>{\text{res}}$ 中！</strong></p>
+<p>对照 Hugging Face <code>peft</code> 源码 <code>src/peft/utils/loftq_utils.py::_pissa_decomposition</code>，对 $\mathbf{W}<em>0 \in \mathbb{R}^{d</em>{\text{out}} \times d_{\text{in}}}$ 执行经济型奇异值分解（或快速低秩随机 SVD <code>torch.svd_lowrank(..., niter=k)</code>，即 <code>init_lora_weights=&quot;pissa_niter_4&quot;</code>）：</p>
+<p>$$\mathbf{W}<em>0 = \mathbf{U} \operatorname{diag}(\boldsymbol{\sigma}) \mathbf{V}^\top = \underbrace{\mathbf{U}</em>{:, :r} \operatorname{diag}(\boldsymbol{\sigma}<em>{:r}) \mathbf{V}</em>{:, :r}^\top}<em>{\text{主奇异分量 (Principal)}} + \underbrace{\mathbf{U}</em>{:, r:} \operatorname{diag}(\boldsymbol{\sigma}<em>{r:}) \mathbf{V}</em>{:, r:}^\top}_{\text{尾部残差分量 (Residual)}}$$</p>
+<p>在带有缩放系数 $s = \text{scaling}$（如 $\alpha/r$）的 PEFT 框架下，为了保证初始化时刻前向输出与原模型 $100%$ 恒等（$\mathbf{W}_{\text{res}} + s \mathbf{B}_0 \mathbf{A}_0 \equiv \mathbf{W}_0$），源码先将前 $r$ 个奇异值除以 $s$：</p>
+<p>$$\tilde{\boldsymbol{\sigma}}<em>{:r} = \frac{\boldsymbol{\sigma}</em>{:r}}{s}, \qquad \mathbf{A}<em>0 = \operatorname{diag}!\left(\sqrt{\tilde{\boldsymbol{\sigma}}</em>{:r}}\right) \mathbf{V}<em>{:, :r}^\top \in \mathbb{R}^{r \times d</em>{\text{in}}}, \qquad \mathbf{B}<em>0 = \mathbf{U}</em>{:, :r} \operatorname{diag}!\left(\sqrt{\tilde{\boldsymbol{\sigma}}<em>{:r}}\right) \in \mathbb{R}^{d</em>{\text{out}} \times r}$$</p>
+<p>$$\mathbf{W}_{\text{res}} = \mathbf{W}_0 - s \mathbf{B}_0 \mathbf{A}_0 \quad (\text{冻结于 }\texttt{base_layer.weight})$$</p>
+<p>此时在 $t=0$ 起点：</p>
+<ol>
+<li><strong>输出严格无损</strong>：$\mathbf{W}_{\text{res}} + s \mathbf{B}_0 \mathbf{A}_0 = \mathbf{W}_0$；</li>
+<li><strong>首步双向满秩梯度激活</strong>：因为 $\mathbf{B}_0 \neq \mathbf{0}$ 且 $\mathbf{A}_0 \neq \mathbf{0}$，$\frac{\partial \mathcal{L}}{\partial \mathbf{A}}$ 与 $\frac{\partial \mathcal{L}}{\partial \mathbf{B}}$ 在第 1 步同时非零，且梯度直接沿着 $\mathbf{W}_0$ 能量最大的前 $r$ 个主奇异向量方向更新，直接模仿全量微调中最主导的特征演化轨迹！</li>
+</ol>
+<h4 id="2pissa-的工程痛点与-subtract_mutated_init-秩-2r-无损转换技巧">（2）PiSSA 的工程痛点与 <code>subtract_mutated_init</code> 秩 $2r$ 无损转换技巧</h4>
+<p>PiSSA 看似完美，但在多任务部署（如 vLLM / S-LoRA 动态挂载数十个 Adapter）中有一个棘手问题：<strong>PiSSA 修改了基座权重 $\mathbf{W}<em>0 \to \mathbf{W}</em>{\text{res}}$</strong>！如果直接保存训练后的 $(\mathbf{B}<em>{\text{tr}}, \mathbf{A}</em>{\text{tr}})$，它只能挂在专用的残差模型 $\mathbf{W}_{\text{res}}$ 上运行，无法与共享原始基座 $\mathbf{W}_0$ 的其他标准 LoRA 适配器混用或动态卸载。</p>
+<p>为了彻底解决这一部署障碍，Hugging Face <code>peft</code> 在 <code>PeftModel.save_pretrained(..., path_initial_model_for_weight_conversion=...)</code> 与 <code>LoraModel.subtract_mutated_init</code> 中实现了一个极为精妙的<strong>分块矩阵恒等变换</strong>：</p>
+<ul>
+<li>训练完成后的等效全权重为：
+$$\mathbf{W}<em>{\text{final}} = \mathbf{W}</em>{\text{res}} + s \mathbf{B}<em>{\text{tr}} \mathbf{A}</em>{\text{tr}} = (\mathbf{W}<em>0 - s \mathbf{B}<em>0 \mathbf{A}<em>0) + s \mathbf{B}</em>{\text{tr}} \mathbf{A}</em>{\text{tr}} = \mathbf{W}<em>0 + s (\mathbf{B}</em>{\text{tr}} \mathbf{A}</em>{\text{tr}} - \mathbf{B}_0 \mathbf{A}_0)$$</li>
+<li>注意到两个秩-$r$ 矩阵之差 $\mathbf{B}<em>{\text{tr}} \mathbf{A}</em>{\text{tr}} - \mathbf{B}<em>0 \mathbf{A}<em>0$ 可以<strong>零误差地写成两个秩-$2r$ 矩阵的乘积</strong>！只需将训练后的参数与初始分解参数按块拼接：
+$$\mathbf{A}</em>{\text{conv}} = \begin{bmatrix} \mathbf{A}</em>{\text{tr}} \ \mathbf{A}<em>0 \end{bmatrix} \in \mathbb{R}^{2r \times d</em>{\text{in}}}, \qquad \mathbf{B}<em>{\text{conv}} = \begin{bmatrix} \mathbf{B}</em>{\text{tr}} &amp; -\mathbf{B}<em>0 \end{bmatrix} \in \mathbb{R}^{d</em>{\text{out}} \times 2r}$$</li>
+<li>验证其乘积：
+$$\mathbf{B}<em>{\text{conv}} \mathbf{A}</em>{\text{conv}} = \begin{bmatrix} \mathbf{B}<em>{\text{tr}} &amp; -\mathbf{B}<em>0 \end{bmatrix} \begin{bmatrix} \mathbf{A}</em>{\text{tr}} \ \mathbf{A}<em>0 \end{bmatrix} = \mathbf{B}</em>{\text{tr}} \mathbf{A}</em>{\text{tr}} - \mathbf{B}_0 \mathbf{A}_0$$</li>
+<li>同时，源码自动将导出配置文件中的 <code>r</code> 翻倍为 $2r$，并将 <code>lora_alpha</code> 同步调整以保持缩放因子 $s$ 不变（标准模式下 <code>lora_alpha *= 2</code> 使 $\frac{2\alpha}{2r} = \frac{\alpha}{r}$；rsLoRA 模式下 <code>lora_alpha *= sqrt(2)</code> 使 $\frac{\sqrt{2}\alpha}{\sqrt{2r}} = \frac{\alpha}{\sqrt{r}}$）。</li>
+<li><strong>工程收益</strong>：训练期完全享受 PiSSA 的极速主成分收敛，导出期一行代码无损转换为<strong>直接挂载在未修改原始基座 $\mathbf{W}_0$ 上的标准秩-$2r$ LoRA 适配器</strong>，无缝兼容所有现有推理引擎！</li>
+</ul>
+<blockquote>
+<p><strong>对比拓展：MiLoRA 与 CorDA（激活协方差感知分解）</strong></p>
+<ul>
+<li><strong>MiLoRA / MiCA</strong>（Minor Singular Component Adaptation）：与 PiSSA 相反，认为主奇异向量承载着预训练的核心世界知识，微调主奇异分量容易引发灾难性遗忘；因此冻结前 $n-r$ 个主奇异分量，仅用最小的 $r$ 个尾部奇异向量初始化可训练旁路；</li>
+<li><strong>CorDA</strong>（Context-Oriented Decomposition Adaptation, Yang et al., NeurIPS 2024，见 <code>peft/tuners/lora/corda.py</code>）：指出单纯对静态权重 $\mathbf{W}<em>0$ 做 SVD 忽略了输入激活分布。CorDA 先用少量校准样本收集输入激活协方差矩阵 $\mathbf{C} = \frac{1}{N}\sum \mathbf{x}\mathbf{x}^\top \in \mathbb{R}^{d</em>{\text{in}} \times d_{\text{in}}}$，然后对加权矩阵 $\mathbf{W}_0 \mathbf{C}$ 做 SVD：$\mathbf{W}_0 \mathbf{C} = \mathbf{U} \boldsymbol{\Sigma} \mathbf{V}^\top$，再右乘 $\mathbf{C}^{-1}$ 还原：$\mathbf{W}_0 = \mathbf{U} \boldsymbol{\Sigma} (\mathbf{V}^\top \mathbf{C}^{-1})$。其支持两种模式：**IPM（Instruction-Previewed Mode）**将下游任务协方差最大的前 $r$ 个分量放入可训练适配器以加速能力获取；**KPM（Knowledge-Preserved Mode）**将通用知识协方差最小的 $r$ 个尾部特征放入可训练适配器以最大化抵抗遗忘。</li>
+</ul>
+</blockquote>
+<hr />
+<h3 id="3-rslora-与-lora高秩渐近方差稳定与无限宽非对称学习率">3. rsLoRA 与 LoRA+：高秩渐近方差稳定与无限宽非对称学习率</h3>
+<h4 id="1rslorarank-stabilized-lora为什么-fracalphar-在高秩下必然坍缩">（1）rsLoRA（Rank-Stabilized LoRA）：为什么 $\frac{\alpha}{r}$ 在高秩下必然坍缩？</h4>
+<p>在面对复杂领域知识注入时，工程师往往希望把秩 $r$ 从 $8$ 提高到 $128, 256$ 甚至 $512$。然而实验表明，在经典缩放因子 $\gamma_r = \frac{\alpha}{r}$ 下，盲目调大 $r$ 不仅不会提升效果，在固定学习率下甚至会出现训练初期的梯度消失与收敛停滞。</p>
+<p><strong>rsLoRA</strong>（Kalajdzievski, 2023）通过随机矩阵与渐近方差分析给出了严格数学解释：</p>
+<ul>
+<li>考察旁路乘积 $\Delta \mathbf{W} \mathbf{x} = \gamma_r \mathbf{B}\mathbf{A}\mathbf{x} = \gamma_r \sum_{k=1}^r \mathbf{b}<em>{:, k} (\mathbf{a}</em>{k, :}^\top \mathbf{x})$。</li>
+<li>假设在第 $k$ 个秩通道上，向量 $\mathbf{a}<em>{k,:}$ 与 $\mathbf{b}</em>{:,k}$（在经历首步更新后）各分量独立同分布、均值为 $0$，且单通道内积项 $z_k = \mathbf{b}<em>{:,k}(\mathbf{a}</em>{k,:}^\top \mathbf{x})$ 的方差为常数 $\sigma_z^2 = \Theta(1)$。</li>
+<li>由于 $r$ 个秩通道彼此独立，根据可加性，$r$ 项求和 $\sum_{k=1}^r z_k$ 的方差随 $r$ <strong>线性增长</strong>：
+$$\operatorname{Var}!\left(\sum_{k=1}^r z_k\right) = r \sigma_z^2 \quad \implies \quad \operatorname{Std}!\left(\sum_{k=1}^r z_k\right) = \sqrt{r} , \sigma_z$$</li>
+<li>当乘上外部缩放系数 $\gamma_r$ 后，旁路输出激活（以及反向传播回 $\mathbf{A}, \mathbf{B}$ 的梯度）的真实标准差尺度为：
+$$\operatorname{Std}(\gamma_r \mathbf{B}\mathbf{A}\mathbf{x}) = \gamma_r \sqrt{r} , \sigma_z$$
+<ul>
+<li><strong>若采用经典 LoRA（$\gamma_r = \frac{\alpha}{r}$）</strong>：有效标准差为 $\frac{\alpha}{r} \cdot \sqrt{r} , \sigma_z = \frac{\alpha}{\sqrt{r}} \sigma_z \xrightarrow{r \to \infty} 0$！例如当 $\alpha=16$ 时，$r=4$ 的有效尺度为 $8\sigma_z$，而当 $r$ 增大到 $256$ 时，有效尺度坍缩到了 $1\sigma_z$（缩水 $8$ 倍），导致高秩下的初期梯度与特征更新被严重扼杀；</li>
+<li><strong>若采用 rsLoRA（$\gamma_r = \frac{\alpha}{\sqrt{r}}$，即 PEFT 中开启 <code>use_rslora=True</code>）</strong>：有效标准差恒为：
+$$\operatorname{Std}!\left(\frac{\alpha}{\sqrt{r}} \mathbf{B}\mathbf{A}\mathbf{x}\right) = \frac{\alpha}{\sqrt{r}} \cdot \sqrt{r} , \sigma_z \equiv \alpha \sigma_z = \Theta(1) \quad (\forall r \ge 1)$$
+从而彻底解耦了秩 $r$ 与激活/梯度尺度，使得增大秩 $r$ 能够平滑、单调地转化为模型微调容量的真实提升。</li>
+</ul>
+</li>
+</ul>
+<h4 id="2loraicml-2024为什么-mathbfb-的学习率必须远大于-mathbfaeta_b--lambda-eta_a">（2）LoRA+（ICML 2024）：为什么 $\mathbf{B}$ 的学习率必须远大于 $\mathbf{A}$（$\eta_B = \lambda \eta_A$）？</h4>
+<p>在经典 LoRA 与 rsLoRA 中，优化器（AdamW）默认对降维矩阵 $\mathbf{A} \in \mathbb{R}^{r \times d_{\text{in}}}$ 和升维矩阵 $\mathbf{B} \in \mathbb{R}^{d_{\text{out}} \times r}$ 使用完全相同的学习率 $\eta_A = \eta_B = \eta$。<strong>LoRA+</strong>（Hayou et al., ICML 2024）利用无限宽神经网络的张量程序理论（Maximal Update Parametrization, $\mu\text{P}$）证明：<strong>在隐藏层维度 $d \gg r$（如 $d = 4096, r = 8$）的尺度下，$\eta_A = \eta_B$ 在数学上是病态的（Sub-optimal）！</strong></p>
+<p>其核心尺度推导如下：</p>
+<ol>
+<li><strong>输入输出维度的非对称性</strong>：
+设输入向量 $\mathbf{x} \in \mathbb{R}^d$ 的每个元素量级为 $\Theta(1)$，则 $|\mathbf{x}|_2 = \Theta(\sqrt{d})$。
+<ul>
+<li>降维矩阵 $\mathbf{A} \in \mathbb{R}^{r \times d}$ 将 $d$ 维输入压缩为 $r$ 维隐向量 $\mathbf{z} = \mathbf{A}\mathbf{x} \in \mathbb{R}^r$。为了保证初始化时 $z_k = \sum_{j=1}^d A_{k,j} x_j = \Theta(1)$，$\mathbf{A}_0$ 必须按方差 $\Theta(1/d)$（即元素量级 $\Theta(d^{-1/2})$）初始化；</li>
+<li>升维矩阵 $\mathbf{B} \in \mathbb{R}^{d \times r}$ 将 $r = \Theta(1)$ 维的隐向量 $\mathbf{z}$ 映射回 $d$ 维输出 $\Delta \mathbf{h} = \mathbf{B}\mathbf{z} \in \mathbb{R}^d$。由于求和仅跨越常数 $r$ 项，要使输出 $\Delta h_i = \sum_{k=1}^r B_{i,k} z_k$ 的每个元素达到 $\Theta(1)$ 的有效特征更新量级，$\mathbf{B}$ 的元素变化量 $\Delta B_{i,k}$ 必须达到 $\Theta(1)$ 量级！</li>
+</ul>
+</li>
+<li><strong>Adam 优化器下的更新步长失配</strong>：
+在 Adam / AdamW 优化器中，参数单步更新的逐元素量级由各自的学习率直接控制（因为一阶动量与二阶动量比值将梯度归一化为了 $\pm \Theta(1)$ 符号量级）：
+$$\Delta \mathbf{A}_t \sim -\eta_A \cdot \operatorname{sign}(\mathbf{G}<em>A) \implies |\Delta A</em>{k,j}| = \Theta(\eta_A)$$
+$$\Delta \mathbf{B}_t \sim -\eta_B \cdot \operatorname{sign}(\mathbf{G}<em>B) \implies |\Delta B</em>{i,k}| = \Theta(\eta_B)$$
+考察一步更新后，两个矩阵各自的更新对层输出 $\Delta \mathbf{h}$ 产生的增量贡献：
+<ul>
+<li><strong>由 $\Delta \mathbf{A}$ 引起的隐层特征变化</strong>：$\Delta \mathbf{z} = \Delta \mathbf{A} , \mathbf{x}$。由于 $\mathbf{x}$ 有 $d$ 个 $\Theta(1)$ 元素且与梯度方向对齐（非随机抵消），内积求和会放大 $d$ 倍！要使 $\Delta \mathbf{z} = \Theta(1)$ 而不发生数值爆炸，学习率 $\eta_A$ 必须受控在 $\eta_A = \Theta(d^{-1})$ 量级；</li>
+<li><strong>由 $\Delta \mathbf{B}$ 引起的输出特征变化</strong>：$\mathbf{B}$ 的每一行仅对 $r = \Theta(1)$ 个元素求和（$\Delta \mathbf{B} , \mathbf{z}$），要使 $\Delta \mathbf{B} , \mathbf{z} = \Theta(1)$，学习率 $\eta_B$ 必须处于 $\eta_B = \Theta(1)$ 量级！</li>
+</ul>
+</li>
+<li><strong>结论与 Hugging Face PEFT 工程配方</strong>：
+如果强行令 $\eta_A = \eta_B = \eta$：
+<ul>
+<li>若将 $\eta$ 设得很大（如 $\Theta(1)$）以迁就 $\mathbf{B}$，则 $\Delta \mathbf{A} , \mathbf{x}$ 会瞬间爆炸导致训练发散；</li>
+<li>若将 $\eta$ 设得很小（如 $\Theta(d^{-1})$）以保证 $\mathbf{A}$ 稳定，则 $\Delta \mathbf{B}$ 的更新量仅为 $\Theta(d^{-1}) \to 0$，导致升维矩阵 $\mathbf{B}$ 几乎处于“半冻结”的爬行状态！
+因此，<strong>LoRA+</strong>（对应 <code>peft/optimizers/loraplus.py::create_loraplus_optimizer</code>）将可训练参数显式拆分为 <code>groupA</code>（<code>lr = eta_A</code>）与 <code>groupB</code>（包含 <code>lora_B</code> 及 1D 参数，<code>lr = loraplus_lr_ratio * eta_A</code>），通过设置比率 $\lambda = \frac{\eta_B}{\eta_A} \in [8, 16]$（理论渐近比率 $\propto d$，有限宽模型实测甜点在 $8\sim 16$），在不增加任何显存与计算量的前提下将微调收敛速度提升约 $1.5\times \sim 2\times$。</li>
+</ul>
+</li>
+</ol>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">PEFT (LoRA 家族) 四大核心演进维度的正交解耦架构图:
+
+                      [ 输入激活 x ∈ R^{d_in} ]
+                                 │
+          ┌──────────────────────┴──────────────────────┐
+          ▼ (冻结主路)                                   ▼ (可训练低秩旁路)
+  ┌─────────────────────────┐                  ┌─────────────────────────┐
+  │ 基座权重 W_0 或残差 W_res │                  │ 降维矩阵 A ∈ R^{r×d_in}  │ ◄── [LoRA+] 小学习率 η_A
+  │ (PiSSA: W_0 - s*B_0*A_0)│                  │ (PiSSA: Top-r 右奇异向量)│
+  └───────────┬─────────────┘                  └───────────┬─────────────┘
+              │                                            │ z = A x ∈ R^r
+              │                                            ▼
+              │                                ┌─────────────────────────┐
+              │                                │ 升维矩阵 B ∈ R^{d_out×r} │ ◄── [LoRA+] 大学习率 η_B = λ η_A
+              │                                │ (PiSSA: Top-r 左奇异向量)│
+              │                                └───────────┬─────────────┘
+              │                                            │
+              │                                            ▼
+              │                                [rsLoRA] 秩稳定缩放 s = α / √r (消除大 r 梯度坍缩)
+              │                                            │
+              └──────────────────┬─────────────────────────┘
+                                 ▼
+              [ 方向合成 V&#x27; = W_0 + s * B * A ]
+                                 │
+                                 ▼
+              [DoRA] 逐输出通道方向归一化 + 可训练幅度向量 m ∈ R^{d_out}:
+                     W_eff = diag( m / stop_grad(||V&#x27;||_row) ) @ V&#x27;
+</code></pre>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align:left">演进方法</th>
+<th style="text-align:left">核心解决的经典 LoRA 痛点</th>
+<th style="text-align:left">关键数学形式 / 改动点</th>
+<th style="text-align:left">额外可训练参数</th>
+<th style="text-align:left">合并后推理额外延迟</th>
+<th style="text-align:left">Hugging Face <code>peft</code> 启用方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Vanilla LoRA</strong> (ICLR 2022)</td>
+<td style="text-align:left">全量微调优化器状态显存过高（$16\Psi$ Bytes）</td>
+<td style="text-align:left">$\mathbf{W}' = \mathbf{W}_0 + \frac{\alpha}{r}\mathbf{B}\mathbf{A}$，$\mathbf{A}_0 \sim \text{Kaiming}, \mathbf{B}_0 = \mathbf{0}$</td>
+<td style="text-align:left">$r(d_{\text{in}} + d_{\text{out}})$</td>
+<td style="text-align:left"><strong>0</strong>（直接相加合并）</td>
+<td style="text-align:left"><code>LoraConfig(r=r, lora_alpha=alpha)</code></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>DoRA</strong> (ICML 2024)</td>
+<td style="text-align:left">幅度变化与方向变化强耦合，低秩下方向调整受限</td>
+<td style="text-align:left">$\mathbf{W}' = \operatorname{diag}!\left(\frac{\mathbf{m}}{\operatorname{sg}(|\mathbf{W}_0 + s\mathbf{B}\mathbf{A}|_r)}\right)(\mathbf{W}_0 + s\mathbf{B}\mathbf{A})$</td>
+<td style="text-align:left">仅多一个向量 $\mathbf{m} \in \mathbb{R}^{d_{\text{out}}}$（约 $+0.01%$）</td>
+<td style="text-align:left"><strong>0</strong>（折算 <code>dora_factor</code> 后合并）</td>
+<td style="text-align:left"><code>LoraConfig(..., use_dora=True)</code></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>PiSSA</strong> (NeurIPS 2024)</td>
+<td style="text-align:left">$\mathbf{B}_0=\mathbf{0}$ 且 $\mathbf{A}_0$ 随机导致早期梯度落入平坦噪声奇异尾部</td>
+<td style="text-align:left">对 $\mathbf{W}_0$ 做 SVD 提取前 $r$ 个主奇异分量初始化 $\mathbf{B}_0, \mathbf{A}<em>0$，冻结 $\mathbf{W}</em>{\text{res}}$</td>
+<td style="text-align:left"><strong>0</strong>（训练后可转为秩 $2r$ 标准 LoRA）</td>
+<td style="text-align:left"><strong>0</strong>（直接合并或转 $2r$ LoRA）</td>
+<td style="text-align:left"><code>LoraConfig(..., init_lora_weights=&quot;pissa_niter_4&quot;)</code></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>CorDA</strong> (NeurIPS 2024)</td>
+<td style="text-align:left">纯权重 SVD 忽略了真实上下文激活分布与抗遗忘需求</td>
+<td style="text-align:left">对激活协方差加权矩阵 $\mathbf{W}_0 \mathbf{C}$ 做 SVD（支持 IPM 主成分 / KPM 尾成分）</td>
+<td style="text-align:left"><strong>0</strong></td>
+<td style="text-align:left"><strong>0</strong></td>
+<td style="text-align:left"><code>LoraConfig(..., init_lora_weights=&quot;corda&quot;)</code></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>rsLoRA</strong> (2023)</td>
+<td style="text-align:left">$\frac{\alpha}{r}$ 随秩 $r$ 增大过度压缩前向方差与反向梯度（$\propto 1/\sqrt{r}$）</td>
+<td style="text-align:left">将缩放因子改为 $\gamma_r = \frac{\alpha}{\sqrt{r}}$，使 $\operatorname{Std}(\gamma_r \mathbf{B}\mathbf{A}\mathbf{x}) = \Theta(1)$</td>
+<td style="text-align:left"><strong>0</strong></td>
+<td style="text-align:left"><strong>0</strong></td>
+<td style="text-align:left"><code>LoraConfig(..., use_rslora=True)</code></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>LoRA+</strong> (ICML 2024)</td>
+<td style="text-align:left">宽度 $d \gg r$ 时 $\eta_A = \eta_B$ 导致 $\mathbf{B}$ 更新过慢、特征学习退化</td>
+<td style="text-align:left">优化器分组设置非对称学习率：$\eta_B = \lambda \eta_A$（$\lambda \in [8, 16]$）</td>
+<td style="text-align:left"><strong>0</strong></td>
+<td style="text-align:left"><strong>0</strong></td>
+<td style="text-align:left"><code>create_loraplus_optimizer(..., loraplus_lr_ratio=16)</code></td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h3 id="4-python-3-标准库实现dora-合并卸载缓存守卫pissa-秩-2r-转换与-rslora--lora-仿真">4. Python 3 标准库实现：DoRA 合并/卸载缓存守卫、PiSSA 秩 $2r$ 转换与 rsLoRA / LoRA+ 仿真</h3>
+<p>下面的零依赖 Python 3 标准库代码严格对齐 Hugging Face <code>peft</code> 官方实现，从底层验证了：</p>
+<ol>
+<li><strong>DoRA（<code>DoraLinearLayer</code> &amp; <code>DoraLinearVariant</code>）</strong>：验证未合并增量公式 <code>base + (rho - 1) * base + rho * s * B(Ax)</code> 与合并后矩阵乘法的数值等价性；并对比证明为什么 <code>unmerge()</code> 必须使用合并时缓存的原始 <code>weight_norm</code>——若在 <code>unmerge</code> 时直接对已合并矩阵重算行范数（此时行范数已恒等于 $\mathbf{m}$），会导致还原出的基座权重产生高达 $0.2331$ 的严重损坏；</li>
+<li><strong>PiSSA（<code>_pissa_decomposition</code> &amp; <code>subtract_mutated_init</code>）</strong>：验证用前 $r$ 个主奇异值/向量初始化 $\mathbf{A}_0, \mathbf{B}<em>0$ 在 $t=0$ 时的精确无损重建，以及微调后通过分块拼接 $[\mathbf{A}</em>{\text{tr}}; \mathbf{A}<em>0]$ 与 $[\mathbf{B}</em>{\text{tr}}, -\mathbf{B}_0]$ 转换为挂载在原始 $\mathbf{W}_0$ 上的秩-$2r$ 标准 LoRA 的零误差等价性；</li>
+<li><strong>rsLoRA 与 LoRA+ 优化动力学</strong>：验证 $r \in {4, 16, 64, 256}$ 时标准 $\alpha/r$ 有效尺度的坍缩 vs rsLoRA $\alpha/\sqrt{r}$ 的恒定尺度，以及从 $\mathbf{B}_0 = \mathbf{0}$ 出发时 LoRA+（$\eta_B = 8\eta_A$）相比同学习率 Vanilla LoRA 的收敛加速。</li>
+</ol>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+from typing import Dict, List
+
+
+def mat_mul(A: List[List[float]], B: List[List[float]]) -&gt; List[List[float]]:
+    &quot;&quot;&quot;计算矩阵乘积 A @ B&quot;&quot;&quot;
+    rows_a, cols_a = len(A), len(A[0])
+    rows_b, cols_b = len(B), len(B[0])
+    assert cols_a == rows_b
+    return [
+        [sum(A[i][k] * B[k][j] for k in range(cols_a)) for j in range(cols_b)]
+        for i in range(rows_a)
+    ]
+
+
+def mat_vec(W: List[List[float]], x: List[float]) -&gt; List[float]:
+    &quot;&quot;&quot;计算矩阵向量乘积 W @ x&quot;&quot;&quot;
+    return [sum(row[j] * x[j] for j in range(len(x))) for row in W]
+
+
+def mat_add(A: List[List[float]], B: List[List[float]], scale_b: float = 1.0) -&gt; List[List[float]]:
+    return [
+        [A[i][j] + scale_b * B[i][j] for j in range(len(A[0]))]
+        for i in range(len(A))
+    ]
+
+
+def row_l2_norms(W: List[List[float]]) -&gt; List[float]:
+    &quot;&quot;&quot;对齐 Hugging Face PEFT DoraLinearLayer.get_weight_norm: torch.linalg.norm(weight, dim=1)&quot;&quot;&quot;
+    return [math.sqrt(sum(v * v for v in row)) for row in W]
+
+
+def simulate_dora_forward_merge_unmerge(
+    W0: List[List[float]],
+    A: List[List[float]],
+    B: List[List[float]],
+    m: List[float],
+    x: List[float],
+    scaling: float,
+) -&gt; Dict[str, object]:
+    &quot;&quot;&quot;
+    严格对齐 huggingface/peft (src/peft/tuners/lora/dora.py &amp; variants.py):
+    1. 未合并前向: base_result + (m / ||W0 + s*BA||_row - 1) * base_result + (m / ||W0 + s*BA||_row) * s * B(Ax)
+    2. 合并权重: W_merged = diag(m / ||W0 + s*BA||_row) @ (W0 + s*BA), 缓存 weight_norm
+    3. 逆向卸载: W_unmerged = diag(weight_norm / m) @ W_merged - s*BA
+    &quot;&quot;&quot;
+    delta_W = mat_mul(B, A)
+    V = mat_add(W0, delta_W, scale_b=scaling)
+    weight_norm = row_l2_norms(V)  # 对应源码中的 weight_norm.detach()
+    dora_factor = [m[i] / weight_norm[i] for i in range(len(W0))]
+
+    # 1. 未合并前向 (DoraLinearLayer.forward)
+    base_result = mat_vec(W0, x)
+    lora_result = mat_vec(B, mat_vec(A, x))
+    out_unmerged = [
+        base_result[i] + (dora_factor[i] - 1.0) * base_result[i] + dora_factor[i] * scaling * lora_result[i]
+        for i in range(len(W0))
+    ]
+
+    # 2. 合并权重与合并后前向 (DoraLinearVariant.merge_safe)
+    W_merged = [
+        [dora_factor[i] * (W0[i][j] + scaling * delta_W[i][j]) for j in range(len(W0[0]))]
+        for i in range(len(W0))
+    ]
+    out_merged = mat_vec(W_merged, x)
+
+    # 3. 正确卸载 (使用缓存的原始 weight_norm) vs 错误卸载 (重算合并后矩阵的行范数)
+    W_unmerged_correct = [
+        [W_merged[i][j] / dora_factor[i] - scaling * delta_W[i][j] for j in range(len(W0[0]))]
+        for i in range(len(W0))
+    ]
+    wrong_norm = row_l2_norms(W_merged)  # 注意: ||W_merged||_row == m != weight_norm!
+    wrong_factor = [m[i] / wrong_norm[i] for i in range(len(W0))]
+    W_unmerged_wrong = [
+        [W_merged[i][j] / wrong_factor[i] - scaling * delta_W[i][j] for j in range(len(W0[0]))]
+        for i in range(len(W0))
+    ]
+
+    max_fwd_diff = max(abs(a - b) for a, b in zip(out_unmerged, out_merged))
+    max_unmerge_err = max(
+        abs(W0[i][j] - W_unmerged_correct[i][j])
+        for i in range(len(W0))
+        for j in range(len(W0[0]))
+    )
+    max_wrong_unmerge_err = max(
+        abs(W0[i][j] - W_unmerged_wrong[i][j])
+        for i in range(len(W0))
+        for j in range(len(W0[0]))
+    )
+    return {
+        &quot;max_fwd_diff&quot;: max_fwd_diff,
+        &quot;max_unmerge_err&quot;: max_unmerge_err,
+        &quot;max_wrong_unmerge_err&quot;: max_wrong_unmerge_err,
+        &quot;weight_norm&quot;: [round(v, 4) for v in weight_norm],
+        &quot;merged_row_norm&quot;: [round(v, 4) for v in wrong_norm],
+    }
+
+
+def simulate_pissa_init_and_rank2r_conversion(
+    U: List[List[float]],
+    S: List[float],
+    Vh: List[List[float]],
+    r: int,
+    scaling: float,
+    delta_A_train: List[List[float]],
+    delta_B_train: List[List[float]],
+) -&gt; Dict[str, object]:
+    &quot;&quot;&quot;
+    严格对齐 huggingface/peft (_pissa_decomposition &amp; subtract_mutated_init):
+    1. 用前 r 个主奇异值/向量初始化 A_0, B_0, 残差 W_res = W_0 - scaling * B_0 @ A_0
+    2. 训练后通过 [A | A_0] 与 [B | -B_0] 拼接为秩 2r 标准 LoRA, 实现无需改动 W_0 的无损热插拔
+    &quot;&quot;&quot;
+    d_out, k_rank = len(U), len(S)
+    d_in = len(Vh[0])
+    # 重建原始满秩矩阵 W0 = U @ diag(S) @ Vh
+    W0 = [
+        [sum(U[i][p] * S[p] * Vh[p][j] for p in range(k_rank)) for j in range(d_in)]
+        for i in range(d_out)
+    ]
+
+    # PiSSA 主奇异子空间分解 (除以 scaling 保证 W_res = W0 - scaling * B0 @ A0)
+    Sr_scaled = [S[p] / scaling for p in range(r)]
+    A0 = [[math.sqrt(Sr_scaled[p]) * Vh[p][j] for j in range(d_in)] for p in range(r)]
+    B0 = [[U[i][p] * math.sqrt(Sr_scaled[p]) for p in range(r)] for i in range(d_out)]
+
+    B0_A0 = mat_mul(B0, A0)
+    W_res = mat_add(W0, B0_A0, scale_b=-scaling)
+
+    # 验证训练起点 t=0 恒等性: W_res + scaling * B0 @ A0 == W0
+    W_init_recon = mat_add(W_res, B0_A0, scale_b=scaling)
+    init_recon_err = max(
+        abs(W0[i][j] - W_init_recon[i][j]) for i in range(d_out) for j in range(d_in)
+    )
+
+    # 模拟训练后参数 A_trained = A0 + delta_A, B_trained = B0 + delta_B
+    A_tr = mat_add(A0, delta_A_train)
+    B_tr = mat_add(B0, delta_B_train)
+    W_pissa_final = mat_add(W_res, mat_mul(B_tr, A_tr), scale_b=scaling)
+
+    # 执行 subtract_mutated_init 转化为挂载在原始 W0 上的秩 2r 标准 LoRA:
+    # A_conv = cat([A_tr, A0], dim=0) -&gt; [2r, d_in]
+    # B_conv = cat([B_tr, -B0], dim=1) -&gt; [d_out, 2r]
+    A_conv = A_tr + A0
+    B_conv = [B_tr[i] + [-v for v in B0[i]] for i in range(d_out)]
+    W_lora_2r_final = mat_add(W0, mat_mul(B_conv, A_conv), scale_b=scaling)
+
+    conv_err = max(
+        abs(W_pissa_final[i][j] - W_lora_2r_final[i][j])
+        for i in range(d_out)
+        for j in range(d_in)
+    )
+    return {
+        &quot;init_recon_err&quot;: init_recon_err,
+        &quot;conv_err&quot;: conv_err,
+        &quot;orig_rank&quot;: r,
+        &quot;converted_rank&quot;: len(A_conv),
+        &quot;principal_energy_ratio&quot;: sum(s * s for s in S[:r]) / sum(s * s for s in S),
+    }
+
+
+def compare_rslora_scaling_and_loraplus_steps(
+    alpha: float,
+    ranks: List[int],
+    W_target_delta: List[List[float]],
+    A_init: List[List[float]],
+    lr_base: float = 0.1,
+    loraplus_ratio: float = 8.0,
+    steps: int = 5,
+) -&gt; Dict[str, object]:
+    &quot;&quot;&quot;
+    验证:
+    1. 标准 LoRA (alpha/r) vs rsLoRA (alpha/sqrt(r)) 在不同秩 r 下的有效分支标准差因子
+       (当 A_ij ~ N(0, 1/d_in), B_ij ~ O(1) 时, sum_{k=1}^r B_ik A_kj 的标准差正比于 sqrt(r),
+        乘上缩放因子 gamma_r 后, 稳定有效尺度为 gamma_r * sqrt(r))
+    2. LoRA+ 非对称学习率 (eta_B = lambda * eta_A) 相比同学习率在 5 步更新后的目标逼近损失下降率
+    &quot;&quot;&quot;
+    std_effective_scale = {r: round((alpha / r) * math.sqrt(r), 4) for r in ranks}
+    rslora_effective_scale = {r: round((alpha / math.sqrt(r)) * math.sqrt(r), 4) for r in ranks}
+
+    # 对比 Vanilla LoRA (eta_B = eta_A) 与 LoRA+ (eta_B = loraplus_ratio * eta_A) 在 F-范数拟合损失
+    # L(A, B) = 0.5 * || B @ A - W_target_delta ||_F^2 下的梯度下降轨迹
+    d_out, d_in = len(W_target_delta), len(W_target_delta[0])
+    r = len(A_init)
+
+    def run_steps(eta_a: float, eta_b: float) -&gt; float:
+        A = [row[:] for row in A_init]
+        B = [[0.0] * r for _ in range(d_out)]  # B_0 = 0
+        for _ in range(steps):
+            BA = mat_mul(B, A)
+            E = [[BA[i][j] - W_target_delta[i][j] for j in range(d_in)] for i in range(d_out)]
+            # grad_B = E @ A^T, grad_A = B^T @ E
+            grad_B = [
+                [sum(E[i][j] * A[k][j] for j in range(d_in)) for k in range(r)]
+                for i in range(d_out)
+            ]
+            grad_A = [
+                [sum(B[i][k] * E[i][j] for i in range(d_out)) for j in range(d_in)]
+                for k in range(r)
+            ]
+            B = [[B[i][k] - eta_b * grad_B[i][k] for k in range(r)] for i in range(d_out)]
+            A = [[A[k][j] - eta_a * grad_A[k][j] for j in range(d_in)] for k in range(r)]
+        BA_final = mat_mul(B, A)
+        return 0.5 * sum(
+            (BA_final[i][j] - W_target_delta[i][j]) ** 2
+            for i in range(d_out)
+            for j in range(d_in)
+        )
+
+    loss_init = 0.5 * sum(
+        W_target_delta[i][j] ** 2 for i in range(d_out) for j in range(d_in)
+    )
+    loss_vanilla = run_steps(eta_a=lr_base, eta_b=lr_base)
+    loss_loraplus = run_steps(eta_a=lr_base, eta_b=lr_base * loraplus_ratio)
+    return {
+        &quot;std_effective_scale&quot;: std_effective_scale,
+        &quot;rslora_effective_scale&quot;: rslora_effective_scale,
+        &quot;loss_init&quot;: round(loss_init, 6),
+        &quot;loss_vanilla&quot;: round(loss_vanilla, 6),
+        &quot;loss_loraplus&quot;: round(loss_loraplus, 6),
+    }
+
+
+# --- 1. 验证 DoRA 前向等价性、权重合并与缓存范数卸载 ---
+W0_demo = [
+    [0.6, -0.8, 0.0, 1.0],
+    [-0.5, 0.4, 0.8, -0.2],
+    [0.3, 0.9, -0.4, 0.5],
+]
+A_demo = [
+    [0.2, -0.1, 0.3, 0.15],
+    [-0.25, 0.4, -0.1, 0.2],
+]
+B_demo = [
+    [0.3, -0.2],
+    [-0.15, 0.35],
+    [0.25, 0.1],
+]
+# 模拟训练后可学习幅度向量 m 已偏离初始行范数
+m_trained = [1.80, 1.25, 1.50]
+x_demo = [1.2, -0.5, 0.8, -0.3]
+
+dora_res = simulate_dora_forward_merge_unmerge(
+    W0_demo, A_demo, B_demo, m_trained, x_demo, scaling=2.0
+)
+assert dora_res[&quot;max_fwd_diff&quot;] &lt; 1e-12
+assert dora_res[&quot;max_unmerge_err&quot;] &lt; 1e-12
+assert dora_res[&quot;max_wrong_unmerge_err&quot;] &gt; 0.15  # 若不缓存原 weight_norm 直接重算会导致严重损坏!
+
+# --- 2. 验证 PiSSA 主奇异值分解初始化与 subtract_mutated_init 秩 2r 无损转换 ---
+# 构造正交矩阵 U (3x3) 与 Vh (3x4)
+U_orth = [
+    [1.0, 0.0, 0.0],
+    [0.0, 0.8, -0.6],
+    [0.0, 0.6, 0.8],
+]
+S_vals = [10.0, 4.0, 0.5]  # 前 r=2 个主奇异值占总能量的 (100+16)/(100+16+0.25) = 99.78%
+Vh_orth = [
+    [1.0, 0.0, 0.0, 0.0],
+    [0.0, 0.6, 0.8, 0.0],
+    [0.0, 0.0, 0.0, 1.0],
+]
+dA = [[0.05, -0.02, 0.03, 0.01], [-0.03, 0.04, -0.01, 0.02]]
+dB = [[0.04, -0.01], [0.02, 0.05], [-0.03, 0.02]]
+
+pissa_res = simulate_pissa_init_and_rank2r_conversion(
+    U_orth, S_vals, Vh_orth, r=2, scaling=2.0, delta_A_train=dA, delta_B_train=dB
+)
+assert pissa_res[&quot;init_recon_err&quot;] &lt; 1e-12
+assert pissa_res[&quot;conv_err&quot;] &lt; 1e-12
+assert pissa_res[&quot;converted_rank&quot;] == 4  # 2 * r
+assert pissa_res[&quot;principal_energy_ratio&quot;] &gt; 0.99
+
+# --- 3. 验证 rsLoRA 秩稳定缩放与 LoRA+ 非对称学习率收敛优势 ---
+W_delta_target = [
+    [0.18, -0.12, 0.24, 0.09],
+    [-0.15, 0.22, -0.08, 0.14],
+    [0.12, 0.16, -0.10, 0.11],
+]
+opt_res = compare_rslora_scaling_and_loraplus_steps(
+    alpha=16.0, ranks=[4, 16, 64, 256], W_target_delta=W_delta_target, A_init=A_demo
+)
+# 标准 alpha/r 的有效尺度随 r 增大坍缩 (8.0 -&gt; 1.0), 而 rsLoRA 恒定为 16.0
+assert opt_res[&quot;std_effective_scale&quot;] == {4: 8.0, 16: 4.0, 64: 2.0, 256: 1.0}
+assert opt_res[&quot;rslora_effective_scale&quot;] == {4: 16.0, 16: 16.0, 64: 16.0, 256: 16.0}
+assert opt_res[&quot;loss_loraplus&quot;] &lt; opt_res[&quot;loss_vanilla&quot;] * 0.35
+
+print(
+    f&quot;1. DoRA Sanity: max_fwd_diff={dora_res[&#x27;max_fwd_diff&#x27;]:.2e}, &quot;
+    f&quot;cached_unmerge_err={dora_res[&#x27;max_unmerge_err&#x27;]:.2e}, &quot;
+    f&quot;uncached_wrong_unmerge_err={dora_res[&#x27;max_wrong_unmerge_err&#x27;]:.4f}&quot;
+)
+print(
+    f&quot;2. PiSSA Sanity: init_err={pissa_res[&#x27;init_recon_err&#x27;]:.2e}, &quot;
+    f&quot;principal_energy={pissa_res[&#x27;principal_energy_ratio&#x27;]:.4f}, &quot;
+    f&quot;rank_{pissa_res[&#x27;orig_rank&#x27;]}_to_lora_rank_{pissa_res[&#x27;converted_rank&#x27;]}_err={pissa_res[&#x27;conv_err&#x27;]:.2e}&quot;
+)
+print(
+    f&quot;3. rsLoRA &amp; LoRA+: std_scale={opt_res[&#x27;std_effective_scale&#x27;]} vs &quot;
+    f&quot;rslora_scale={opt_res[&#x27;rslora_effective_scale&#x27;]}; &quot;
+    f&quot;5-step loss: init={opt_res[&#x27;loss_init&#x27;]:.4f} -&gt; vanilla={opt_res[&#x27;loss_vanilla&#x27;]:.4f} vs &quot;
+    f&quot;loraplus={opt_res[&#x27;loss_loraplus&#x27;]:.4f}&quot;
+)
+print(&quot;All DoRA, PiSSA, rsLoRA, and LoRA+ assertions passed!&quot;)
+</code></pre>
+<p>实际运行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">1. DoRA Sanity: max_fwd_diff=2.22e-16, cached_unmerge_err=1.11e-16, uncached_wrong_unmerge_err=0.2331
+2. PiSSA Sanity: init_err=0.00e+00, principal_energy=0.9978, rank_2_to_lora_rank_4_err=0.00e+00
+3. rsLoRA &amp; LoRA+: std_scale={4: 8.0, 16: 4.0, 64: 2.0, 256: 1.0} vs rslora_scale={4: 16.0, 16: 16.0, 64: 16.0, 256: 16.0}; 5-step loss: init=0.1358 -&gt; vanilla=0.1086 vs loraplus=0.0359
+All DoRA, PiSSA, rsLoRA, and LoRA+ assertions passed!
+</code></pre>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“DoRA 既然把权重分解成了幅度向量 $\mathbf{m}$ 和归一化方向矩阵 $\frac{\mathbf{V} + \Delta \mathbf{V}}{|\mathbf{V} + \Delta \mathbf{V}|_r}$，包含非线性除法，因此推理时无法像普通 LoRA 那样合并回基座，必然带来额外的推理延迟。”</strong>
+事实：<strong>DoRA 在训练结束后同样可以 100% 合并进基座权重，实现真正的零额外推理延迟！</strong> 因为在推理阶段，$\mathbf{m}$、$\mathbf{W}<em>0$、$\mathbf{B}$ 和 $\mathbf{A}$ 全部是已经固定下来的常数张量。只需在部署前一次性算出合并权重 $\mathbf{W}</em>{\text{merged}} = \operatorname{diag}!\left(\frac{\mathbf{m}}{|\mathbf{W}_0 + s\mathbf{B}\mathbf{A}|_r}\right)(\mathbf{W}<em>0 + s\mathbf{B}\mathbf{A})$ 并写回 <code>base_layer.weight</code>，推理时的前向计算依然只是单一的标准矩阵乘法 $\mathbf{h} = \mathbf{x}\mathbf{W}</em>{\text{merged}}^\top$。</li>
+<li><strong>误区二：“PiSSA 只是改了 $\mathbf{A}$ 和 $\mathbf{B}$ 的初始化方式（用 $\mathbf{W}_0$ 的主奇异向量初始化），所以训练完保存出来的 <code>adapter_model.safetensors</code> 可以直接拿去挂载在原版 Hugging Face 基座模型 $\mathbf{W}_0$ 上推理。”</strong>
+事实：<strong>如果不经过转换直接把 PiSSA 训练出的适配器挂在原版基座 $\mathbf{W}<em>0$ 上，模型会因为主奇异分量被重复叠加两次（$\mathbf{W}<em>0 + s\mathbf{B}</em>{\text{tr}}\mathbf{A}</em>{\text{tr}} \approx \mathbf{W}<em>0 + \mathbf{W}</em>{\text{principal}}$）而直接输出乱码！</strong> 因为 PiSSA 在初始化时已经从基座中减去了主奇异分量（$\mathbf{W}_{\text{res}} = \mathbf{W}_0 - s\mathbf{B}_0\mathbf{A}_0$）。要想挂载在未修改的原版基座 $\mathbf{W}<em>0$ 上，必须在保存时传入 <code>path_initial_model_for_weight_conversion</code> 调用 <code>subtract_mutated_init</code>，将其转换为秩为 $2r$ 的标准增量适配器 $[\mathbf{B}</em>{\text{tr}}, -\mathbf{B}<em>0][\mathbf{A}</em>{\text{tr}}; \mathbf{A}_0]$。</li>
+<li><strong>误区三：“想要提升 LoRA 在复杂任务上的拟合能力，只需要直接把 <code>LoraConfig</code> 里的 <code>r</code> 从 8 改到 256（保持其他配置和学习率不变），就能获得显著收益。”</strong>
+事实：<strong>在未开启 <code>use_rslora=True</code> 的默认配置下，固定 <code>lora_alpha</code> 和学习率直接把 $r$ 放大 32 倍，会导致缩放因子 $\alpha/r$ 缩小 32 倍，而分支求和标准差仅增长 $\sqrt{32} \approx 5.66$ 倍，最终导致有效前向激活与反向梯度尺度萎缩至原来的 $1/\sqrt{32} \approx 17.7%$！</strong> 不仅拿不到高秩红利，反而会因为有效学习率坍缩而学不动。冲击高秩（$r \ge 64$）时应当开启 <code>use_rslora=True</code>（改用 $\alpha/\sqrt{r}$），并配合 LoRA+ 的非对称学习率确保升维矩阵 $\mathbf{B}$ 得到充分训练。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/wanshuiyin/ARIS-in-AI-Offer/blob/904ffbcbc929769c4e5517e1a94daac7fa119bd5/docs/tutorials/lora_peft_tutorial.md" target="_blank" rel="noopener noreferrer">wanshuiyin/ARIS-in-AI-Offer (<code>docs/tutorials/lora_peft_tutorial.md</code>)</a>（固定 commit <code>904ffbc</code>）与 <a href="https://github.com/ArronAI007/Awesome-AGI/blob/87cf55c9bc44dbbb4eb0f57828311b08e3604480/README.md" target="_blank" rel="noopener noreferrer">ArronAI007/Awesome-AGI (<code>README.md</code>)</a>，独立重构并扩展源码级对比。</li>
+<li>Liu et al., <a href="https://arxiv.org/abs/2402.09353" target="_blank" rel="noopener noreferrer">DoRA: Weight-Decomposed Low-Rank Adaptation</a>，ICML 2024（Oral），及 Hugging Face 官方源码 <a href="https://github.com/huggingface/peft/blob/34d342a6156bd77a83f093b5be21fd8396edc451/src/peft/tuners/lora/dora.py" target="_blank" rel="noopener noreferrer">huggingface/peft (<code>src/peft/tuners/lora/dora.py</code> &amp; <code>src/peft/tuners/lora/variants.py</code>)</a>（固定 commit <code>34d342a</code>）：逐输出通道幅度-方向分解、分母范数 <code>weight_norm.detach()</code> 停止梯度与 <code>merge</code>/<code>unmerge</code> 范数缓存机制。</li>
+<li>Meng et al., <a href="https://arxiv.org/abs/2404.02948" target="_blank" rel="noopener noreferrer">PiSSA: Principal Singular Values and Singular Vectors Adaptation of Large Language Models</a>，NeurIPS 2024（Spotlight），及 Hugging Face 官方源码 <a href="https://github.com/huggingface/peft/blob/34d342a6156bd77a83f093b5be21fd8396edc451/src/peft/utils/loftq_utils.py" target="_blank" rel="noopener noreferrer">huggingface/peft (<code>src/peft/utils/loftq_utils.py::_pissa_decomposition</code> &amp; <code>src/peft/tuners/lora/model.py::subtract_mutated_init</code>)</a>（固定 commit <code>34d342a</code>）：主奇异值分解初始化、残差基座构造与秩 $2r$ 标准 LoRA 转换公式。</li>
+<li>Kalajdzievski, <a href="https://arxiv.org/abs/2312.03732" target="_blank" rel="noopener noreferrer">A Rank Stabilization Scaling Factor for Fine-Tuning with LoRA (rsLoRA)</a>，2023，及 Hugging Face 官方源码 <a href="https://github.com/huggingface/peft/blob/34d342a6156bd77a83f093b5be21fd8396edc451/src/peft/tuners/lora/layer.py" target="_blank" rel="noopener noreferrer">huggingface/peft (<code>src/peft/tuners/lora/layer.py</code>)</a>（固定 commit <code>34d342a</code>）：$\gamma_r = \alpha/\sqrt{r}$ 渐近方差稳定推导。</li>
+<li>Hayou et al., <a href="https://arxiv.org/abs/2402.12354" target="_blank" rel="noopener noreferrer">LoRA+: Efficient Low Rank Adaptation of Large Models</a>，ICML 2024，及 Hugging Face 官方源码 <a href="https://github.com/huggingface/peft/blob/34d342a6156bd77a83f093b5be21fd8396edc451/src/peft/optimizers/loraplus.py" target="_blank" rel="noopener noreferrer">huggingface/peft (<code>src/peft/optimizers/loraplus.py</code>)</a>（固定 commit <code>34d342a</code>）：无限宽网络下 $\mathbf{A}/\mathbf{B}$ 算子尺度不对称分析与 $\eta_B = \lambda \eta_A$ 优化器分组实现。</li>
+<li>Yang et al., <a href="https://arxiv.org/abs/2406.05223" target="_blank" rel="noopener noreferrer">CorDA: Context-Oriented Decomposition Adaptation of Large Language Models for Task-Aware Parameter-Efficient Fine-Tuning</a>，NeurIPS 2024，及 Biderman et al., <a href="https://arxiv.org/abs/2405.09673" target="_blank" rel="noopener noreferrer">LoRA Learns Less and Forgets Less</a>，TMLR 2024。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-11-12</strong>。仅执行标准库下 DoRA 前向/合并/卸载范数校验、PiSSA 主奇异值分解与秩 $2r$ 转换、rsLoRA 缩放尺度及 LoRA+ 梯度下降数值验证，未运行多卡大模型微调基准压测。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">当把 PiSSA 或 DoRA 与 4-bit 量化基座（即 QPiSSA / QDoRA）结合时，为什么不能直接在 4-bit 量化后的权重上做 PiSSA 的 SVD 分解？Hugging Face <code>peft</code>（<code>replace_lora_weights_pissa</code> 与 <code>LoftQ</code>）是如何解决“量化误差 + 低秩分解误差”双重叠加的？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：当把 PiSSA 或 DoRA 与 4-bit 量化基座（即 QPiSSA / QDoRA）结合时，为什么不能直接在 4-bit 量化后的权重上做 PiSSA 的 SVD 分解？Hugging Face peft（replace_lora_weights_pissa 与 LoftQ）是如何解决“量化误差 + 低秩分解误差”双重叠加的？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>直接在量化权重上做 PiSSA 的两个陷阱</strong>：
+<ul>
+<li>第一，bitsandbytes 的 <code>Linear4bit</code>（NF4）将权重打包存储在 <code>uint8</code> 紧凑张量中，不能直接传入 <code>torch.linalg.svd</code>；</li>
+<li>第二，即使先把 4-bit 权重 $\widehat{\mathbf{W}}_0 = \operatorname{Quant}(\mathbf{W}_0)$ 反量化回 FP32 再做 SVD 提取主成分 $\mathbf{B}_0 \mathbf{A}<em>0$，并把残差 $\mathbf{W}</em>{\text{res}} = \widehat{\mathbf{W}}_0 - s \mathbf{B}_0 \mathbf{A}<em>0$ <strong>再次量化</strong>回 4-bit，也会经历“两次有损量化”，且转换回标准 LoRA 时会遇到不可消除的非线性失配：
+$$\operatorname{Quant}(\mathbf{W}</em>{\text{res}}) + s \mathbf{B}\mathbf{A} \neq \operatorname{Quant}(\mathbf{W}_0) + s (\mathbf{B}\mathbf{A} - \mathbf{B}_0 \mathbf{A}_0)$$</li>
+</ul>
+</li>
+<li><strong>源码级解法（<code>replace_lora_weights_pissa</code> 与 <code>LoftQ</code> 交替投影）</strong>：
+<ul>
+<li>在 <code>src/peft/utils/loftq_utils.py::replace_lora_weights_pissa</code> 中，PEFT 通过 <code>_SafetensorLoader</code> 逐层从磁盘流式懒加载<strong>原始未量化的 FP16/BF16 safetensors 权重</strong> $\mathbf{W}_0$，在 FP32 下执行精确的 <code>_pissa_decomposition</code> 得到 $\mathbf{A}_0, \mathbf{B}<em>0$ 与高精度残差 $\mathbf{W}</em>{\text{res}} = \mathbf{W}_0 - s \mathbf{B}_0 \mathbf{A}<em>0$，随后**仅对残差矩阵 $\mathbf{W}</em>{\text{res}}$ 执行一次 4-bit NF4 量化**！由于主奇异分量（往往也是幅度最大的离群值来源）已经被剥离进全精度的 $\mathbf{B}_0 \mathbf{A}<em>0$ 中，残差矩阵 $\mathbf{W}</em>{\text{res}}$ 的数值分布更加集中均匀，其 4-bit 量化误差反而比直接量化原始 $\mathbf{W}_0$ 小得多！</li>
+<li>而在 <strong>LoftQ</strong>（Li et al., ICLR 2024）中，若希望在保留量化流程的同时补偿 NF4 量化误差，则通过 $T$ 步交替优化（Alternating Minimization）：第 $t$ 步先对当前低秩修正后的权重做 NF4 量化 $Q_t = \operatorname{Quant}<em>{\text{NF4}}(\mathbf{W}<em>0 - \mathbf{B}</em>{t-1}\mathbf{A}</em>{t-1})$，再用秩-$r$ SVD 拟合量化残差 $\mathbf{W}_0 - Q_t \approx \mathbf{B}_t \mathbf{A}_t$，使 $Q_T + \mathbf{B}_T \mathbf{A}_T$ 在训练起点最大程度逼近全精度 $\mathbf{W}_0$。</li>
+</ul>
+</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">如果不用固定秩 $r$，而是希望在总参数预算不变的前提下为 Transformer 不同层、不同模块（如 <code>v_proj</code>/<code>down_proj</code> vs <code>q_proj</code>/<code>k_proj</code>）动态分配不同的有效秩，AdaLoRA（ICLR 2023）是如何通过拟奇异值分解与重要性剪枝实现的？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：如果不用固定秩 $r$，而是希望在总参数预算不变的前提下为 Transformer 不同层、不同模块（如 v_proj/down_proj vs q_proj/k_proj）动态分配不同的有效秩，AdaLoRA（ICLR 2023）是如何通过拟奇异值分解与重要性剪枝实现的？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>SVD 形式参数化与正交正则化</strong>：
+如果直接对普通矩阵乘积 $\Delta \mathbf{W} = \mathbf{B}\mathbf{A}$ 剪掉某一列/行，由于列向量之间彼此非正交且高度耦合，剪掉一个维度会剧烈破坏其余维度的子空间表征。<strong>AdaLoRA</strong>（Zhang et al., ICLR 2023）直接将增量参数化为显式的三元组 SVD 形式：
+$$\Delta \mathbf{W}_k = \mathbf{P}_k \boldsymbol{\Lambda}<em>k \mathbf{Q}<em>k, \qquad \mathbf{P}<em>k \in \mathbb{R}^{d</em>{\text{out}} \times r}, \quad \boldsymbol{\Lambda}<em>k = \operatorname{diag}(\boldsymbol{\lambda}<em>k) \in \mathbb{R}^{r \times r}, \quad \mathbf{Q}<em>k \in \mathbb{R}^{r \times d</em>{\text{in}}}$$
+为了避免每步调用复杂度高达 $O(\min(d</em>{\text{out}}, d</em>{\text{in}})^3)$ 的真实 SVD，AdaLoRA 在损失函数中加入轻量级正交惩罚项（耗时仅 $O(r^2 (d</em>{\text{out}} + d</em>{\text{in}}))$）：
+$$\mathcal{R}(\mathbf{P}_k, \mathbf{Q}_k) = |\mathbf{P}_k^\top \mathbf{P}_k - \mathbf{I}_r|_F^2 + |\mathbf{Q}_k \mathbf{Q}_k^\top - \mathbf{I}_r|<em>F^2$$
+强制 $\mathbf{P}<em>k, \mathbf{Q}<em>k$ 在训练全程保持近似正交，从而无需重构就能安全地将单个三元组 $(\mathbf{P}</em>{k, *, i}, \lambda</em>{k,i}, \mathbf{Q}</em>{k, i, *})$ 直接置零剪枝。</li>
+<li><strong>基于敏感度平滑的三元组重要性评分与三次预算衰减</strong>：
+AdaLoRA 结合参数-梯度乘积的一阶泰勒敏感度 $I(\theta) = |\theta \cdot \nabla_\theta \mathcal{L}|$，通过指数移动平均（EMA）维护平滑敏感度 $\bar{I}(\theta)$ 与不确定性（波动度）$\bar{U}(\theta) = \text{EMA}(|I(\theta) - \bar{I}(\theta)|)$，定义单个参数重要性 $s(\theta) = \bar{I}(\theta) \cdot \bar{U}(\theta)$，并将第 $k$ 个模块第 $i$ 个奇异分量的整体重要性定义为奇异值与左右奇异向量平均重要性的加权和：
+$$S_{k,i} = s(\lambda_{k,i}) + \frac{1}{d_{\text{out}}} \sum_{u=1}^{d_{\text{out}}} s(P_{k, u, i}) + \frac{1}{d_{\text{in}}} \sum_{v=1}^{d_{\text{in}}} s(Q_{k, i, v})$$
+训练初期先以较高的初始秩 $b^{(0)} = 1.5 , b^{\text{target}}$ 预热，随后按三次多项式调度（Cubic Schedule）逐步淘汰全局得分最低的奇异分量，最终自动把宝贵的秩预算集中分配给对下游任务最敏感的 FFN（<code>down_proj</code> / <code>up_proj</code>）与深层 Value/Output 投影矩阵。</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">Biderman et al.（TMLR 2024，《LoRA Learns Less and Forgets Less》）通过大规模实验发现了什么核心规律？在生产实践中，即使上了 DoRA + PiSSA + rsLoRA，什么场景下仍然必须放弃低秩微调、改用全量微调或 GaLore？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：Biderman et al.（TMLR 2024，《LoRA Learns Less and Forgets Less》）通过大规模实验发现了什么核心规律？在生产实践中，即使上了 DoRA + PiSSA + rsLoRA，什么场景下仍然必须放弃低秩微调、改用全量微调或 GaLore？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>“学得更少，但也忘得更少（Learns Less and Forgets Less）”的双刃剑效应</strong>：
+Biderman et al. (2024) 在持续预训练（Continued Pretraining）与高难度指令微调（Python 代码合成与 GSM8K/MATH 数学推理）上对比了不同秩 $r \in [4, 256]$ 的 LoRA 与全量微调，发现：
+<ul>
+<li>当下游任务主要是<strong>对齐输出格式、语气风格或激活预训练已有知识</strong>时，低秩微调完全可以追平全量微调；</li>
+<li>当下游任务需要向模型<strong>注入高密度的全新领域事实、全新编程语言语法或复杂多步推理模式</strong>时，更新矩阵 $\Delta \mathbf{W}$ 的真实有效秩（Effective Rank）接近满秩，低秩约束构成了刚性的<strong>信息容量瓶颈（Capacity Bottleneck）</strong>——即便启用 DoRA 或 PiSSA，只要 $r \ll \min(d_{\text{out}}, d_{\text{in}})$，其在目标域上的上限依然低于全量微调；</li>
+<li>但与此同时，正因为低秩更新被限制在 $r$ 维子空间内（特别当结合 CorDA KPM 或 MiLoRA 时），模型对原预训练分布的偏离远小于全量微调，因此在通用基准上的<strong>灾难性遗忘（Catastrophic Forgetting）显著更轻</strong>，扮演了天然的谱正则化器（Spectral Regularizer）。</li>
+</ul>
+</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-4">
+          <div class="followup-label">追问 04</div><h3 id="followup-4">何时必须走出低秩适配器？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：何时必须走出低秩适配器？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><p>当微调语料达到百亿 Token 级别（如垂直领域继续预训练或小语种扩词表训练）且必须突破低秩容量上限，但硬件又放不下全量微调的优化器状态时，应转向 <strong>GaLore（Gradient Low-Rank Projection, Zhao et al., ICML 2024）</strong>：GaLore <strong>不把权重本身限制为低秩结构</strong>，而是保持全量权重 $\mathbf{W} \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$ 直接更新，仅每隔 $T$ 步（如 $T=200$）对梯度矩阵 $\mathbf{G}_t$ 做一次 SVD 提取投影矩阵 $\mathbf{P}_t$，在低维空间维护 Adam 的一阶/二阶动量，并随子空间切换让全量权重在训练全周期内跨越多个低秩子空间累积出<strong>满秩更新（Full-Rank Update）</strong>。</p>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0040 · 单题笔记</span><a href="../questions/llm-0040-dora-pissa-rslora-loraplus-peft.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0040", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
