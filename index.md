@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：201** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：202** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -43,7 +43,7 @@
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
-| 🧠 大模型基础与原理 | 31 | [查看 ↓](#-大模型基础与原理) |
+| 🧠 大模型基础与原理 | 32 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 45 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 44 | [查看 ↓](#-工程化部署性能成本) |
@@ -53,7 +53,7 @@
 
 ## 🧠 大模型基础与原理
 
-<sub>分类 ID：`llm` ｜ 共 31 题</sub>
+<sub>分类 ID：`llm` ｜ 共 32 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -88,6 +88,7 @@
 | 29 | [KV Cache 极低比特量化（KIVI 与 KVQuant）是如何通过键值非对称分组、流式残差窗口、Pre-RoPE 量化与稠密-稀疏离群值隔离实现 2-bit 无损长上下文推理的？](questions/llm-0038-kv-cache-quantization-kivi-kvquant.md) | 🔴 困难 |
 | 30 | [KV Cache 稀疏驱逐与结构化预算分配（StreamingLLM、H2O、SnapKV 与 PyramidKV）是如何通过注意力汇聚点保护、重要词元识别与层级金字塔预算突破长上下文内存瓶颈的？](questions/llm-0039-kv-cache-eviction-streamingllm-h2o-snapkv-pyramidkv.md) | 🔴 困难 |
 | 31 | [LoRA 进阶演进（DoRA、PiSSA、rsLoRA 与 LoRA+）是如何通过权重幅度-方向解耦、主奇异值分解初始化、秩稳定缩放与非对称学习率突破参数高效微调瓶颈的？](questions/llm-0040-dora-pissa-rslora-loraplus-peft.md) | 🔴 困难 |
+| 32 | [偏好对齐进阶演进（SimPO、ORPO、IPO 与 KTO）是如何通过无参考长度归一化、单阶段优势比惩罚、二次有界目标与前景理论非配对损失突破 DPO 瓶颈的？](questions/llm-0041-simpo-orpo-kto-ipo-preference-optimization.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 
