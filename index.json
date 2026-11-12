@@ -4474,6 +4474,29 @@
       "language": "zh",
       "updated": "2026-11-12",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0041",
+      "title": "偏好对齐进阶演进（SimPO、ORPO、IPO 与 KTO）是如何通过无参考长度归一化、单阶段优势比惩罚、二次有界目标与前景理论非配对损失突破 DPO 瓶颈的？",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "preference-optimization",
+        "simpo",
+        "orpo",
+        "ipo",
+        "kto",
+        "dpo"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开大模型对齐与后训练指南（Chasing1020/agentic-ai-guide-zh / Awesome-AgenticLLM-RL-Papers）扩展改编；SimPO（NeurIPS 2024）、ORPO（EMNLP 2024）、IPO（AISTATS 2024）、KTO（ICML 2024）及 Hugging Face TRL 源码核实（见参考）",
+      "file": "llm-0041-simpo-orpo-kto-ipo-preference-optimization.md",
+      "language": "zh",
+      "updated": "2026-11-13",
+      "answers_count": 1
     }
   ]
 }

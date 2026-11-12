@@ -1554,6 +1554,17 @@
       "images": 0
     },
     {
+      "id": "llm-0041",
+      "file": "llm-0041-simpo-orpo-kto-ipo-preference-optimization.html",
+      "source": "questions/llm-0041-simpo-orpo-kto-ipo-preference-optimization.md",
+      "source_sha256": "6d8c80f564f5c7ac2aac2df6e4a703bafbd8b53068e3dc5814064fef1f7de103",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
