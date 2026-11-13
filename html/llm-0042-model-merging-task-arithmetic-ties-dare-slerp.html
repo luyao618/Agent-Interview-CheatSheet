@@ -1,0 +1,974 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。大模型无训练权重合并（Task Arithmetic、TIES-Merging、DARE 与 SLERP）是如何通过任务向量算术、符号冲突消解、随机稀疏重缩放与超球面测地线插值实现多能力融合的？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0042-model-merging-task-arithmetic-ties-dare-slerp.md">
+  <meta name="source-sha256" content="4784e37722512014e3d9f4a453620ca063b234f54a44ad2444622ebcf9cbc3ee">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>大模型无训练权重合并（Task Arithmetic、TIES-Merging、DARE 与 SLERP）是如何通过任务向量算术、符号冲突消解、随机稀疏重缩放与超球面测地线插值实现多能力融合的？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0042</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title">大模型无训练权重合并（Task Arithmetic、TIES-Merging、DARE 与 SLERP）是如何通过任务向量算术、符号冲突消解、随机稀疏重缩放与超球面测地线插值实现多能力融合的？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>在多任务大模型迭代与开源后训练（Post-Training）流水线中，团队往往基于同一个预训练底座模型（Base Model, $\theta_{\text{pre}}$）微调出了多个领域专家模型或 LoRA 适配器（例如数学推理模型 $\theta_{\text{math}}$、代码生成模型 $\theta_{\text{code}}$、人类偏好对齐模型 $\theta_{\text{chat}}$）。如果将所有数据混合重新做联合多任务微调（Joint Multi-Task Training），不仅训练算力成本高昂，还常受限于上游闭源微调数据集不可得；而如果采用多模型集成（Ensembling），推理显存与延迟又会随模型数量线性倍增。**模型合并（Model Merging / Weight Fusion）**允许在不进行任何梯度更新、甚至无需训练数据的情况下，直接在权重空间（Weight Space）将多个同源微调模型融合为单一模型，并在 <code>arcee-ai/mergekit</code> 与 Hugging Face <code>peft</code> 中成为工业界标准范式。</p>
+<p>请深入剖析以下三个核心问题：</p>
+<ol>
+<li><strong>线性模式连通性与任务向量算术及干扰瓶颈（Task Arithmetic vs TIES-Merging）</strong>：为什么只有源自**同一底座检查点（Homologous Base Checkpoint）**的微调模型才能在权重空间直接相加或平均，而将两个独立随机初始化的模型权重求平均会彻底失效？**Task Arithmetic（任务向量算术）**是如何通过定义任务向量 $\tau_t = \theta_t - \theta_{\text{pre}}$ 实现技能叠加（Addition）与有害能力擦除（Negation）的？当合并多个任务向量时，为什么朴素线性加权会遭遇严重的平庸化退化？**TIES-Merging（Trim, Elect Sign, and Merge）**是如何通过“幅值剪枝（Trim）$\to$ 主导符号选举（Elect Sign）$\to$ 不相交均值合并（Disjoint Merge）”三步法精确消除冗余噪声与正负符号冲突的？</li>
+<li><strong>极度稀疏重缩放与无偏期望保持（DARE 与 DELLA 的数学机制）</strong>：为什么微调产生的参数增量（Delta Weights）可以被随机丢弃 $90%$ 甚至 $99%$ 而不损失模型能力？**DARE（Drop And REscale）**是如何通过伯努利随机掩码与 $\frac{1}{1-p}$ 重缩放因子，在大幅削减多模型参数碰撞率的同时，严格保证线性层前向输出期望无偏（$\mathbb{E}[\tilde{\tau} x] = \tau x$）的？针对随机丢弃可能误杀极少数高幅值关键参数的缺陷，**DELLA（Drop and rEscale via MagPrune）**是如何通过基于幅值排名的自适应丢弃概率优化 DARE 的？在 <code>mergekit</code> 与 <code>peft</code> 中，<code>dare_linear</code> 与 <code>dare_ties</code> 的计算链路有何本质区别？</li>
+<li><strong>超球面测地线插值与范数保持（SLERP vs LERP 线性插值）</strong>：在融合两个全量微调模型时，为什么标准线性插值（LERP / Model Soups，$\theta_{\text{LERP}} = (1-t)\theta_0 + t\theta_1$）会在夹角较大时导致中间点权重范数坍缩（Norm Shrinkage）并弱化深层激活信号？**球面线性插值（SLERP, Spherical Linear Interpolation）**是如何沿着超球面大圆测地线（Geodesic）保持几何模长恒定过渡的？请给出 SLERP 的闭式三角系数推导，并说明工程源码（如 <code>mergekit</code> 的 <code>slerp.py</code>）中如何处理两向量近似共线（$\cos \Omega \to 1$）时的除零奇点与数值下溢边界？</li>
+</ol>
+<p>本题由公开面试题/系统设计整理扩展改编，不是已核实的企业真题；不采信脱离具体条件的性能收益承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-11-14</span></p><div class="prose"><p><strong>大模型无训练权重合并的物理基石是同源微调模型在损失曲面上的线性模式连通性（Linear Mode Connectivity），而算法演进的核心主线则是消除多任务参数增量之间的结构性干扰（Parameter Interference）：（1）源自同一预训练底座 $\theta_{\text{pre}}$ 的微调模型位于同一个低损失盆地（Low-Loss Basin）内且共享神经元排列对称性；Task Arithmetic 将微调增量抽象为任务向量 $\tau_t = \theta_t - \theta_{\text{pre}}$ 并执行线性组合 $\theta_{\text{new}} = \theta_{\text{pre}} + \lambda \sum_t w_t \tau_t$，但多模型合并时会因“小幅值冗余参数叠加”与“同坐标正负符号相消”而退化；TIES-Merging 通过仅保留各任务向量前 $k%$ 最大幅值（Trim）、按总幅值或频次选举每个坐标的主导符号 $\gamma_j = \text{sgn}(\sum_t \hat{\tau}_t^{(j)})$（Elect Sign），并仅对符号与 $\gamma_j$ 一致的非零分量求不相交均值（Disjoint Merge），彻底阻断了反向梯度抵消；（2）DARE 发现微调增量 $\tau_t$ 具有极高的过参数化冗余度，通过以概率 $p \in [0.9, 0.99]$ 随机置零增量并以 $\frac{1}{1-p}$ 放大幸存参数（$\tilde{\tau}_t = \frac{m_t \odot \tau_t}{1-p}$，$m_t \sim \text{Bernoulli}(1-p)$），使单层激活增量期望严格满足 $\mathbb{E}[\tilde{\tau}_t x] = \tau_t x$，同时将 $M$ 个模型的非零参数重叠碰撞概率压降至 $(1-p)^M$；DELLA 进一步将均匀随机丢弃改造为按幅值升序排名分配保留概率 $q_i = (q - \epsilon) + \frac{\text{rank}(|\tau^{(i)}|)-1}{N-1}\cdot 2\epsilon$，兼顾了高幅值特征保护与随机无偏性；（3）针对双模型融合中线性插值 LERP 使中间权重范数收缩为 $|\theta|\cos(\Omega/2)$ 的缺陷，SLERP 通过弧长参数化公式 $\text{SLERP}(\theta_0, \theta_1; t) = \frac{\sin((1-t)\Omega)}{\sin\Omega}\theta_0 + \frac{\sin(t\Omega)}{\sin\Omega}\theta_1$ 沿超球面测地线插值以保持权重流形范数不变，并在 $|\cos\Omega| &gt; 0.9995$ 时自动回退至 LERP 消除 $\sin\Omega \to 0$ 的数值奇点。</strong></p>
+<p>在展开数学推导与源码分析前，建议结合题库内已有题目建立完整知识图谱：关于 LoRA 低秩微调的基础矩阵分解 $\Delta W = \frac{\alpha}{r}BA$ 与合并回底座权重的原理，请参阅 <a href="llm-0001-lora-fine-tuning.html">llm-0001</a>；关于 DoRA 幅度-方向解耦、PiSSA 主奇异值初始化与 rsLoRA 秩稳定缩放，请参阅 <a href="llm-0040-dora-pissa-rslora-loraplus-peft.html">llm-0040</a>；关于 DPO、SimPO、ORPO、IPO 与 KTO 等偏好对齐训练阶段如何塑造权重增量，请参阅 <a href="llm-0041-simpo-orpo-kto-ipo-preference-optimization.html">llm-0041</a>；关于通过知识蒸馏（Knowledge Distillation）将多教师能力迁移至单学生模型的有训练替代方案，请参阅 <a href="llm-0015-knowledge-distillation-tradeoffs.html">llm-0015</a>；关于在业务落地中如何权衡 Prompt、RAG 与微调的工程边界，请参阅 <a href="llm-0014-prompt-rag-finetuning-choice.html">llm-0014</a>。</p>
+<hr />
+<h3 id="1-线性模式连通性task-arithmetic-与-ties-merging-符号冲突消解">1. 线性模式连通性、Task Arithmetic 与 TIES-Merging 符号冲突消解</h3>
+<h4 id="1为什么只有同源底座模型homologous-models才能直接做权重算术">（1）为什么只有“同源底座模型（Homologous Models）”才能直接做权重算术？</h4>
+<p>神经网络的损失曲面是高度非凸的，且隐层神经元具有<strong>排列对称性（Permutation Symmetry）</strong>：在 Transformer 的 FFN 或多头注意力层中，任意置换两个中间神经元的排列顺序（同时置换输入投影矩阵的行与输出投影矩阵的列），网络的前向函数完全不变，但参数张量在欧氏空间中的坐标却天差地别。</p>
+<ul>
+<li><strong>跨底座合并必然失败</strong>：如果两个模型 $\theta_A, \theta_B$ 是从不同随机种子独立预训练出来的（或者一个是 Llama-3、另一个是 Qwen-2.5），它们的同一参数坐标 $(i, j)$ 编码的是毫不相关的特征子空间；直接求平均 $\frac{1}{2}(\theta_A + \theta_B)$ 会跨越损失曲面上的高耸能量壁垒（High-Loss Energy Barrier），导致合并后的模型彻底输出乱码；</li>
+<li><strong>同源微调的线性模式连通性（Linear Mode Connectivity, Frankle et al., 2020; Model Soups, Wortsman et al., ICML 2022）</strong>：当多个专家模型 $\theta_1, \dots, \theta_M$ 均从<strong>同一个预训练检查点 $\theta_{\text{pre}}$</strong> 出发进行微调时，由于预训练已经固定了特征坐标系的排列对称性，且微调学习率较小，各专家模型仍然停留在以 $\theta_{\text{pre}}$ 为中心的同一个平坦低损失盆地（Low-Loss Basin）内。因此，在该盆地内部对增量做线性或凸组合，依然落在低损失流形上。</li>
+</ul>
+<h4 id="2task-arithmetic任务向量算术与两大参数干扰源">（2）Task Arithmetic（任务向量算术）与两大参数干扰源</h4>
+<p><strong>Task Arithmetic</strong>（Ilharco et al., ICLR 2023）提出将第 $t$ 个任务微调前后的权重差定义为<strong>任务向量（Task Vector / Delta Weight）</strong>：</p>
+<p>$$\tau_t = \theta_t - \theta_{\text{pre}} \in \mathbb{R}^d, \qquad (\text{若为 LoRA 适配器，则 } \tau_t = \frac{\alpha_t}{r_t} B_t A_t)$$</p>
+<p>通过在任务向量空间执行加减法，可以实现无需训练的模型编辑：</p>
+<ul>
+<li><strong>多技能叠加（Multi-Task Addition）</strong>：$\theta_{\text{merged}} = \theta_{\text{pre}} + \lambda \sum_{t=1}^M w_t \tau_t$（例如合并数学 $\tau_{\text{math}}$ 与代码 $\tau_{\text{code}}$）；</li>
+<li><strong>能力擦除 / 机器遗忘（Task Negation / Unlearning）</strong>：$\theta_{\text{unlearn}} = \theta_{\text{pre}} - \lambda \tau_{\text{toxic}}$（先在有害数据或隐私数据上微调出 $\tau_{\text{toxic}}$，再从底座中<strong>减去</strong>该向量，即可定向抹除有害行为而保持通用能力）；</li>
+<li><strong>类比推理（Task Analogy）</strong>：$\hat{\theta}_D = \theta_C + (\theta_B - \theta_A)$。</li>
+</ul>
+<p>然而，<strong>TIES-Merging</strong>（Yadav et al., NeurIPS 2023）通过深入剖析发现，当用朴素 Task Arithmetic 合并 $M \ge 3$ 个模型时，性能会急剧衰减，根源在于两类致命的<strong>参数干扰（Parameter Interference）</strong>：</p>
+<ol>
+<li><strong>冗余小幅值参数的噪声累积（Interference from Redundant Parameters）</strong>：在单任务微调中，超过 $80%$ 的参数坐标变化量 $|\tau_t^{(j)}|$ 极其微弱，对该任务本身毫无贡献；但在多模型相加时，十几个模型的微弱漂移叠加在原本对某个特定任务至关重要的坐标 $j$ 上，就会污染该关键参数；</li>
+<li><strong>同坐标正负符号冲突相消（Interference from Sign Disagreement）</strong>：对于第 $j$ 个参数坐标，模型 1 要求大幅正向更新（如 $\tau_1^{(j)} = +0.70$），模型 2 也要求正向更新（$\tau_2^{(j)} = +0.50$），而模型 3 却要求反向更新（$\tau_3^{(j)} = -0.90$）。朴素求和得到 $+0.70 + 0.50 - 0.90 = +0.30$（再除以 $3$ 仅剩 $+0.10$），正负增量相互抵消，使得合并后的参数退化回接近底座 $\theta_{\text{pre}}$ 的平庸值，导致所有任务同时掉点！</li>
+</ol>
+<h4 id="3ties-merging-的三步走算法与-peft--mergekit-源码核实">（3）TIES-Merging 的三步走算法与 <code>peft</code> / <code>mergekit</code> 源码核实</h4>
+<p>对照 Hugging Face <code>peft</code> 官方源码（<code>src/peft/utils/merge_utils.py::ties</code>，第 185–214 行）与 <code>arcee-ai/mergekit</code>（<code>mergekit/merge_methods/generalized_task_arithmetic.py</code>，第 91–172 行），TIES-Merging 对每个参数张量的 $M$ 个任务向量 ${\tau_1, \dots, \tau_M}$ 依次执行以下三步：</p>
+<ol>
+<li><strong>Step 1 — Trim（按幅值剪枝冗余参数）</strong>：
+给定保留密度超参 $k \in (0, 1]$（源码中的 <code>density</code>，典型值 $0.2 \sim 0.75$），对每个任务向量 $\tau_t$ 独立保留绝对值最大的前 $\lfloor k \cdot d \rfloor$ 个坐标，将其余 $1 - k$ 比例的小幅值漂移直接归零，得到稀疏修剪向量 $\hat{\tau}_t$（对应 <code>peft</code> 的 <code>magnitude_based_pruning</code> 与 <code>mergekit</code> 的 <code>sparsify(..., method=&quot;magnitude&quot;)</code>）。</li>
+<li><strong>Step 2 — Elect Sign（跨模型主导符号选举）</strong>：
+对于每个参数坐标 $j \in {1, \dots, d}$，计算所有模型在该坐标上的主导符号 $\gamma_j \in {+1, -1}$。源码中支持两种选举策略（<code>peft</code> 中的 <code>majority_sign_method=&quot;total&quot; | &quot;frequency&quot;</code>，对应 <code>mergekit</code> 的 <code>ConsensusMethod.sum | count</code>）：
+<ul>
+<li><strong>按总幅值选举（<code>total</code> / <code>sum</code>，TIES 原论文默认）</strong>：由正负双方累积幅值绝对值更大的一方胜出：
+$$\gamma_j^{\text{total}} = \text{sgn}!\left( \sum_{t=1}^M w_t \hat{\tau}<em>t^{(j)} \right) = \begin{cases} +1, &amp; \text{if } \sum</em>{t=1}^M w_t \hat{\tau}_t^{(j)} \ge 0 \ -1, &amp; \text{otherwise} \end{cases}$$</li>
+<li><strong>按投票频次选举（<code>frequency</code> / <code>count</code>）</strong>：统计非零正号与负号的模型个数：
+$$\gamma_j^{\text{freq}} = \text{sgn}!\left( \sum_{t=1}^M \text{sgn}(\hat{\tau}_t^{(j)}) \right)$$</li>
+</ul>
+</li>
+<li><strong>Step 3 — Disjoint Merge（不相交同号子集聚合）</strong>：
+在坐标 $j$ 上，构造二值共识掩码 $M_t^{(j)} = \mathbb{I}!\left(\text{sgn}(\hat{\tau}_t^{(j)}) == \gamma_j\right)$，<strong>彻底剔除所有符号与主导符号相反的模型分量（以及已归零的分量）</strong>，仅对方向一致的模型子集 $\mathcal{A}_j = {t \mid M_t^{(j)} = 1}$ 求加权平均：
+<ul>
+<li>在 <code>peft</code>（<code>disjoint_merge</code>，第 139–141 行）中，按保留的模型个数 $|\mathcal{A}<em>j|$ 归一化：
+$$\tau</em>{\text{TIES}}^{(j)} = \frac{\sum_{t=1}^M M_t^{(j)} \cdot w_t \hat{\tau}<em>t^{(j)}}{\max!\left(1, \sum</em>{t=1}^M M_t^{(j)}\right)}$$</li>
+<li>在 <code>mergekit</code>（<code>GeneralizedTaskArithmeticMerge.merge_group</code>，第 133–145 行，当开启 <code>normalize=True</code> 时）中，按保留的权重之和归一化：
+$$\tau_{\text{TIES}}^{(j)} = \lambda \cdot \frac{\sum_{t=1}^M M_t^{(j)} \cdot w_t \hat{\tau}<em>t^{(j)}}{\sum</em>{t=1}^M M_t^{(j)} \cdot w_t}$$</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h3 id="2-dare-与-della极度稀疏随机丢弃无偏重缩放与幅值排名采样">2. DARE 与 DELLA：极度稀疏随机丢弃、无偏重缩放与幅值排名采样</h3>
+<h4 id="1daredrop-and-rescale为什么随机扔掉-90sim-99-的微调增量还能保持能力">（1）DARE（Drop And REscale）：为什么随机扔掉 $90%\sim 99%$ 的微调增量还能保持能力？</h4>
+<p><strong>DARE</strong>（Yu et al., <em>&quot;Language Models are Super Mario: Absorbing Abilities from Homologous Models as a Free Lunch&quot;</em>, ICML 2024）揭示了一个反直觉的科学发现：全量微调（SFT）产生的参数增量 $\tau_t = \theta_t - \theta_{\text{pre}}$ 具有极端的冗余性（数值范围通常在 $10^{-3}$ 量级以内），而与 TIES 按幅值确定性剪枝不同，<strong>DARE 并不是一种合并算法，而是一种极其强大的合并前预处理（Preprocessing）机制</strong>。</p>
+<p>给定丢弃率 $p \in (0, 1)$（或保留密度 $q = \text{density} = 1 - p$，例如 $p = 0.9 \implies q = 0.1$），DARE 对任务向量 $\tau_t$ 执行两步操作（对照 <code>peft/utils/merge_utils.py::random_pruning</code> 第 56–72 行）：</p>
+<ol>
+<li><strong>Drop（伯努利随机掩码）</strong>：独立同分布地从伯努利分布采样掩码 $m_t^{(j)} \sim \text{Bernoulli}(1 - p)$，将比例为 $p$ 的增量随机置为 $0$：
+$$\check{\tau}_t = m_t \odot \tau_t$$</li>
+<li><strong>REscale（除以保留率 $1 - p$ 恢复期望尺度）</strong>：将幸存的 $1 - p$ 比例非零参数放大 $\frac{1}{1 - p}$ 倍：
+$$\tilde{\tau}_t = \frac{m_t \odot \tau_t}{1 - p} = \frac{m_t \odot \tau_t}{\text{density}}$$</li>
+</ol>
+<p><strong>为什么除以 $1 - p$ 能零成本恢复原始微调模型的能力？（前向激活无偏性证明）</strong>：
+考虑某个线性层权重 $W_{\text{SFT}} = W_{\text{pre}} + \Delta W$，输入激活向量为 $x \in \mathbb{R}^{d_{\text{in}}}$。原始微调增量对该层输出的第 $i$ 个维度的贡献为：</p>
+<p>$$\Delta y_i = \sum_{j=1}^{d_{\text{in}}} \Delta W_{i, j} x_j$$</p>
+<p>经过 DARE 处理后，由于 $\mathbb{E}[m_{i, j}] = 1 - p$，稀疏重缩放后的输出增量期望为：</p>
+<p>$$\mathbb{E}!\left[\Delta \tilde{y}<em>i\right] = \sum</em>{j=1}^{d_{\text{in}}} \mathbb{E}!\left[\frac{m_{i, j}}{1 - p}\right] \Delta W_{i, j} x_j = \sum_{j=1}^{d_{\text{in}}} \frac{1 - p}{1 - p} \Delta W_{i, j} x_j = \Delta y_i$$</p>
+<p>且由于大语言模型的隐藏层维度 $d_{\text{in}}$ 极大（如 $4096$ 或 $8192$），根据大数定律，数千个独立随机项加权求和的相对方差随 $\frac{1}{d_{\text{in}}(1-p)}$ 迅速收敛，使得单层输出的实际值高度集中于精确期望 $\Delta y_i$ 附近！与此同时，当合并 $M$ 个经过 DARE 稀疏化的模型时，任意坐标上两个模型同时保留非零参数的碰撞概率从 $1$ 暴降至 $(1-p)^2$（例如 $p=0.9$ 时碰撞率仅为 $1%$），从根本上化解了多任务权重的干扰。</p>
+<blockquote>
+<p><strong>源码细节对比（<code>peft</code> 解析缩放 vs <code>mergekit</code> 经验范数缩放）</strong>：
+在 Hugging Face <code>peft</code>（<code>random_pruning</code> 第 71 行）中，直接采用理论解析缩放 <code>pruned_tensor = pruned_tensor / density</code>；而在 <code>arcee-ai/mergekit</code>（<code>mergekit/sparsify.py::rescaled_masked_tensor</code> 第 40–53 行）中，为了消除小尺寸张量上的采样方差，当 <code>rescale=True</code> 时采用精确的经验 $L_1$ 范数匹配：<code>masked * (tensor.abs().sum() / masked.abs().sum())</code>（在大张量极限下 $\frac{|\tau|_1}{|m \odot \tau|_1} \to \frac{1}{1-p}$）。</p>
+</blockquote>
+<h4 id="2delladrop-and-rescale-via-magprune幅值排名自适应采样">（2）DELLA（Drop and rEscale via MagPrune）：幅值排名自适应采样</h4>
+<p>尽管 DARE 在大多数密度下表现出色，但当保留率极低（如 $\text{density} = 0.05$）时，完全均匀的随机采样仍有 $95%$ 的概率把微调中极少数幅度最大的核心特征权重误杀归零；反之，如果像 TIES 那样只保留 top-$k$ 最大幅值，又会破坏随机采样的无偏期望性质。</p>
+<p><strong>DELLA</strong>（Deep et al., 2024）在 <code>mergekit</code>（<code>mergekit/sparsify.py::della_magprune</code>，第 137–175 行）中将两者完美结合：<strong>按参数绝对值在当前行内的升序排名（Rank）线性分配保留概率</strong>。
+设某行有 $N$ 个参数，将 $|\tau_{i, j}|$ 按从小到大排序得到名次 $r_{i, j} \in {1, 2, \dots, N}$，归一化排名为 $\tilde{r}<em>{i, j} = \frac{r</em>{i, j} - 1}{N - 1} \in [0, 1]$。给定目标平均密度 $q = \text{density}$ 与摄动半径 $\epsilon$（需满足 $0 &lt; q - \epsilon &lt; q + \epsilon &lt; 1$），每个元素的保留概率为：</p>
+<p>$$q_{i, j} = (q - \epsilon) + 2\epsilon \cdot \tilde{r}_{i, j} \in [q - \epsilon, ; q + \epsilon]$$</p>
+<p>可以看到，全行平均保留率恰好等于 $\frac{1}{N}\sum_j q_{i, j} = q$，但幅值最大的参数拥有最高保留概率 $q + \epsilon$，幅值最小的参数仅以 $q - \epsilon$ 概率保留，采样后再通过范数重缩放恢复整体尺度。</p>
+<h4 id="3dare_linear-与-dare_ties-的流水线组合">（3）<code>dare_linear</code> 与 <code>dare_ties</code> 的流水线组合</h4>
+<p>在 <code>peft</code> 与 <code>mergekit</code> 中，DARE 作为前置稀疏器可与不同后端融合器自由正交组合：</p>
+<ul>
+<li><strong><code>dare_linear</code>（DARE + Task Arithmetic）</strong>：对各任务向量执行 $\text{DARE}(\tau_t, \text{density}, \text{rescale}=\text{True})$ 后，直接做加权线性求和 $\sum_t w_t \tilde{\tau}_t$；</li>
+<li><strong><code>dare_ties</code>（DARE + TIES Consensus）</strong>：先用 DARE 随机稀疏并重缩放替代 TIES 的确定性幅值剪枝，随后继续执行 TIES 的主导符号选举（Elect Sign）与不相交同号合并（Disjoint Merge）。</li>
+</ul>
+<hr />
+<h3 id="3-slerp球面线性插值超球面测地线范数坍缩防治与共线奇点保护">3. SLERP（球面线性插值）：超球面测地线、范数坍缩防治与共线奇点保护</h3>
+<h4 id="1为什么在双模型合并中线性插值lerp会导致权重范数坍缩norm-shrinkage">（1）为什么在双模型合并中，线性插值（LERP）会导致“权重范数坍缩（Norm Shrinkage）”？</h4>
+<p>假设我们要以比例 $t \in [0, 1]$ 融合两个同源全量模型权重向量 $v_0, v_1 \in \mathbb{R}^d$。在高维参数空间中，同源微调后的权重行向量通常具有极其相近的 $L_2$ 模长 $|v_0|_2 \approx |v_1|_2 = R$，但方向存在夹角 $\Omega \in (0, \pi)$（即 $\cos\Omega = \frac{v_0 \cdot v_1}{|v_0|_2 |v_1|_2}$）。</p>
+<p>如果使用标准的<strong>线性插值（LERP / Linear Merge）</strong>：</p>
+<p>$$v_{\text{LERP}}(t) = (1 - t) v_0 + t v_1$$</p>
+<p>计算其在中点 $t = 0.5$ 处的欧氏范数平方：</p>
+<p>$$\left| v_{\text{LERP}}(0.5) \right|_2^2 = \frac{1}{4}|v_0|_2^2 + \frac{1}{4}|v_1|_2^2 + \frac{1}{2}|v_0|_2 |v_1|_2 \cos\Omega = \frac{R^2}{2}(1 + \cos\Omega) = R^2 \cos^2!\left(\frac{\Omega}{2}\right)$$</p>
+<p>$$\implies \left| v_{\text{LERP}}(0.5) \right|_2 = R \cos!\left(\frac{\Omega}{2}\right) &lt; R \quad (\forall \Omega \in (0, \pi))$$</p>
+<p>例如，当两个微调方向正交（$\Omega = 90^\circ, \cos\Omega = 0$）时，中点权重的模长直接缩水为原来的 $\cos 45^\circ = \frac{\sqrt{2}}{2} \approx 70.71%$！在未经过后续重训练的深层 Transformer 中，权重矩阵范数的系统性萎缩会改变 Attention Logits 的有效温度与 RMSNorm 前的特征尺度分布。</p>
+<h4 id="2slerp-的球面测地线公式与-mergekitslerppy-源码级工程边界">（2）SLERP 的球面测地线公式与 <code>mergekit/slerp.py</code> 源码级工程边界</h4>
+<p><strong>球面线性插值（SLERP，Shoemake, SIGGRAPH 1985）</strong> 不沿穿过球体内部的弦（Chord）走直线，而是沿着连接 $v_0$ 与 $v_1$ 的**超球面大圆测地线（Great-Circle Geodesic）**以恒定角速度 $\Omega$ 旋转。</p>
+<p>设插值点旋转角度为 $t\Omega$，在由 $v_0, v_1$ 张成的二维平面内作斜交分解，可得唯一保范闭式解：</p>
+<p>$$\text{SLERP}(v_0, v_1; t) = \frac{\sin!\big((1 - t)\Omega\big)}{\sin\Omega} v_0 + \frac{\sin(t\Omega)}{\sin\Omega} v_1, \qquad \Omega = \arccos!\left( \frac{v_0 \cdot v_1}{|v_0|_2 |v_1|_2} \right)$$</p>
+<p>验证其模长（当 $|v_0|_2 = |v_1|_2 = R$ 时）：</p>
+<p>$$\left| \text{SLERP}(v_0, v_1; t) \right|_2^2 = \frac{R^2}{\sin^2\Omega} \left[ \sin^2((1-t)\Omega) + \sin^2(t\Omega) + 2\sin((1-t)\Omega)\sin(t\Omega)\cos\Omega \right] = R^2$$</p>
+<p>无论 $t \in [0, 1]$ 取何值，SLERP 插值后的权重向量模长恒等于 $R$！</p>
+<p>对照 <code>arcee-ai/mergekit</code> 官方源码（<code>mergekit/merge_methods/slerp.py::slerp</code>，第 20–78 行），工业级实现包含三项关键数值工程设计：</p>
+<ol>
+<li><strong>按输出行（Per-Row / Leading Axis）独立做球面插值与分块防溢出</strong>：
+源码第 35–36 行执行 <code>a = v0.reshape(v0.shape[0], -1)</code>，并按 <code>_CHUNK_ELEMENTS = 1024 * 1024</code> 分块计算范数，且<strong>先将分块除以总范数 <code>norm_a</code> 再做点积</strong>（第 58–61 行），彻底杜绝了半精度/单精度下大张量原始点积的上溢（Overflow）；</li>
+<li><strong>共线与反平行奇点的线性回退保护（<code>dot_threshold = 0.9995</code>）</strong>：
+当两个模型的某层权重几乎未变或完全共线时，点积 $|\cos\Omega| \to 1 \implies \Omega \to 0 \text{ 或 } \pi \implies \sin\Omega \to 0$，分母出现 $0/0$ 数值奇点！源码第 64–70 行设定阈值 <code>dot_threshold = 0.9995</code>（对应夹角约 $1.81^\circ$）：
+$$\text{coef}_0, \text{coef}_1 = \begin{cases} 1 - t, ;; t &amp; \text{if } |\cos\Omega| &gt; 0.9995 ;; (\text{回退为 LERP}) \ \dfrac{\sin((1-t)\Omega)}{\sin\Omega}, ;; \dfrac{\sin(t\Omega)}{\sin\Omega} &amp; \text{otherwise} \end{cases}$$</li>
+<li><strong>仅限恰好 2 个同构模型</strong>：SLERP 定义在二维大圆弧上，源码 <code>InputContract(base=BasePolicy.REQUIRED, min_inputs=2, max_inputs=2)</code> 严格限制每次只能融合两个模型（若需融合多个模型，需采用层次化二叉树 SLERP 或改用 NuSLERP / Karcher Mean / TIES）。</li>
+</ol>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">大模型无训练权重合并 (Model Merging) 主流算法演进与工程选型全景:
+
+  [ 前置硬性约束: 待合并模型是否微调自同一个 Base Checkpoint (满足线性模式连通性)? ]
+         │
+         ├── 否 (异构架构或不同预训练底座) ──► 不可直接加权! 需做 Git Re-Basin 排列对齐 / FuseLLM 蒸馏 / Passthrough 拼接
+         │
+         └── 是 (同源 Homologous Models) ──► [ 待合并的模型数量 M 是多少? ]
+                                                    │
+                    ┌───────────────────────────────┴───────────────────────────────┐
+                    ▼ (M = 2: 双模型精细融合, 支持逐层梯度曲线 t)                     ▼ (M &gt;= 3: 多专家技能合成或负面能力擦除)
+      ┌───────────────────────────────────┐                           ┌───────────────────────────────────┐
+      │ SLERP (球面线性插值)               │                           │ 提取任务向量 τ_t = θ_t - θ_base    │
+      │ • 沿超球面大圆测地线恒定角速度旋转│                           └─────────────────┬─────────────────┘
+      │ • 消除 LERP 的 cos(Ω/2) 范数坍缩  │                                             │
+      │ • |cos Ω| &gt; 0.9995 自动回退 LERP  │                       [ 步骤 A: 稀疏化与重缩放预处理 (Sparsify) ]
+      └───────────────────────────────────┘                                             │
+                                                          ┌─────────────────────────────┼─────────────────────────────┐
+                                                          ▼ (无稀疏化)                   ▼ (确定性幅值剪枝)             ▼ (随机稀疏 + 期望恢复)
+                                                 ┌─────────────────┐           ┌─────────────────┐           ┌─────────────────────────┐
+                                                 │ Raw Task Vector │           │ Magnitude Prune │           │ DARE / DELLA            │
+                                                 │ 保留 100% 参数  │           │ 仅留 Top-k% 幅值│           │ • DARE: Bernoulli(1-p)  │
+                                                 └────────┬────────┘           └────────┬────────┘           │   并乘 1/(1-p) 保期望   │
+                                                          │                             │                    │ • DELLA: 按幅值排名赋概率│
+                                                          └──────────────┬──────────────┴────────────────────┴────────────┬────────────┘
+                                                                         │                                                │
+                                                                         ▼                                                ▼
+                                                    [ 步骤 B: 跨模型符号冲突消解与聚合 (Consensus &amp; Aggregation) ]
+                                                                         │
+                                           ┌─────────────────────────────┴─────────────────────────────┐
+                                           ▼ (直接加权线性求和: 无符号过滤)                             ▼ (主导符号选举 + 不相交同号平均)
+                                ┌───────────────────────────┐                               ┌───────────────────────────┐
+                                │ • Task Arithmetic (无剪枝)│                               │ • TIES-Merging (幅值剪枝) │
+                                │ • DARE-Linear (随机稀疏后)│                               │ • DARE-TIES / DELLA-TIES  │
+                                └───────────────────────────┘                               └───────────────────────────┘
+</code></pre>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align:left">合并算法 / 范式</th>
+<th style="text-align:center">模型数量限制</th>
+<th style="text-align:center">是否需要 $\theta_{\text{base}}$</th>
+<th style="text-align:left">稀疏化与重缩放机制</th>
+<th style="text-align:left">符号冲突消解机制</th>
+<th style="text-align:left">核心数学公式（增量或权重）</th>
+<th style="text-align:left">最佳工程适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Linear / Model Soups</strong> (ICML 2022)</td>
+<td style="text-align:center">$M \ge 2$</td>
+<td style="text-align:center">否</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">无（直接加权平均）</td>
+<td style="text-align:left">$\theta_{\text{new}} = \sum_{t=1}^M w_t \theta_t ;; (\sum w_t = 1)$</td>
+<td style="text-align:left">同一任务不同超参微调 Checkpoint 平均以提升鲁棒性</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>SLERP</strong> (SIGGRAPH 1985 / MergeKit)</td>
+<td style="text-align:center"><strong>严格 $M = 2$</strong></td>
+<td style="text-align:center">否（将其中之一视作端点）</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">无（测地线旋转）</td>
+<td style="text-align:left">$\frac{\sin((1-t)\Omega)}{\sin\Omega}\theta_0 + \frac{\sin(t\Omega)}{\sin\Omega}\theta_1$</td>
+<td style="text-align:left">两个强力同源全量模型的平滑融合（支持按层配置 $t$ 曲线）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Task Arithmetic</strong> (ICLR 2023)</td>
+<td style="text-align:center">$M \ge 1$</td>
+<td style="text-align:center"><strong>是</strong></td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">无（正负直接抵消）</td>
+<td style="text-align:left">$\theta_{\text{base}} + \lambda \sum_{t=1}^M w_t (\theta_t - \theta_{\text{base}})$</td>
+<td style="text-align:left">少量正交任务叠加，或通过负权重 $-w_t$ 执行有害能力擦除</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>TIES-Merging</strong> (NeurIPS 2023)</td>
+<td style="text-align:center">$M \ge 2$</td>
+<td style="text-align:center"><strong>是</strong></td>
+<td style="text-align:left">Top-$k%$ 幅值剪枝（通常不重缩放）</td>
+<td style="text-align:left"><strong>是</strong>（Elect Sign + Disjoint Merge）</td>
+<td style="text-align:left">$\theta_{\text{base}} + \lambda \frac{\sum_{t \in \mathcal{A}_j} w_t \hat{\tau}_t^{(j)}}{</td>
+<td style="text-align:left">\mathcal{A}_j</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>DARE-Linear / DARE-TIES</strong> (ICML 2024)</td>
+<td style="text-align:center">$M \ge 2$</td>
+<td style="text-align:center"><strong>是</strong></td>
+<td style="text-align:left">随机丢弃 $p$ 并放大 $\frac{1}{1-p}$（或 $L_1$ 保范）</td>
+<td style="text-align:left"><code>dare_linear</code> 否 / <code>dare_ties</code> <strong>是</strong></td>
+<td style="text-align:left">$\tilde{\tau}_t = \frac{m_t \odot \tau_t}{1-p}, ;; m_t \sim \text{Bern}(1-p)$</td>
+<td style="text-align:left">增量冗余度极高的 SFT 模型低碰撞融合（常取 $\text{density} \in [0.1, 0.5]$）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>DELLA</strong> (2024 / MergeKit)</td>
+<td style="text-align:center">$M \ge 2$</td>
+<td style="text-align:center"><strong>是</strong></td>
+<td style="text-align:left">幅值升序排名概率 $q_i = q - \epsilon + 2\epsilon\tilde{r}_i$ + 保范</td>
+<td style="text-align:left">常配合 TIES 共识掩码</td>
+<td style="text-align:left">$P(\text{keep } \tau^{(i)}) \propto \text{rank}(</td>
+<td style="text-align:left">\tau^{(i)}</td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h3 id="4-python-3-标准库实现ties-符号消解daredella-期望保持与-slerp-仿真">4. Python 3 标准库实现：TIES 符号消解、DARE/DELLA 期望保持与 SLERP 仿真</h3>
+<p>下面的零依赖 Python 3 标准库代码严格对齐 Hugging Face <code>peft</code>（<code>src/peft/utils/merge_utils.py</code>）与 <code>arcee-ai/mergekit</code>（<code>slerp.py</code>、<code>generalized_task_arithmetic.py</code>、<code>sparsify.py</code>）官方源码，验证了：</p>
+<ol>
+<li><strong>Task Arithmetic 符号抵消 vs TIES-Merging 三步消解</strong>：构造 3 个模型在 4 个参数坐标上的任务向量（包含微弱噪声与剧烈正负符号冲突 $+0.70, +0.50, -0.90$），对比朴素求和的信号衰减与 TIES 剪枝、主导符号选举及不相交均值合并后的清晰特征恢复；</li>
+<li><strong>DARE 随机稀疏重缩放 $\frac{1}{1-p}$ 的前向内积无偏期望与 DELLA 排名概率</strong>：在 $\text{density}=0.2$（丢弃 $80%$ 参数）下进行蒙特卡洛仿真，验证重缩放后 $\mathbb{E}[\tilde{\tau}\cdot x] \approx \tau \cdot x$，而不重缩放则缩水至 $20%$，并精确复现 <code>mergekit</code> 的 DELLA 排名保留概率；</li>
+<li><strong>SLERP 超球面保范插值 vs LERP 范数坍缩及共线回退保护</strong>：验证两个模长为 $10.0$ 的正交权重向量在 $t=0.5$ 时 LERP 模长坍缩至 $7.0711$ 而 SLERP 严格保持 $10.0000$，以及当 $\cos\Omega &gt; 0.9995$ 时自动触发线性回退。</li>
+</ol>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+import random
+from typing import Dict, List, Literal
+
+
+def magnitude_prune_1d(vec: List[float], density: float) -&gt; List[float]:
+    &quot;&quot;&quot;
+    对齐 huggingface/peft `magnitude_based_pruning` 与 arcee-ai/mergekit `magnitude`:
+    保留绝对值最大的 top-k (k = int(density * N)) 个元素，其余置 0
+    &quot;&quot;&quot;
+    n = len(vec)
+    k = int(density * n)
+    if k &lt;= 0:
+        return [0.0] * n
+    if k &gt;= n:
+        return list(vec)
+    indexed = sorted(range(n), key=lambda i: abs(vec[i]), reverse=True)
+    keep = set(indexed[:k])
+    return [vec[i] if i in keep else 0.0 for i in range(n)]
+
+
+def ties_merge_1d(
+    task_vectors: List[List[float]],
+    weights: List[float],
+    density: float = 0.75,
+    majority_sign_method: Literal[&quot;total&quot;, &quot;frequency&quot;] = &quot;total&quot;,
+    normalize_by_weights: bool = False,
+) -&gt; Dict[str, List[float]]:
+    &quot;&quot;&quot;
+    对齐 huggingface/peft `ties` (normalize_by_weights=False, 按保留模型数均值)
+    与 arcee-ai/mergekit `GeneralizedTaskArithmeticMerge` (normalize_by_weights=True):
+    Step 1 (Trim): 按幅值剪枝保留 top-k%
+    Step 2 (Elect Sign): 计算每个坐标的主导符号 (+1 或 -1)
+    Step 3 (Disjoint Merge): 仅聚合符号与主导符号一致的分量
+    &quot;&quot;&quot;
+    m = len(task_vectors)
+    d = len(task_vectors[0])
+    trimmed = [magnitude_prune_1d(tv, density) for tv in task_vectors]
+
+    effective = [
+        [trimmed[t][j] * (weights[t] if normalize_by_weights else 1.0) for j in range(d)]
+        for t in range(m)
+    ]
+    elected_signs: List[int] = []
+    for j in range(d):
+        if majority_sign_method == &quot;total&quot;:
+            s_val = sum(effective[t][j] for t in range(m))
+        elif majority_sign_method == &quot;frequency&quot;:
+            s_val = sum(
+                (1 if effective[t][j] &gt; 0 else (-1 if effective[t][j] &lt; 0 else 0))
+                for t in range(m)
+            )
+        else:
+            raise ValueError(f&quot;Unknown method: {majority_sign_method}&quot;)
+        elected_signs.append(1 if s_val &gt;= 0 else -1)
+
+    naive_sum = [
+        round(sum(weights[t] * task_vectors[t][j] for t in range(m)), 4)
+        for j in range(d)
+    ]
+
+    merged: List[float] = []
+    for j in range(d):
+        num = 0.0
+        den = 0.0
+        for t in range(m):
+            val = trimmed[t][j]
+            sgn = 1 if val &gt; 0 else (-1 if val &lt; 0 else 0)
+            if sgn == elected_signs[j]:
+                num += weights[t] * val
+                den += weights[t] if normalize_by_weights else 1.0
+        merged.append(
+            round(
+                num / max(den, 1.0)
+                if not normalize_by_weights
+                else (num / den if den != 0 else 0.0),
+                4,
+            )
+        )
+
+    return {
+        &quot;naive_task_arithmetic&quot;: naive_sum,
+        &quot;elected_signs&quot;: elected_signs,
+        &quot;ties_merged&quot;: merged,
+    }
+
+
+def simulate_dare_expectation_and_della(
+    delta: List[float],
+    x_input: List[float],
+    density: float = 0.2,
+    epsilon: float = 0.15,
+    trials: int = 4000,
+    seed: int = 42,
+) -&gt; Dict[str, object]:
+    &quot;&quot;&quot;
+    验证:
+    1. DARE (Yu et al., ICML 2024 &amp; peft `random_pruning`):
+       保留率 q = density = 1 - p, 重缩放 1/q 后前向内积期望无偏, 不重缩放则缩水为 q 倍
+    2. DELLA (Deep et al., 2024 &amp; mergekit `della_magprune`):
+       按幅值升序排名分配保留概率 probs = (density - epsilon) + rank_norm * 2 * epsilon
+    &quot;&quot;&quot;
+    rng = random.Random(seed)
+    exact_dot = sum(d * x for d, x in zip(delta, x_input))
+    rescaled_dots = []
+    unscaled_dots = []
+    for _ in range(trials):
+        r_dot = 0.0
+        u_dot = 0.0
+        for d_val, x_val in zip(delta, x_input):
+            if rng.random() &lt; density:
+                u_dot += d_val * x_val
+                r_dot += (d_val / density) * x_val
+        rescaled_dots.append(r_dot)
+        unscaled_dots.append(u_dot)
+
+    n = len(delta)
+    sorted_indices = sorted(range(n), key=lambda i: abs(delta[i]))
+    ranks = [0] * n
+    for pos, idx in enumerate(sorted_indices):
+        ranks[idx] = pos + 1
+    min_r, max_r = min(ranks), max(ranks)
+    della_probs = [
+        round((density - epsilon) + ((r - min_r) / (max_r - min_r)) * 2.0 * epsilon, 4)
+        for r in ranks
+    ]
+    return {
+        &quot;exact_dot&quot;: round(exact_dot, 4),
+        &quot;dare_rescaled_mean&quot;: round(sum(rescaled_dots) / trials, 4),
+        &quot;dare_unscaled_mean&quot;: round(sum(unscaled_dots) / trials, 4),
+        &quot;della_keep_probs&quot;: della_probs,
+    }
+
+
+def compare_lerp_vs_slerp(
+    v0: List[float],
+    v1: List[float],
+    t: float = 0.5,
+    dot_threshold: float = 0.9995,
+) -&gt; Dict[str, object]:
+    &quot;&quot;&quot;
+    严格对齐 arcee-ai/mergekit `mergekit/merge_methods/slerp.py::slerp`:
+    对比等模长正交/大夹角向量在 t=0.5 时 LERP 的范数坍缩与 SLERP 的测地线保范特性,
+    以及 |dot| &gt; dot_threshold 时的共线线性回退保护
+    &quot;&quot;&quot;
+    norm0 = math.sqrt(sum(a * a for a in v0))
+    norm1 = math.sqrt(sum(b * b for b in v1))
+    dot = sum((a / norm0) * (b / norm1) for a, b in zip(v0, v1))
+    dot = max(-1.0, min(1.0, dot))
+
+    lerp_vec = [(1.0 - t) * a + t * b for a, b in zip(v0, v1)]
+    lerp_norm = math.sqrt(sum(c * c for c in lerp_vec))
+
+    if abs(dot) &gt; dot_threshold:
+        coef_a, coef_b = 1.0 - t, t
+        used_fallback = True
+    else:
+        theta = math.acos(dot)
+        sin_theta = math.sin(theta)
+        coef_a = math.sin((1.0 - t) * theta) / sin_theta
+        coef_b = math.sin(t * theta) / sin_theta
+        used_fallback = False
+
+    slerp_vec = [coef_a * a + coef_b * b for a, b in zip(v0, v1)]
+    slerp_norm = math.sqrt(sum(c * c for c in slerp_vec))
+    return {
+        &quot;input_norm&quot;: round(norm0, 4),
+        &quot;cos_theta&quot;: round(dot, 4),
+        &quot;lerp_norm&quot;: round(lerp_norm, 4),
+        &quot;slerp_norm&quot;: round(slerp_norm, 4),
+        &quot;norm_shrink_ratio&quot;: round(lerp_norm / slerp_norm, 4),
+        &quot;used_fallback&quot;: used_fallback,
+    }
+
+
+# --- 1. 验证 TIES-Merging 消除小幅值噪声与正负符号冲突 ---
+tv_list = [
+    [0.80, 0.70, -0.60, 0.04],
+    [0.60, 0.50, -0.80, -0.03],
+    [-0.05, -0.90, 0.02, -0.50],
+]
+ties_res = ties_merge_1d(
+    tv_list, weights=[1.0, 1.0, 1.0], density=0.75, majority_sign_method=&quot;total&quot;
+)
+assert ties_res[&quot;naive_task_arithmetic&quot;] == [1.35, 0.30, -1.38, -0.49]
+assert ties_res[&quot;elected_signs&quot;] == [1, 1, -1, -1]
+assert ties_res[&quot;ties_merged&quot;] == [0.70, 0.60, -0.70, -0.50]
+
+# --- 2. 验证 DARE 1/(1-p) 无偏期望恢复与 DELLA 幅值自适应保留概率 ---
+delta_demo = [0.02, -0.15, 0.40, -0.85, 1.20]
+x_demo = [1.5, -2.0, 0.8, -1.2, 0.5]
+dare_res = simulate_dare_expectation_and_della(
+    delta_demo, x_demo, density=0.2, epsilon=0.15
+)
+assert abs(dare_res[&quot;dare_rescaled_mean&quot;] - dare_res[&quot;exact_dot&quot;]) &lt; 0.08
+assert abs(dare_res[&quot;dare_unscaled_mean&quot;] - dare_res[&quot;exact_dot&quot;] * 0.2) &lt; 0.05
+assert dare_res[&quot;della_keep_probs&quot;] == [0.05, 0.125, 0.2, 0.275, 0.35]
+
+# --- 3. 验证 SLERP 球面测地线保范 vs LERP 范数坍缩 &amp; 共线保护 ---
+ortho_res = compare_lerp_vs_slerp([10.0, 0.0], [0.0, 10.0], t=0.5)
+collinear_res = compare_lerp_vs_slerp([10.0, 0.0], [9.9999, 0.01], t=0.5)
+assert ortho_res[&quot;slerp_norm&quot;] == 10.0 and ortho_res[&quot;lerp_norm&quot;] == 7.0711
+assert ortho_res[&quot;used_fallback&quot;] is False
+assert collinear_res[&quot;used_fallback&quot;] is True
+
+print(
+    f&quot;1. TIES vs Naive: naive={ties_res[&#x27;naive_task_arithmetic&#x27;]}, &quot;
+    f&quot;signs={ties_res[&#x27;elected_signs&#x27;]}, ties={ties_res[&#x27;ties_merged&#x27;]}&quot;
+)
+print(
+    f&quot;2. DARE &amp; DELLA: exact_dot={dare_res[&#x27;exact_dot&#x27;]:.4f}, &quot;
+    f&quot;dare_rescaled={dare_res[&#x27;dare_rescaled_mean&#x27;]:.4f}, &quot;
+    f&quot;dare_unscaled={dare_res[&#x27;dare_unscaled_mean&#x27;]:.4f}, &quot;
+    f&quot;della_probs={dare_res[&#x27;della_keep_probs&#x27;]}&quot;
+)
+print(
+    f&quot;3. LERP vs SLERP: input_norm={ortho_res[&#x27;input_norm&#x27;]:.2f}, &quot;
+    f&quot;lerp_norm={ortho_res[&#x27;lerp_norm&#x27;]:.4f}, slerp_norm={ortho_res[&#x27;slerp_norm&#x27;]:.4f}, &quot;
+    f&quot;shrink={ortho_res[&#x27;norm_shrink_ratio&#x27;]:.4f}, collinear_fallback={collinear_res[&#x27;used_fallback&#x27;]}&quot;
+)
+print(&quot;All Task Arithmetic, TIES, DARE, DELLA, and SLERP assertions passed!&quot;)
+</code></pre>
+<p>实际运行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">1. TIES vs Naive: naive=[1.35, 0.3, -1.38, -0.49], signs=[1, 1, -1, -1], ties=[0.7, 0.6, -0.7, -0.5]
+2. DARE &amp; DELLA: exact_dot=2.2700, dare_rescaled=2.3101, dare_unscaled=0.4620, della_probs=[0.05, 0.125, 0.2, 0.275, 0.35]
+3. LERP vs SLERP: input_norm=10.00, lerp_norm=7.0711, slerp_norm=10.0000, shrink=0.7071, collinear_fallback=True
+All Task Arithmetic, TIES, DARE, DELLA, and SLERP assertions passed!
+</code></pre>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“只要两个大模型的参数量一样、架构类名相同（比如都是 7B 的 LlamaForCausalLM 结构），就可以用 SLERP 或 TIES 把它们的权重合并在一起，集百家之长。”</strong>
+事实：<strong>同架构（Same Architecture）绝不等于同源（Homologous）！</strong> 如果两个 7B 模型是从不同预训练随机种子训出来的（或者一个是 DeepSeek-7B、另一个是 Mistral-7B 改了词表与层宽后强行对齐形状），由于神经网络隐藏层神经元的排列对称性（Permutation Invariance），模型 A 的第 $100$ 号神经元与模型 B 的第 $100$ 号神经元语义完全正交。直接做权重算术会落入损失曲面的高能壁垒区，产出彻底报废的乱码模型。无训练权重合并的硬性前提是<strong>所有参与合并的模型必须源自同一个预训练祖先检查点（Shared Base Checkpoint）</strong>。</li>
+<li><strong>误区二：“DARE 随机把 $90%$ 的微调参数增量置零，就等于把整个大模型变成了 $90%$ 稀疏度的稀疏网络，从而能在推理时直接获得 10 倍的矩阵乘法加速与显存压缩。”</strong>
+事实：<strong>DARE 稀疏化的是微调增量 $\tau_t = \theta_t - \theta_{\text{pre}}$，而不是最终的模型权重 $\theta_{\text{merged}}$！</strong> 当稀疏化后的增量 $\tilde{\tau}<em>t$ 被加回到稠密的预训练底座权重 $\theta</em>{\text{pre}}$ 上（$\theta_{\text{merged}} = \theta_{\text{pre}} + \sum_t \tilde{\tau}<em>t$）之后，由于 $\theta</em>{\text{pre}}$ 本身是 $100%$ 稠密的，最终得到的合并模型依然是一个标准的稠密张量！DARE 稀疏化的真正目的是<strong>在合并瞬间大幅降低多个任务增量在同一坐标上发生碰撞干扰的概率</strong>，或者用于稀疏存储/传输 Delta Checkpoints，而不会减少底座模型本身的推理计算量。</li>
+<li><strong>误区三：“TIES-Merging 和 DARE 都包含剪枝（Pruning）操作，所以它们是互相排斥的替代关系，用了一个就不能用另一个。”</strong>
+事实：<strong>DARE（随机丢弃 + $\frac{1}{1-p}$ 重缩放）作用于单模型增量的预处理阶段，而 TIES 的核心贡献（Elect Sign 主导符号选举 + Disjoint Merge 不相交同号平均）作用于跨模型的冲突消解阶段，两者完全正交且天然互补！</strong> 在 Hugging Face <code>peft</code> 与 <code>arcee-ai/mergekit</code> 中，专门提供了结合两者的 <code>dare_ties</code>（以及结合 DELLA 与 TIES 的 <code>della</code>）方法：先用 DARE/DELLA 稀疏化并保持前向激活期望，再用 TIES 过滤剩余碰撞坐标上的反号分量。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/f-o-x11/dreaming-press/blob/2c2eb9c90e15cce501cc8296ab736a34829b8487/content/posts/model-merging-ties-vs-dare-vs-slerp.md" target="_blank" rel="noopener noreferrer">f-o-x11/dreaming-press (<code>content/posts/model-merging-ties-vs-dare-vs-slerp.md</code>)</a>（固定 commit <code>2c2eb9c</code>）与 <a href="https://github.com/nibzard/awesome-agentic-patterns/blob/6b766b8c5b5e183e39ec16ae8c1d0b49769470f5/patterns/merged-code-language-skill-model.md" target="_blank" rel="noopener noreferrer">nibzard/awesome-agentic-patterns (<code>patterns/merged-code-language-skill-model.md</code>)</a>（固定 commit <code>6b766b8</code>），独立推导数学机制并扩展源码级对比。</li>
+<li>Ilharco et al., <a href="https://arxiv.org/abs/2212.04089" target="_blank" rel="noopener noreferrer">Editing Models with Task Arithmetic</a>，ICLR 2023：任务向量 $\tau_t = \theta_t - \theta_{\text{pre}}$ 定义、多任务线性叠加与负权重能力擦除（Task Negation）。</li>
+<li>Yadav et al., <a href="https://arxiv.org/abs/2306.01708" target="_blank" rel="noopener noreferrer">TIES-Merging: Resolving Interference When Merging Models</a>，NeurIPS 2023，及 Hugging Face 官方源码 <a href="https://github.com/huggingface/peft/blob/5d3916b304a24734e5acb37116b8e3bcf0c9eae4/src/peft/utils/merge_utils.py" target="_blank" rel="noopener noreferrer">huggingface/peft (<code>src/peft/utils/merge_utils.py</code>)</a>（固定 commit <code>5d3916b</code>）：冗余参数剪枝（Trim）、主导符号选举（Elect Sign）与不相交合并（Disjoint Merge）实现。</li>
+<li>Yu et al., <a href="https://arxiv.org/abs/2311.03099" target="_blank" rel="noopener noreferrer">Language Models are Super Mario: Absorbing Abilities from Homologous Models as a Free Lunch (DARE)</a>，ICML 2024：微调增量随机伯努利丢弃与 $\frac{1}{1-p}$ 无偏期望恢复证明。</li>
+<li>Goddard et al., <a href="https://arxiv.org/abs/2403.13257" target="_blank" rel="noopener noreferrer">Arcee's MergeKit: A Toolkit for Merging Large Language Models</a>，2024，及官方源码 <a href="https://github.com/arcee-ai/mergekit/blob/0f1423ecf0f06f46f17b045b333b6c445705390e/mergekit/merge_methods/slerp.py" target="_blank" rel="noopener noreferrer">arcee-ai/mergekit (<code>mergekit/merge_methods/slerp.py</code>, <code>generalized_task_arithmetic.py</code>, <code>sparsify.py</code>)</a>（固定 commit <code>0f1423e</code>）：SLERP 球面插值与共线回退、DELLA 幅值排名稀疏化与广义任务算术实现。</li>
+<li>Deep et al., <a href="https://arxiv.org/abs/2406.11617" target="_blank" rel="noopener noreferrer">DELLA-Merging: Reducing Interference in Model Merging through Magnitude-Based Sampling</a>，2024，及 Wortsman et al., <a href="https://arxiv.org/abs/2203.05482" target="_blank" rel="noopener noreferrer">Model Soups: Averaging Weights of Multiple Fine-Tuned Models Improves Accuracy Without Increasing Inference Time</a>，ICML 2022。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-11-14</strong>。仅执行标准库下 Task Arithmetic / TIES 符号消解、DARE 无偏期望与 DELLA 排名概率、SLERP 测地线保范与共线回退的数值验证，未运行多卡大模型权重合并基准评测。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">在使用 Hugging Face <code>peft</code> 的 <code>add_weighted_adapter</code> 合并多个 LoRA 适配器（如 <code>combination_type=&quot;linear&quot;</code> vs <code>&quot;cat&quot;</code> vs <code>&quot;ties&quot;</code> vs <code>&quot;dare_ties&quot;</code>）时，为什么 <code>&quot;linear&quot;</code> 直接对低秩矩阵 $A_i, B_i$ 求加权平均会产生严重的“交叉项污染（Cross-Term Interference）”，而转换到全秩增量空间 $\Delta W_i = B_i A_i$ 或使用 <code>&quot;cat&quot;</code> 拼接才能保持真实算术语义？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：在使用 Hugging Face peft 的 add_weighted_adapter 合并多个 LoRA 适配器（如 combination_type=&quot;linear&quot; vs &quot;cat&quot; vs &quot;ties&quot; vs &quot;dare_ties&quot;）时，为什么 &quot;linear&quot; 直接对低秩矩阵 $A_i, B_i$ 求加权平均会产生严重的“交叉项污染（Cross-Term Interference）”，而转换到全秩增量空间 $\Delta W_i = B_i A_i$ 或使用 &quot;cat&quot; 拼接才能保持真实算术语义？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>低秩因子分别求和的“交叉项泄漏”数学本质</strong>：
+对于第 $i$ 个 LoRA 适配器，其真实注入线性层的全秩权重增量为 $\Delta W_i = s_i B_i A_i$（其中 $s_i = \frac{\alpha_i}{r_i}$）。如果我们试图在不展开全秩矩阵的情况下，直接令合并后的低秩矩阵为 $\bar{B} = \sum_{i=1}^M w_i B_i, ; \bar{A} = \sum_{i=1}^M w_i A_i$，则合并后的实际等效权重增量为：
+$$\Delta W_{\text{factor-avg}} = \bar{B}\bar{A} = \left(\sum_{i=1}^M w_i B_i\right)\left(\sum_{j=1}^M w_j A_j\right) = \underbrace{\sum_{i=1}^M w_i^2 B_i A_i}<em>{\text{真实平方加权项}} + \underbrace{\sum</em>{i \neq j} w_i w_j B_i A_j}<em>{\text{跨适配器伪交叉项!}}$$
+由于不同 LoRA 独立训练时其内部低秩隐空间（秩 $r$ 维坐标系）存在任意正交旋转变换，$B_i$ 的列与 $A_j$（$i \neq j$）的行毫无对应关系，交叉项 $\sum</em>{i \neq j} w_i w_j B_i A_j$ 纯属高幅值随机噪声！</li>
+<li><strong>PEFT 源码中的三种工程解法与权衡</strong>：
+<ul>
+<li><strong><code>combination_type=&quot;cat&quot;</code>（秩拼接，零交叉污染但秩膨胀）</strong>：将所有适配器的缩放矩阵在秩维度拼接：$B_{\text{cat}} = [w_1 s_1 B_1, \dots, w_M s_M B_M] \in \mathbb{R}^{d_{\text{out}} \times (Mr)}$，$A_{\text{cat}} = [A_1^\top, \dots, A_M^\top]^\top \in \mathbb{R}^{(Mr) \times d_{\text{in}}}$，此时 $B_{\text{cat}} A_{\text{cat}} = \sum_{i=1}^M w_i s_i B_i A_i$ 严格等于精确的 Task Arithmetic，代价是合并后 LoRA 的秩变为 $M \cdot r$；</li>
+<li><strong><code>combination_type=&quot;svd&quot;</code> / <code>&quot;ties_svd&quot;</code> / <code>&quot;dare_ties_svd&quot;</code>（全秩展开 $\to$ TIES/DARE 融合 $\to$ 截断 SVD 压回目标秩 $r$）</strong>：先计算每个适配器的乘积增量 $\tau_i = s_i B_i A_i \in \mathbb{R}^{d_{\text{out}} \times d_{\text{in}}}$，在全秩空间执行 TIES 或 DARE-TIES 得到 $\tau_{\text{merged}}$，随后对 $\tau_{\text{merged}} = U \Sigma V^\top$ 做截断奇异值分解，令 $B_{\text{new}} = U_{:, :r}\sqrt{\Sigma_{:r, :r}}, ; A_{\text{new}} = \sqrt{\Sigma_{:r, :r}}V_{:, :r}^\top$，从而在不增加推理秩的前提下消除交叉项污染。</li>
+</ul>
+</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">当微调模型相较于底座模型新增了特殊词元（Added Special Tokens，如 Chat 模板中的 <code>&lt;|im_start|&gt;</code>、<code>&lt;tool_call&gt;</code>）导致词表大小 <code>vocab_size</code> 不一致，或者参数增量在局部出现极端离群值（Outliers）时，模型合并会遇到什么故障？工程上如何通过 Tokenizer 对齐与 <code>magnitude_outliers</code> / <code>breadcrumbs</code> 处理？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：当微调模型相较于底座模型新增了特殊词元（Added Special Tokens，如 Chat 模板中的 &lt;|im_start|&gt;、&lt;tool_call&gt;）导致词表大小 vocab_size 不一致，或者参数增量在局部出现极端离群值（Outliers）时，模型合并会遇到什么故障？工程上如何通过 Tokenizer 对齐与 magnitude_outliers / breadcrumbs 处理？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>词表维度失配（Tokenizer &amp; Embedding Mismatch）的对齐协议</strong>：
+当模型 A 的词表为 $128256$、模型 B 扩展了 $4$ 个特殊 Token 变为 $128260$ 时，<code>embed_tokens.weight</code> 与 <code>lm_head.weight</code> 张量形状不一致，直接运行矩阵减法会触发维度报错。即使两者同为 $128260$，若相同 Token ID 对应的文本字符串不同，直接平均 Embedding 也会摧毁特殊指令识别。<code>mergekit</code> 的标准处理协议是：先构建联合目标词表，对共同的基础词表区段执行标准 Task Arithmetic / TIES / SLERP，而对某个专家模型独有的新增 Token 行，采用均值初始化或直接从该专家模型 Passthrough 拷贝（并在 <code>mergekit</code> 配置中显式声明 <code>tokenizer_source: union</code> 或 <code>base</code>）。</li>
+<li><strong>极端大离群值干扰与 Model Breadcrumbs（<code>magnitude_outliers</code>）</strong>：
+TIES 仅剪除小幅值尾部，认为幅值越大越重要；然而 Davari et al.（<em>Model Breadcrumbs</em>, ECCV 2024，对应 <code>mergekit/sparsify.py::magnitude_outliers</code>，第 81–115 行）发现，微调增量中位于最顶端 $\gamma$ 比例（如前 $1%$）的**极端大离群值（Extreme Outliers）**往往是对特定微调批次的过拟合，合并进通用底座后会破坏其他任务的激活分布。<code>magnitude_outliers</code> 通过双向截尾——先切除前 $\gamma$（如 $1%$）的最大绝对值离群点，再切除底部 $1 - \text{density} - \gamma$ 的微小噪声，仅保留中间核心频段的增量，显著提升了多任务合并的稳健性。</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">除了同构合并（Homologous Weight Averaging），开源社区常说的“缝合怪模型（Frankenmerging / Passthrough）”与“免训练混合专家合成（Training-Free MoE / FrankenMoE，如 <code>mergekit-moe</code>）”是什么原理？它们的工程收益与能力边界在哪里？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：除了同构合并（Homologous Weight Averaging），开源社区常说的“缝合怪模型（Frankenmerging / Passthrough）”与“免训练混合专家合成（Training-Free MoE / FrankenMoE，如 mergekit-moe）”是什么原理？它们的工程收益与能力边界在哪里？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>层间堆叠缝合（Passthrough / Frankenmerging，如將 70B 扩增为 120B）</strong>：
+不同于在相同层号之间对权重求加权平均，Passthrough 直接将模型 A 的第 $[0, 32)$ 层与模型 B（或模型 A 自身）的第 $[16, 48)$ 层在深度维度上交错串联起来。由于微调后的同源模型相邻层之间的残差流表征（Residual Stream Representation）具有高度的平滑连续性，重复插入中间层相当于在隐空间延长了特征精炼的常微分方程（ODE）积分步数。这能以零训练成本增强复杂角色扮演或长链路感知，但会实打实地增加模型总参数量、KV Cache 显存与推理延迟，且在交界层容易出现激活范数跳变。</li>
+<li><strong>免训练 MoE 组装（FrankenMoE / Upcycling to MoE via <code>mergekit-moe</code>）</strong>：
+给定一个通用底座模型与 $K$ 个同源垂直领域稠密微调模型（如数学、代码、医疗、法律），保持共享的 Self-Attention 层权重（可通过 TIES/SLERP 合并），将每个稠密模型的 FFN（MLP）层直接作为 MoE 架构中的一个独立专家（Expert $1 \dots K$）。至于门控路由器（Router Gate $W_g \in \mathbb{R}^{K \times d_{\text{model}}}$），在完全无训练的冷启动阶段，可以通过计算各领域代表性正面 Prompt 与负面 Prompt 在该层输入隐藏状态的平均聚类中心（Centroid Vectors）并做归一化来直接初始化 $W_g$ 的行向量！这样既完全避免了多专家 FFN 权重合并时的参数干扰，又利用稀疏 Top-2 激活控制了单 Token 的推理 FLOPs。</li>
+</ol>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0042 · 单题笔记</span><a href="../questions/llm-0042-model-merging-task-arithmetic-ties-dare-slerp.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0042", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

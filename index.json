@@ -4497,6 +4497,29 @@
       "language": "zh",
       "updated": "2026-11-13",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0042",
+      "title": "大模型无训练权重合并（Task Arithmetic、TIES-Merging、DARE 与 SLERP）是如何通过任务向量算术、符号冲突消解、随机稀疏重缩放与超球面测地线插值实现多能力融合的？",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "model-merging",
+        "task-arithmetic",
+        "ties-merging",
+        "dare",
+        "slerp",
+        "mergekit"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开模型合并工程指南与模式库（f-o-x11/dreaming-press / nibzard/awesome-agentic-patterns）扩展改编；Task Arithmetic（ICLR 2023）、TIES-Merging（NeurIPS 2023）、DARE（ICML 2024）、DELLA（2024）及 Arcee MergeKit / Hugging Face PEFT 源码核实（见参考）",
+      "file": "llm-0042-model-merging-task-arithmetic-ties-dare-slerp.md",
+      "language": "zh",
+      "updated": "2026-11-14",
+      "answers_count": 1
     }
   ]
 }

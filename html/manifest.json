@@ -1565,6 +1565,17 @@
       "images": 0
     },
     {
+      "id": "llm-0042",
+      "file": "llm-0042-model-merging-task-arithmetic-ties-dare-slerp.html",
+      "source": "questions/llm-0042-model-merging-task-arithmetic-ties-dare-slerp.md",
+      "source_sha256": "4784e37722512014e3d9f4a453620ca063b234f54a44ad2444622ebcf9cbc3ee",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
