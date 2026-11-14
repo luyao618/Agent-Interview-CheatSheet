@@ -4520,6 +4520,29 @@
       "language": "zh",
       "updated": "2026-11-14",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0043",
+      "title": "大模型训练后剪枝与稀疏化（SparseGPT、Wanda、2:4 半结构化稀疏与 ShortGPT）是如何通过逆海森误差补偿、激活感知重要性与层影响力评估突破压缩瓶颈的？",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "model-pruning",
+        "sparsegpt",
+        "wanda",
+        "2-4-sparsity",
+        "shortgpt",
+        "structured-pruning"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开模型剪枝工程指南与评测笔记（Orchestra-Research/AI-Research-SKILLs / prabakaranc98/nthExperiment）扩展改编；SparseGPT（ICML 2023）、Wanda（ICLR 2024）、LLM-Pruner（NeurIPS 2023）、ShortGPT（2024）及官方源码核实（见参考）",
+      "file": "llm-0043-pruning-sparsegpt-wanda-2to4-shortgpt.md",
+      "language": "zh",
+      "updated": "2026-11-15",
+      "answers_count": 1
     }
   ]
 }
