@@ -1576,6 +1576,17 @@
       "images": 0
     },
     {
+      "id": "llm-0043",
+      "file": "llm-0043-pruning-sparsegpt-wanda-2to4-shortgpt.html",
+      "source": "questions/llm-0043-pruning-sparsegpt-wanda-2to4-shortgpt.md",
+      "source_sha256": "8a51a8ffee0c97c09b74798a39af3877c1222eed00d629572df5b2826b66e0f3",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
