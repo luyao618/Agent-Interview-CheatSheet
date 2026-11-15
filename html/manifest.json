@@ -1587,6 +1587,17 @@
       "images": 0
     },
     {
+      "id": "llm-0044",
+      "file": "llm-0044-differential-transformer-gated-attention.html",
+      "source": "questions/llm-0044-differential-transformer-gated-attention.md",
+      "source_sha256": "a972729fa69d821b468f37b2c03ced67ff76d94edfd9269fc8a3e583feedcbd2",
+      "answers": 1,
+      "followups": 4,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
