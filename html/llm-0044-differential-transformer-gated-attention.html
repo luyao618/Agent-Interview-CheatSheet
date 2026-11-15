@@ -1,0 +1,977 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。差分注意力（Differential Transformer V1/V2）与门控注意力（Gated Attention）是如何通过双 Softmax 噪声相减、同 GQA 组交错配对与 SDPA 输出稀疏门控消除注意力沉没及激活离群值的？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0044-differential-transformer-gated-attention.md">
+  <meta name="source-sha256" content="a972729fa69d821b468f37b2c03ced67ff76d94edfd9269fc8a3e583feedcbd2">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>差分注意力（Differential Transformer V1/V2）与门控注意力（Gated Attention）是如何通过双 Softmax 噪声相减、同 GQA 组交错配对与 SDPA 输出稀疏门控消除注意力沉没及激活离群值的？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0044</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title">差分注意力（Differential Transformer V1/V2）与门控注意力（Gated Attention）是如何通过双 Softmax 噪声相减、同 GQA 组交错配对与 SDPA 输出稀疏门控消除注意力沉没及激活离群值的？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>在百亿至千亿参数大语言模型（LLM）的超长上下文推理（$32\text{K} \sim 1\text{M}$ Tokens）与低比特量化部署中，传统的多头 Softmax 注意力（Multi-Head Softmax Attention）暴露出三大底层结构缺陷：</p>
+<ol>
+<li><strong>注意力噪声底噪（Attention Noise Floor）</strong>：由于 $\text{softmax}(z)_j = \frac{\exp(z_j)}{\sum_t \exp(z_t)} &gt; 0$ 严格非负且强制归一化为 $1$，当序列包含数万个无关背景 Token 时，单个无关 Token 哪怕仅分得 $10^{-5}$ 的微小概率，累计起来的背景噪声质量也会高达 $50%$ 以上，直接淹没关键上下文（引发“大海捞针”失灵与长文本幻觉）；</li>
+<li><strong>注意力沉没（Attention Sink）与极端激活离群值（Massive Activation Outliers）</strong>：当某个注意力头在当前上下文中没有找到值得关注的语义目标时，Softmax 归一化的“总和必为 $1$”约束迫使模型将高达 $46% \sim 80%$ 的注意力权重倾泻在序列首个 Token（BOS 或首词）上作为“垃圾桶”，并在首 Token 处催生出幅值超过中位数数千倍的隐藏层激活离群值，严重破坏训练稳定性与 INT4/INT8 量化精度；</li>
+<li><strong>跨层线性投影的低秩瓶颈（Low-Rank Linear Mapping Bottleneck）</strong>：在每个注意力头内部，值投影矩阵 $W_V^k \in \mathbb{R}^{d_{\text{model}} \times d_{\text{head}}}$ 与输出投影矩阵 $W_O^k \in \mathbb{R}^{d_{\text{head}} \times d_{\text{model}}}$ 之间没有任何非线性激活函数，导致两者在数学上退化为一个秩至多为 $d_{\text{head}} \ll d_{\text{model}}$ 的低秩线性映射。</li>
+</ol>
+<p>为了从架构根源上攻克上述难题，工业界近期演进出两条代表性技术路线：<strong>微软提出的差分注意力（Differential Transformer V1 / V2，ICLR 2025）</strong> 与 <strong>阿里 Qwen 团队提出的门控注意力（Gated Attention，NeurIPS 2025 Best Paper，已集成至 Qwen3-Next）</strong>。请深入剖析以下三个核心问题：</p>
+<ol>
+<li><strong>Differential Transformer V1 的双 Softmax 相减消噪与梯度流对齐机制</strong>：DIFF V1 是如何仿照主动降噪耳机与差分放大器，通过计算两个 Softmax 注意力图之差 $\left(\text{softmax}!\left(\frac{Q_1 K_1^\top}{\sqrt{d}}\right) - \lambda , \text{softmax}!\left(\frac{Q_2 K_2^\top}{\sqrt{d}}\right)\right) V$ 消除长上下文共模背景噪声的？为什么在 V1 中必须将参数 $\lambda$ 重参数化为 $\lambda = \exp(\lambda_{q_1} \cdot \lambda_{k_1}) - \exp(\lambda_{q_2} \cdot \lambda_{k_2}) + \lambda_{\text{init}}(l)$（其中 $\lambda_{\text{init}}(l) = 0.8 - 0.6 \exp(-0.3 l)$），并在每个头独立执行 <code>GroupNorm</code>（逐头 <code>RMSNorm</code>）后乘上固定系数 $(1 - \lambda_{\text{init}})$？</li>
+<li><strong>从 DIFF V1 到生产级 DIFF V2 的工程重构与 GQA 分组配对陷阱</strong>：为什么 DIFF V1（为了对齐参数量而将每个注意力头的 Value 维度拓宽为 $2d$，即 $head_dim_v = 2 \times head_dim_q$）在标准 FlashAttention-2 与自回归 Decode 阶段会遭遇算子回退与算术强度下降？<strong>DIFF V2</strong> 是如何通过“倍增 Query 头数（$2h$）、保持 KV 头数（$h_{kv}$）与维度 $d$ 不变、移除逐头 RMSNorm 并改用逐 Token 逐头 $\text{sigmoid}(\lambda)$”实现零自定义算子开销与大规模预训练稳定的？在实现 DIFF V2 的双头相减时，为什么必须对<strong>同一个 GQA 组内的偶奇头</strong>执行交错切片 <code>attn[:, 0::2] - sigmoid(lam) * attn[:, 1::2]</code>，而绝不能执行对半切分 <code>attn[:, :h] - sigmoid(lam) * attn[:, h:]</code>？</li>
+<li><strong>Gated Attention（Qwen3-Next）的非线性破除、输入依赖稀疏性与 Attention Sink 消除</strong>：为什么在 Scaled Dot-Product Attention（SDPA）输出之后、线性输出投影 $W_O$ 之前施加 <strong>Query 依赖的逐头/逐元素 Sigmoid 乘性门控（$G_1$ 位置）</strong> 能打破 $W_V^k W_O^k$ 的低秩线性瓶颈？相比在 Value 投影后门控（$G_2$ 位置）或跨头共享门控，为什么唯独 SDPA 输出端的独立 Sigmoid 门控能够提供“当无信息可取时关闭整个头输出”的零参考通道，从而在不修改 Softmax 本身的前提下将首 Token 注意力沉没（Attention Sink）从 $46.7%$ 压降至 $4.8%$，并将层间最大激活离群值（Massive Activation）削减 $10$ 倍以上？</li>
+</ol>
+<p>本题由公开面试题/系统设计整理扩展改编，不是已核实的企业真题；不采信脱离具体条件的性能收益承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-argon</span><span>2026-11-16</span></p><div class="prose"><p><strong>差分注意力（Differential Transformer V1/V2）与门控注意力（Gated Attention）分别从“注意力分布的共模噪声相减抵消”和“注意力输出端的低秩非线性门控截断”两个维度重构了标准 Softmax 注意力：（1）在 Differential Transformer V1 中，模型将查询与键拆分为两组 $[Q_1; Q_2]$ 与 $[K_1; K_2]$，利用差分算子 $(A_1 - \lambda A_2)V$ 抵消长序列无关上下文上的均匀背景噪声底噪（类比差分放大器抑制共模干扰），通过双指数点积 $\lambda = \exp(\lambda_{q_1}\cdot\lambda_{k_1}) - \exp(\lambda_{q_2}\cdot\lambda_{k_2}) + \lambda_{\text{init}}(l)$ 保障参数双向灵活寻优，并借助逐头 <code>RMSNorm</code> 配合 $(1 - \lambda_{\text{init}})$ 缩放因子使梯度范数与标准 Transformer 严格对齐；（2）针对 V1 因 $d_V = 2 d_{QK}$ 不对称导致无法直接走 FlashAttention-2 标准内核及百亿规模训练后期逐头 Norm 失稳的工程痛点，DIFF V2 将 Query 头数翻倍为 $2h$ 而保持 KV 头数 $h_{kv}$ 与头维 $d$ 一致，在单次标准 FlashAttention 调用后按同 GQA 组相邻奇偶头 <code>attn[:, :, 0::2] - sigmoid(lambda_val) * attn[:, :, 1::2]</code> 执行差分（确保相减的两个子头严格共享同一套 Key/Value 基底，避免跨组相减制造伪影）；（3）Gated Attention（Qwen3-Next）则指出标准多头注意力输出 $o_i^k = \sum_{j\le i} S_{ij}^k X_j (W_V^k W_O^k)$ 存在秩至多为 $d_{\text{head}}$ 的线性坍缩（在 GQA 共享 $W_V$ 时尤甚），且非负归一化的 Softmax 迫使无匹配头向首 Token 倾泻权重形成 Attention Sink 与千倍级激活离群值；通过在 SDPA 输出与 $W_O$ 之间插入 Query 依赖的独立 Sigmoid 门控 $Y' = Y \odot \sigma(X W_\theta)$（$G_1$ 位置），既在 $W_V^k$ 与 $W_O^k$ 之间注入了非线性表达力，又赋予每个注意力头按需输出“全零向量”的稀疏截断能力，彻底解除了向首 Token 构造巨幅垃圾桶激活的优化压力。</strong></p>
+<p>在深入推导数学公式与源码实现前，建议结合题库内已有相关题目建立完整的注意力与长上下文工程知识体系：关于标准因果自注意力（Causal Self-Attention）机制与掩码基础，请参阅 <a href="llm-0010-causal-attention-architecture.html">llm-0010</a>；关于自回归推理中 KV Cache 的显存带宽瓶颈与 Prefill/Decode 两阶段算术强度分析，请参阅 <a href="llm-0018-kv-cache-prefill-decode.html">llm-0018</a>；关于 DeepSeek-V2/V3 通过低秩潜在压缩与矩阵吸收（Matrix Absorption）重构注意力的 MLA 架构，请参阅 <a href="llm-0034-mla-multi-head-latent-attention-rope-absorption.html">llm-0034</a>；关于 StreamingLLM 中首次形式化揭示的注意力汇聚点（Attention Sink）现象及 H2O、SnapKV、PyramidKV 稀疏驱逐机制，请参阅 <a href="llm-0039-kv-cache-eviction-streamingllm-h2o-snapkv-pyramidkv.html">llm-0039</a>；关于激活离群值（Activation Outliers）对 INT4/INT8 训练后量化（GPTQ、AWQ、SmoothQuant）造成的量化网格崩塌及平滑迁移对策，请参阅 <a href="llm-0035-ptq-gptq-awq-smoothquant.html">llm-0035</a>；关于 Mamba/Mamba-2 等自带输入依赖门控的线性状态空间模型与混合架构，请参阅 <a href="llm-0036-mamba-selective-ssm-ssd-hybrid.html">llm-0036</a>。</p>
+<hr />
+<h3 id="1-differential-transformer-v1双-softmax-共模消噪lambda-重参数化与梯度流对齐">1. Differential Transformer V1：双 Softmax 共模消噪、$\lambda$ 重参数化与梯度流对齐</h3>
+<h4 id="1为什么标准-softmax-注意力在超长上下文下会被背景噪声底噪淹没">（1）为什么标准 Softmax 注意力在超长上下文下会被“背景噪声底噪”淹没？</h4>
+<p>给定序列长度为 $N$ 的输入隐状态 $X \in \mathbb{R}^{N \times d_{\text{model}}}$，标准单头注意力的输出为 $O = \text{softmax}!\left(\frac{Q K^\top}{\sqrt{d}}\right) V$。</p>
+<ul>
+<li>对于查询向量 $q_i$ 和任意完全无关的背景键向量 $k_j$（$j \notin \mathcal{S}<em>{\text{rel}}$），其内积得分 $s</em>{i,j} = \frac{q_i^\top k_j}{\sqrt{d}}$ 并非绝对的 $-\infty$，而是在 $0$ 附近随机波动的有限实数，经过指数映射后 $\exp(s_{i,j}) \approx 1 &gt; 0$。</li>
+<li>假设长文档中有 $1$ 个关键目标词元（Needle，$s_{i, \text{needle}} = 5.0$，$\exp(5.0) \approx 148.4$）以及 $N - 1 = 64,000$ 个无关背景词元（平均 $\exp(s_{i,j}) \approx 1.0$）。此时经过 Softmax 归一化后，目标词元分得的注意力权重仅为：
+$$w_{i, \text{needle}} = \frac{148.4}{148.4 + 64000 \times 1.0} \approx 0.23%$$
+而高达 $99.77%$ 的注意力权重被均匀摊薄在 $64,000$ 个无关噪声词元上！这种随序列长度 $N$ 线性膨胀的<strong>非负噪声底噪（Noise Floor）</strong>，正是标准 Transformer 在长上下文“大海捞针（Needle-In-A-Haystack）”、多文档 RAG 引用溯源及少样本上下文学习（ICL）对示例顺序高度敏感的根本原因。</li>
+</ul>
+<h4 id="2differential-attention-v1-的数学形式与参数设计">（2）Differential Attention V1 的数学形式与参数设计</h4>
+<p>受电子工程中**差分放大器（Differential Amplifier）<strong>与</strong>主动降噪耳机（Noise-Canceling Headphones）**通过两路反相信号相减抵消共模环境噪声的启发，Ye et al.（<em>Differential Transformer</em>, ICLR 2025）提出将每个头的 Query 和 Key 投影拆分为两组 $Q_1, Q_2 \in \mathbb{R}^{N \times d}$ 与 $K_1, K_2 \in \mathbb{R}^{N \times d}$，而 Value 投影设为 $V \in \mathbb{R}^{N \times 2d}$。差分注意力算子 $\text{DiffAttn}(\cdot)$ 定义为（对照官方仓库 <code>microsoft/unilm</code> 下 <code>Diff-Transformer/multihead_diffattn.py</code> 及 Hugging Face <code>transformers</code> 中 <code>modeling_diffllama.py</code>）：</p>
+<p>$$[Q_1; Q_2] = X W^Q, \qquad [K_1; K_2] = X W^K, \qquad V = X W^V$$</p>
+<p>$$\text{DiffAttn}(X) = \left( \underbrace{\text{softmax}!\left(\frac{Q_1 K_1^\top}{\sqrt{d}}\right)}<em>{A_1 \text{ (主信号+共模噪声)}} - \lambda , \underbrace{\text{softmax}!\left(\frac{Q_2 K_2^\top}{\sqrt{d}}\right)}</em>{A_2 \text{ (参考共模噪声)}} \right) V$$</p>
+<p>当 $A_1$ 和 $A_2$ 在海量无关背景 Token 上展现出高度相似的共模噪声分布（例如均接近 $\frac{1}{N}$）而仅在真正相关的少量语义 Token 上产生差异时，$A_1 - \lambda A_2$ 能够将无关背景位置的等效权重直接<strong>抵消至接近 $0$（甚至允许微弱负值）</strong>，从而涌现出极其干净的稀疏注意力图谱！</p>
+<p>为了使该机制在深层网络中稳定收敛，DIFF V1 引入了三项精密的数学设计：</p>
+<ol>
+<li><strong>可学习标量 $\lambda$ 的双指数重参数化（Re-parameterization）</strong>：
+直接将标量 $\lambda$ 作为单个裸参数优化极易受到梯度尺度和初始化敏感性的困扰。DIFF V1 将 $\lambda$ 参数化为四个维度为 $d$ 的可学习向量 $\lambda_{q_1}, \lambda_{k_1}, \lambda_{q_2}, \lambda_{k_2} \in \mathbb{R}^d$（初始化为 $\mathcal{N}(0, 0.1^2)$）的内积指数差加上层相关的先验常数 $\lambda_{\text{init}}(l)$：
+$$\lambda = \exp(\lambda_{q_1} \cdot \lambda_{k_1}) - \exp(\lambda_{q_2} \cdot \lambda_{k_2}) + \lambda_{\text{init}}(l)$$
+$$\lambda_{\text{init}}(l) = 0.8 - 0.6 \exp(-0.3 \cdot l), \qquad l \in {0, 1, \dots, L-1} \text{ (或 } 1 \dots L \text{)}$$
+<ul>
+<li><strong>为什么 $\lambda_{\text{init}}(l)$ 随层深 $l$ 单调递增？</strong> 在第 $0$ 层（$\lambda_{\text{init}}(0) = 0.2$），Token 表征尚处于局部词法聚合阶段，需要较温和的消噪比例以保留广泛上下文信息；随着层数加深（当 $l \to \infty$ 时 $\lambda_{\text{init}}(l) \to 0.8$），深层特征高度抽象，需要更激进的差分相减以滤除累积的背景干扰。</li>
+</ul>
+</li>
+<li><strong>逐头独立归一化（Per-Head RMSNorm / GroupNorm）与 $(1 - \lambda_{\text{init}})$ 梯度流对齐</strong>：
+由于两个概率分布相减后，每个注意力头输出 $\text{head}<em>i = \text{DiffAttn}(X; W_i^Q, W_i^K, W_i^V, \lambda) \in \mathbb{R}^{N \times 2d}$ 的方差显著缩小且因稀疏度不同而在不同头之间剧烈波动，V1 对每个头独立施加 <code>RMSNorm</code>（论文中称为 <code>GroupNorm</code>，因为每个头作为独立 Group 归一化），随后乘上固定缩放因子 $(1 - \lambda</em>{\text{init}})$ 再拼接投影：
+$$\overline{\text{head}}<em>i = (1 - \lambda</em>{\text{init}}) \cdot \text{RMSNorm}(\text{head}_i), \qquad \text{MultiHeadDiff}(X) = \text{Concat}(\overline{\text{head}}_1, \dots, \overline{\text{head}}_h) W^O$$
+<ul>
+<li><strong>为什么必须乘 $(1 - \lambda_{\text{init}})$？</strong> 原论文 Appendix F（Gradient Flow of Diff Transformer）严格证明：经 <code>RMSNorm</code> 归一化后，$\text{LN}(\text{head}<em>i)$ 的数值尺度被强行拉回至 $\mathcal{O}(1)$，而其内部差分项 $(A_1 - \lambda A_2)V$ 的原始尺度正比于 $(1 - \lambda</em>{\text{init}})$；若不乘回 $(1 - \lambda_{\text{init}})$，反向传播通过 <code>RMSNorm</code> 时的雅可比矩阵会将梯度放大 $\frac{1}{1 - \lambda_{\text{init}}}$ 倍，导致深层（$1 - \lambda_{\text{init}} = 0.2$ 时梯度放大 $5$ 倍）发生严重梯度爆炸。乘上 $(1 - \lambda_{\text{init}})$ 恰好抵消了该分母，使 DIFF V1 的各层梯度范数与标准 Transformer 完全一致，可直接复用相同的学习率与预训练超参！</li>
+</ul>
+</li>
+</ol>
+<hr />
+<h3 id="2-从-diff-v1-到生产级-diff-v2-的架构演进与-gqa-交错配对准则">2. 从 DIFF V1 到生产级 DIFF V2 的架构演进与 GQA 交错配对准则</h3>
+<h4 id="1为什么-diff-v1-在生产级大图预训练与推理引擎中遭遇瓶颈">（1）为什么 DIFF V1 在生产级大图预训练与推理引擎中遭遇瓶颈？</h4>
+<p>尽管 DIFF V1 在论文实验（3B~13B）中表现优异，但当工业界将其推向 $70\text{B}+$ 生产级训练与高吞吐推理引擎（vLLM / FlashAttention）时，暴露出三大硬件与系统痛点：</p>
+<ol>
+<li><strong>非对称头维度（$d_V = 2 d_{QK}$）破坏 FlashAttention-2 兼容性</strong>：
+为了在参数量与 KV Cache 大小上严格对齐基线 Transformer（设基线有 $2h$ 个头、头维为 $d$），DIFF V1 将头数减半为 $h$，令 $Q_1, Q_2, K_1, K_2$ 头维为 $d$，但令 $V$ 的头维翻倍为 $2d$。然而，<strong>标准 FlashAttention-2 与 cuDNN SDPA 内核要求 Query/Key 头维与 Value 头维相等（<code>head_dim_v == head_dim_q</code>）</strong>！在 Hugging Face <code>transformers</code> 的 <code>DiffLlamaAttention</code> 源码注释中明确指出：若直接传入 <code>head_dim_v = 2 * head_dim_q</code>，PyTorch SDPA 会被迫从高速 Flash 内核回退到慢速 <code>math / memory-efficient</code> 内核；若拆成两次标准 FlashAttention 调用（将 $V \in \mathbb{R}^{2d}$ 拆为两半 $V_1, V_2 \in \mathbb{R}^d$），则每次 Decode 步都必须把 $Q, K$ 与注意力矩阵重复计算或读取两次，导致推理延迟显著劣于基线 Transformer。</li>
+<li><strong>后期预训练的逐头 RMSNorm 失稳（Training Instability）</strong>：
+在大规模超长 Token 预训练后期，当某一个差分头的 $A_1$ 与 $\lambda A_2$ 几乎完全相等（即该头输出趋近于零向量 $\text{head}_i \to \mathbf{0}$）时，逐头 <code>RMSNorm</code> 的分母 $\sqrt{\frac{1}{2d}|\text{head}_i|_2^2 + \epsilon} \to \sqrt{\epsilon}$ 会变得极小，将微小数值噪声瞬间放大数百倍并引发 Loss Spike。</li>
+<li><strong>全局共享标量 $\lambda$ 的表达受限</strong>：V1 中同一层的不同 Token 共享同一个静态标量 $\lambda$，无法根据当前查询 Token 的具体语义动态调节消噪强度。</li>
+</ol>
+<h4 id="2diff-v2microsoft-unilm-2026的三大生产级重构">（2）DIFF V2（Microsoft unilm, 2026）的三大生产级重构</h4>
+<p>为了彻底解决上述问题，<strong>Differential Transformer V2（DIFF V2）</strong>（对照 <code>microsoft/unilm</code> 仓库 <code>Diff-Transformer/Diff-Transformer-V2/multihead_flashdiffv2.py</code>）对架构进行了极具洞察力的外科手术式改造：</p>
+<ol>
+<li><strong>倍增 Query 头数（$2h$），保持 KV 头数（$h_{kv}$）与头维 $d$ 完全不变</strong>：
+设基线 GQA Transformer 拥有 $h$ 个 Query 头、$h_{kv}$ 个 KV 头，每个头的维度均为 $d$。DIFF V2 <strong>不再强行把 $V$ 的头维改成 $2d$</strong>，而是直接将 Query 投影扩展为 $2h$ 个头（维度仍为 $d$），同时保持 Key 和 Value 仍为 $h_{kv}$ 个头（维度仍为 $d$，多出的少量 $W_Q$ 参数通过微调 FFN 中间层维度抵消）：
+$$Q \in \mathbb{R}^{B \times N \times 2h \times d}, \qquad K, V \in \mathbb{R}^{B \times N \times h_{kv} \times d}$$
+<ul>
+<li><strong>推理与算子收益</strong>：此时 $Q, K, V$ 的头维全部等于 $d$，<strong>一行代码 <code>attn = flash_attn_func(q, k, v, causal=True)</code> 即可原封不动地调用标准 FlashAttention-2 / FlashAttention-3 内核</strong>，无需任何自定义 CUDA Kernel！更妙的是，在 Memory-Bound 的自回归 Decode 阶段，KV Cache 的容量与 HBM 读取字节数与基线 Transformer <strong>100% 相同</strong>（仅加载一次 $h_{kv} \times d$ 的 KV 缓存），而每个加载进 SRAM 的 KV 头现在同时服务于 $2 \times \frac{h}{h_{kv}}$ 个 Query 头，算术强度（Arithmetic Intensity）翻倍，因此 <strong>Decode 吞吐速度与基线 Transformer 完全持平</strong>！</li>
+</ul>
+</li>
+<li><strong>移除逐头 RMSNorm（SubLN）</strong>：
+因为两个相减的注意力输出 $O_1, O_2$ 共享完全相同的 Value 向量 $V$，其输出方差天然受控，结合动态有界门控后可直接省去逐头 <code>RMSNorm</code>，根除了训练后期分母趋零导致的梯度爆炸隐患。</li>
+<li><strong>Token-specific &amp; Head-wise Sigmoid $\lambda$ 投影</strong>：
+废除复杂的四向量指数重参数化与 $\lambda_{\text{init}}(l)$，直接用一个轻量线性层从输入 $X$ 为每个 Token、每个输出头动态预测 $\lambda_{\text{logit}} = X W^\lambda \in \mathbb{R}^{B \times N \times h}$，并通过 $\text{sigmoid}$ 约束在 $(0, 1)$ 区间内：
+$$\text{DiffAttnV2}(Q, K, V, \lambda_{\text{logit}}) = \text{attn}<em>{:, :, 0::2, :} - \sigma(\lambda</em>{\text{logit}}) \odot \text{attn}_{:, :, 1::2, :}$$</li>
+</ol>
+<h4 id="3核心工程考点为什么-diff-v2-必须用偶奇交错切片-02-与-12而绝不能用对半切分-h-与-h">（3）核心工程考点：为什么 DIFF V2 必须用偶奇交错切片 <code>0::2</code> 与 <code>1::2</code>，而绝不能用对半切分 <code>:h</code> 与 <code>h:</code>？</h4>
+<p>在 GQA（Grouped-Query Attention）下，<code>flash_attn_func(q, k, v)</code> 会将 $2h$ 个 Query 头按连续顺序平均分配给 $h_{kv}$ 个 KV Group（每个 GQA Group 包含 $\frac{2h}{h_{kv}}$ 个连续的 Query 头，它们共享同一个 Key 头 $K_g$ 和同一个 Value 头 $V_g$）。</p>
+<ul>
+<li><strong>差分消噪成立的物理前提</strong>：相减的两个分支 $\text{attn}_1 = A_1 V^{(1)}$ 与 $\text{attn}_2 = A_2 V^{(2)}$ <strong>必须乘在同一个 Value 矩阵上（即 $V^{(1)} \equiv V^{(2)} = V_g$）</strong>，才能利用分配律提出公因式：
+$$A_1 V_g - \lambda A_2 V_g = (A_1 - \lambda A_2) V_g$$
+只有这样，两个注意力图在相同背景位置上的权重才能对同一个 Value 向量做标量抵消！</li>
+<li><strong>正确做法（<code>attn[:, :, 0::2]</code> 与 <code>attn[:, :, 1::2]</code>）</strong>：取第 $2i$ 个头与第 $2i+1$ 个头相减。由于 $\frac{2h}{h_{kv}}$ 是偶数（哪怕在 MHA 下 $h = h_{kv}$，每个 KV 头也恰好对应 $2$ 个相邻的 Query 头 $2i$ 和 $2i+1$），相邻偶奇头 $(2i, 2i+1)$ <strong>永远处于同一个 GQA Group 内</strong>，100% 共享相同的 $K_g$ 与 $V_g$！</li>
+<li><strong>错误做法（<code>attn[:, :, :h]</code> 与 <code>attn[:, :, h:]</code> 或 <code>torch.chunk(attn, 2, dim=2)</code>）</strong>：把前一半 Query 头 $i \in [0, h-1]$ 与后一半 Query 头 $i+h \in [h, 2h-1]$ 相减。此时第 $i$ 个头属于前半区的某个 KV Group $g_1$（对应 $V_{g_1}$），而第 $i+h$ 个头属于后半区的另一个完全不同的 KV Group $g_2$（对应 $V_{g_2} \neq V_{g_1}$）。两者相减得到的是 $A_1 V_{g_1} - \lambda A_2 V_{g_2}$，由于 $V_{g_1}$ 与 $V_{g_2}$ 处于完全不同的特征子空间，<strong>不仅根本无法提取公因式抵消背景噪声，反而会把两个无关 KV 头的共模噪声线性叠加放大</strong>！</li>
+</ul>
+<hr />
+<h3 id="3-gated-attentionqwen3-next低秩映射破除与-attention-sink-free-机制">3. Gated Attention（Qwen3-Next）：低秩映射破除与 Attention-Sink-Free 机制</h3>
+<h4 id="1标准-mha--gqa-中的-w_v-w_o-低秩线性坍缩证明">（1）标准 MHA / GQA 中的 $W_V W_O$ 低秩线性坍缩证明</h4>
+<p>在 NeurIPS 2025 Best Paper <em>Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free</em>（Qiu et al., 2025，已应用于 <code>Qwen3-Next-80B-A3B</code>）中，作者首先从代数角度揭示了标准注意力输出路径的表达瓶颈。
+设多头注意力共有 $H$ 个 Query 头，输出投影矩阵 $W_O \in \mathbb{R}^{(H d_{\text{head}}) \times d_{\text{model}}}$ 按行拆分为对应每个头的子块 $W_O^k \in \mathbb{R}^{d_{\text{head}} \times d_{\text{model}}}$（$k = 1, \dots, H$）。根据分块矩阵乘法性质，“先拼接各头输出再右乘 $W_O$”完全等价于“每个头独立右乘 $W_O^k$ 后对所有头求和”。因此，第 $i$ 个 Token 在第 $k$ 个注意力头上的输出贡献 $o_i^k \in \mathbb{R}^{1 \times d_{\text{model}}}$ 可以展开为（论文公式 6）：</p>
+<p>$$o_i^k = \left( \sum_{j=0}^{i} S_{i,j}^k \cdot (X_j W_V^k) \right) W_O^k = \sum_{j=0}^{i} S_{i,j}^k \cdot X_j \underbrace{\left( W_V^k W_O^k \right)}<em>{M^k \in \mathbb{R}^{d</em>{\text{model}} \times d_{\text{model}}}}$$</p>
+<ul>
+<li><strong>低秩瓶颈</strong>：由于 $W_V^k \in \mathbb{R}^{d_{\text{model}} \times d_{\text{head}}}$ 與 $W_O^k \in \mathbb{R}^{d_{\text{head}} \times d_{\text{model}}}$ 之间没有任何非线性函数，它们直接坍缩为单一矩阵 $M^k = W_V^k W_O^k$，其秩满足 $\text{rank}(M^k) \le d_{\text{head}} \ll d_{\text{model}}$（例如 $d_{\text{head}} = 128, d_{\text{model}} = 4096$）；</li>
+<li><strong>GQA 下的进一步恶化</strong>：在 Grouped-Query Attention 中，同一组内的所有 Query 头甚至共享同一个 $W_V^{\text{group}}$，使各个头的变换矩阵共享同一个左低秩子空间！</li>
+<li><strong>插入门控或归一化的非线性增益</strong>：如果在 SDPA 输出 $Y^k = \sum_{j=0}^i S_{i,j}^k X_j W_V^k$ 与 $W_O^k$ 之间（记为 <strong>$G_1$ 位置</strong>）或者在 Value 投影 $V_j^k = X_j W_V^k$ 之后（记为 <strong>$G_2$ 位置</strong>）施加门控调制，就打破了 $W_V^k$ 与 $W_O^k$ 的线性结合律，显著提升了每个头的非线性表达能力。</li>
+</ul>
+<h4 id="2为什么唯独sdpa-输出端g_1的-query-依赖稀疏-sigmoid-门控能彻底消除-attention-sink">（2）为什么唯独“SDPA 输出端（$G_1$）的 Query 依赖稀疏 Sigmoid 门控”能彻底消除 Attention Sink？</h4>
+<p>尽管在 $G_1$（SDPA 输出后）和 $G_2$（Value 投影后）加门控都能引入非线性，但论文在 15B MoE 与 1.7B Dense 模型（3.5T Tokens 训练）上的消融实验（论文 Table 4）发现了惊人的分化：</p>
+<ul>
+<li><strong>注意力沉没（Attention Sink）与巨幅激活（Massive Activation）的成因回顾</strong>：
+在标准 Transformer 中，当第 $i$ 个 Token 的第 $k$ 个注意力头在当前上下文中处于“无事可做（No-op）”状态时，由于 $\sum_{j=0}^i S_{i,j}^k = 1$，它必须把近乎 $100%$ 的注意力权重倾倒在某个不影响语义的公共位置上。由于自回归因果掩码下第 $0$ 个 Token（初始 Token）对所有后续位置都可见，模型在预训练中自发将第 $0$ 个 Token 异化为<strong>全局注意力垃圾桶（Attention Sink）</strong>——通过在首 Token 的隐状态上构造出幅值高达 $1000+$ 的极端离群值（Massive Activation），并让 $W_V^k W_O^k$ 将该方向的向量映射为近似零贡献或固定偏置，从而变相实现“不提取任何上下文信息”。</li>
+<li><strong>$G_1$（SDPA 输出门控）vs $G_2$（Value 门控）的本质差异</strong>：
+在 <code>qiuzh20/gated_attention</code> 官方源码（<code>modeling_qwen3.py</code> 第 281–363 行）中，<code>Qwen3Attention</code> 将 <code>q_proj</code> 的输出维度扩展为：
+<ul>
+<li><strong>Element-wise $G_1$ Gate</strong>：<code>q_proj</code> 输出 $H \cdot d_{\text{head}} \times 2$，切分出查询状态 $Q$ 与逐元素门控得分 $G_{\text{score}} \in \mathbb{R}^{B \times N \times H \times d_{\text{head}}}$；</li>
+<li><strong>Head-wise $G_1$ Gate</strong>：<code>q_proj</code> 输出 $H \cdot d_{\text{head}} + H$，切分出查询状态 $Q$ 与逐头门控标量 $G_{\text{score}} \in \mathbb{R}^{B \times N \times H \times 1}$（仅增加 $d_{\text{model}} \times H$ 的极微小参数量！）；
+在完成标准 FlashAttention / SDPA 得到输出 <code>attn_output</code>（形状 $[B, N, H, d_{\text{head}}]$）后，在送入 <code>o_proj</code> 前执行一行乘性门控：
+$$Y'<em>i = \text{SDPA}(Q_i, K</em>{\le i}, V_{\le i}) \odot \sigma(X_i W_\theta)$$</li>
+</ul>
+<ol>
+<li><strong>Query 依赖性（Query-Dependent）</strong>：$G_1$ 门控由<strong>当前查询 Token $X_i$</strong> 决定（而 $G_2$ 门控 $\sigma(X_j W_\theta)$ 只取决于被检索的历史 Token $X_j$，不知道当前 Query $X_i$ 需要什么信息）。当 Query $X_i$ 判断第 $k$ 个头在当前步无需检索任何有效特征时，只需直接令 $\sigma(X_i W_\theta^k) \to 0$，即可将整个头的 SDPA 输出完美归零！</li>
+<li><strong>稀疏门控分布（Input-Dependent Sparsity）</strong>：论文统计表明，$G_1$ Sigmoid 门控的平均得分极低（Element-wise 均值仅 $0.116$，Head-wise 均值仅 $0.172$），大量门控值集中在 $0$ 附近。因为每个头都拥有了合法的“一键静音（Zero-out）”开关，模型再也不需要把注意力强行倾泻在首 Token 上，也无需在首 Token 上制造千倍级的激活离群值！实测首 Token 平均注意力占比（F-Attn）从基线的 <strong>$46.7%$ 骤降至 $4.8%$</strong>（第 21 层从 $83%$ 降至 $4%$），层间最大隐藏层激活值（M-Act）从 <strong>$1053$ 暴降至 $94$</strong>，并在 YaRN 外推至 $128\text{K}$ 上下文时将 RULER 基准得分从 $31.65$ 大幅提升至 $58.82$！</li>
+</ol>
+</li>
+</ul>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">标准 Softmax 注意力 vs Differential Attention (V1/V2) vs Gated Attention (Qwen3-Next) 架构流转对比:
+
+  [1] 标准 Softmax Attention (受困于长序列背景底噪 + 首 Token Attention Sink 巨幅离群值)
+      X ──► Q, K, V ──► A = softmax(Q K^T / √d) ──► Y = A V ──────────────► Y W_O
+                        (∑ A_ij = 1 强制非负和为1, 无关词元累积底噪, 无事可做时倾泻至 Token 0)
+
+  [2] Differential Transformer V2 (双 Softmax 同 GQA 组奇偶交错相减, 零自定义算子开销抵消共模噪声)
+      X ──► Q (2h 头, 维 d), K (h_kv 头, 维 d), V (h_kv 头, 维 d), λ_logit = X W_λ (h 头)
+              │
+              ▼ (直接调用标准 FlashAttention-2, KV Cache 仅加载 1 次)
+            attn = flash_attn_func(Q, K, V)   [shape: B, N, 2h, d]
+              │
+              ├──► attn_even = attn[:, :, 0::2, :]  (同 GQA Group 内偶数 Query 头)
+              ├──► attn_odd  = attn[:, :, 1::2, :]  (同 GQA Group 内奇数 Query 头, 共享相同 K_g, V_g)
+              ▼
+            Y_diff = attn_even - sigmoid(λ_logit) ⊙ attn_odd ──► Y_diff W_O
+
+  [3] Gated Attention (Qwen3-Next, G1 位置 SDPA 输出端 Query 依赖稀疏 Sigmoid 门控)
+      X ──► q_proj ──► split ──┬──► Q (H 头, 维 d), K (h_kv 头), V (h_kv 头)
+                               │      │
+                               │      ▼ (标准 FlashAttention / SDPA)
+                               │    Y_sdpa = softmax(Q K^T / √d) V   [shape: B, N, H, d]
+                               │      │
+                               └──► G_score (H×d 或 H×1) ──► σ(G_score) (均值 ~0.12, 强稀疏)
+                                                               │
+                                                               ▼ (打破 W_V·W_O 低秩 + 一键静音无用头)
+                                                       Y_gated = Y_sdpa ⊙ σ(G_score) ──► Y_gated W_O
+</code></pre>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align:left">架构维度 / 对比项</th>
+<th style="text-align:left">标准 GQA Transformer</th>
+<th style="text-align:left">Differential Transformer V1 (ICLR 2025)</th>
+<th style="text-align:left">Differential Transformer V2 (2026)</th>
+<th style="text-align:left">Gated Attention (<code>G1</code>, NeurIPS 2025 / Qwen3-Next)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>核心数学公式</strong></td>
+<td style="text-align:left">$\text{softmax}!\left(\frac{QK^\top}{\sqrt{d}}\right)V$</td>
+<td style="text-align:left">$(1-\lambda_{\text{init}})\text{LN}!\left((A_1 - \lambda A_2)V\right)$</td>
+<td style="text-align:left">$\text{attn}<em>{0::2} - \sigma(X W^\lambda) \odot \text{attn}</em>{1::2}$</td>
+<td style="text-align:left">$\left(\text{softmax}!\left(\frac{QK^\top}{\sqrt{d}}\right)V\right) \odot \sigma(X W_\theta)$</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Q / K / V 头数与维度</strong></td>
+<td style="text-align:left">$Q: (h, d)$<br>$K,V: (h_{kv}, d)$</td>
+<td style="text-align:left">$Q, K: (2 \times \frac{h}{2}, d)$<br>$V: (\frac{h}{2}, \mathbf{2d})$（非对称）</td>
+<td style="text-align:left">$Q: (\mathbf{2h}, d)$<br>$K,V: (h_{kv}, d)$（全对称）</td>
+<td style="text-align:left">$Q: (h, d)$ + Gate $(h, d \text{ 或 } 1)$<br>$K,V: (h_{kv}, d)$</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>FlashAttention-2 兼容性</strong></td>
+<td style="text-align:left">原生兼容</td>
+<td style="text-align:left">需拆分为 2 次调用或定制 Kernel（因 $d_V = 2d_{QK}$）</td>
+<td style="text-align:left"><strong>单次标准调用原生兼容</strong></td>
+<td style="text-align:left"><strong>单次标准调用原生兼容</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Decode 阶段 KV Cache 带宽</strong></td>
+<td style="text-align:left">$1\times$ 基线</td>
+<td style="text-align:left">加载 $2$ 次或算术强度减半，Decode 较慢</td>
+<td style="text-align:left"><strong>$1\times$ 基线（算术强度翻倍，速度持平）</strong></td>
+<td style="text-align:left"><strong>$1\times$ 基线（速度几乎无损）</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>逐头 RMSNorm (SubLN)</strong></td>
+<td style="text-align:left">无</td>
+<td style="text-align:left"><strong>必需</strong>（但在 70B+ 训练后期易致失稳）</td>
+<td style="text-align:left"><strong>已移除</strong>（共享 $V_g$ + Sigmoid $\lambda$ 天然稳定）</td>
+<td style="text-align:left">无（门控本身已提供非线性与方差抑制）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>消除核心痛点</strong></td>
+<td style="text-align:left">—</td>
+<td style="text-align:left">抵消长序列无关背景共模噪声、压低激活离群值</td>
+<td style="text-align:left">兼顾差分消噪与生产级推理速度/训练稳定性</td>
+<td style="text-align:left">打破 $W_V W_O$ 低秩瓶颈、<strong>消除 Attention Sink 与千倍离群值</strong></td>
+</tr>
+</tbody>
+</table></div>
+<hr />
+<h3 id="4-python-3-标准库实现diff-v1-噪声抵消diff-v2-gqa-交错配对校验与-qwen3-gated-attention-仿真">4. Python 3 标准库实现：DIFF V1 噪声抵消、DIFF V2 GQA 交错配对校验与 Qwen3 Gated Attention 仿真</h3>
+<p>下面的零依赖 Python 3 标准库代码严格对齐 <code>microsoft/unilm</code>（<code>multihead_diffattn.py</code> 与 <code>multihead_flashdiffv2.py</code>）以及 <code>qiuzh20/gated_attention</code>（<code>modeling_qwen3.py</code>），定量验证了：</p>
+<ol>
+<li><strong>Differential Attention V1 的长上下文噪声抵消效应</strong>：在包含 $1$ 个目标 Needle Token 与 $20$ 个无关背景干扰 Token 的序列中，标准 Softmax Attention 将 $54.87%$ 的权重浪费在背景噪声上，导致输出向量与真实目标 Value 的余弦相似度仅为 $0.6352$；而 DIFF V1 通过双 Softmax 相减将背景噪声总质量压降至 $0.1863$，与目标 Value 的余弦相似度跃升至 <strong>$0.9181$</strong>；</li>
+<li><strong>DIFF V2 同 GQA 组奇偶交错配对（<code>0::2</code> vs <code>1::2</code>）与跨组对半切分（<code>:h</code> vs <code>h:</code>）的对比</strong>：当两个 GQA 组各自包含不同的共模 KV 背景干扰（$+10.0$ 与 $-8.0$）时，正确的同组交错相减 <code>0::2</code> vs <code>1::2</code> 精准还原出真实信号 <code>[[1.2001, 0.8001], [0.5, 1.5]]</code>；而错误的对半切分 <code>:h</code> vs <code>h:</code> 因跨 KV 组相减导致噪声反向叠加，输出严重畸变为 <code>[[18.7, 17.3], [18.0, 18.0]]</code>；</li>
+<li><strong>Qwen3 Gated Attention（$G_1$）消除 Attention Sink 与 Massive Activation</strong>：当某个头因无匹配目标而将 $92%$ 注意力倾泻在首 Token 上时，Query 依赖的 Sigmoid 门控将该冗余头关闭（门控值 $0.018$），使全层平均等效首 Token 沉没权重从 $0.4850$ 骤降至 $0.0325$，最大隐藏层激活值从 $46.0680$ 压降至 $3.7566$。</li>
+</ol>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+from typing import Dict, List
+
+
+def softmax(logits: List[float]) -&gt; List[float]:
+    m = max(logits)
+    exps = [math.exp(x - m) for x in logits]
+    s = sum(exps)
+    return [e / s for e in exps]
+
+
+def sigmoid(x: float) -&gt; float:
+    return 1.0 / (1.0 + math.exp(-x))
+
+
+def rms_norm(vec: List[float], eps: float = 1e-5) -&gt; List[float]:
+    ms = sum(x * x for x in vec) / len(vec)
+    inv_rms = 1.0 / math.sqrt(ms + eps)
+    return [x * inv_rms for x in vec]
+
+
+def lambda_init_fn(depth: int) -&gt; float:
+    &quot;&quot;&quot;对齐 microsoft/unilm Diff-Transformer `multihead_diffattn.py`: 0.8 - 0.6 * exp(-0.3 * depth)&quot;&quot;&quot;
+    return 0.8 - 0.6 * math.exp(-0.3 * depth)
+
+
+def simulate_diff_attn_v1_vs_standard(
+    q1: List[float],
+    q2: List[float],
+    keys1: List[List[float]],
+    keys2: List[List[float]],
+    values: List[List[float]],
+    lambda_q1: List[float],
+    lambda_k1: List[float],
+    lambda_q2: List[float],
+    lambda_k2: List[float],
+    depth: int = 0,
+) -&gt; Dict[str, object]:
+    &quot;&quot;&quot;
+    对比标准 Softmax Attention 与 Differential Attention V1 的长上下文噪声抵消机制:
+    - A1 = softmax(q1 K1^T / sqrt(d)), A2 = softmax(q2 K2^T / sqrt(d))
+    - lambda = exp(lambda_q1 · lambda_k1) - exp(lambda_q2 · lambda_k2) + lambda_init(depth)
+    - DiffAttn = (1 - lambda_init) * RMSNorm((A1 - lambda * A2) V)
+    &quot;&quot;&quot;
+    d = len(q1)
+    scale = 1.0 / math.sqrt(d)
+    logits1 = [sum(q1[j] * k[j] for j in range(d)) * scale for k in keys1]
+    logits2 = [sum(q2[j] * k[j] for j in range(d)) * scale for k in keys2]
+    a1 = softmax(logits1)
+    a2 = softmax(logits2)
+
+    lam_init = lambda_init_fn(depth)
+    lam1 = math.exp(sum(a * b for a, b in zip(lambda_q1, lambda_k1)))
+    lam2 = math.exp(sum(a * b for a, b in zip(lambda_q2, lambda_k2)))
+    lam = lam1 - lam2 + lam_init
+
+    diff_weights = [w1 - lam * w2 for w1, w2 in zip(a1, a2)]
+
+    # 第 0 个 Token 为目标 Needle，1..N-1 为无关背景噪声 Token
+    std_noise_mass = sum(abs(w) for w in a1[1:])
+    diff_noise_mass = sum(abs(w) for w in diff_weights[1:])
+
+    dim_v = len(values[0])
+    std_out = [sum(a1[t] * values[t][j] for t in range(len(values))) for j in range(dim_v)]
+    diff_raw = [
+        sum(diff_weights[t] * values[t][j] for t in range(len(values))) for j in range(dim_v)
+    ]
+    diff_out = [(1.0 - lam_init) * x for x in rms_norm(diff_raw)]
+
+    needle_v = values[0]
+    cos_std = sum(a * b for a, b in zip(std_out, needle_v)) / (
+        math.sqrt(sum(a * a for a in std_out)) * math.sqrt(sum(b * b for b in needle_v))
+    )
+    cos_diff = sum(a * b for a, b in zip(diff_out, needle_v)) / (
+        math.sqrt(sum(a * a for a in diff_out)) * math.sqrt(sum(b * b for b in needle_v))
+    )
+
+    return {
+        &quot;lambda_init&quot;: round(lam_init, 4),
+        &quot;lambda_val&quot;: round(lam, 4),
+        &quot;std_needle_weight&quot;: round(a1[0], 4),
+        &quot;std_noise_mass&quot;: round(std_noise_mass, 4),
+        &quot;diff_needle_weight&quot;: round(diff_weights[0], 4),
+        &quot;diff_noise_mass&quot;: round(diff_noise_mass, 4),
+        &quot;cos_std_to_needle&quot;: round(cos_std, 4),
+        &quot;cos_diff_to_needle&quot;: round(cos_diff, 4),
+    }
+
+
+def verify_diff_v2_gqa_head_pairing(
+    sdpa_heads: List[List[float]],
+    lambda_logits: List[float],
+) -&gt; Dict[str, object]:
+    &quot;&quot;&quot;
+    验证 DIFF V2 (`multihead_flashdiffv2.py`) 同 GQA 组交错配对 `0::2` vs `1::2` 与错误对半切分 `:h` vs `h:` 的差异。
+    &quot;&quot;&quot;
+    lam_gates = [sigmoid(x) for x in lambda_logits]
+    h = len(sdpa_heads) // 2
+
+    # 正确实现: 同一 GQA Group 相邻交错相减 (attn[:, 0::2] - sigmoid(lam) * attn[:, 1::2])
+    correct_even = sdpa_heads[0::2]
+    correct_odd = sdpa_heads[1::2]
+    out_correct = [
+        [
+            round(correct_even[i][d] - lam_gates[i] * correct_odd[i][d], 4)
+            for d in range(len(sdpa_heads[0]))
+        ]
+        for i in range(h)
+    ]
+
+    # 错误实现: 跨 GQA Group 对半切分 (attn[:, :h] - sigmoid(lam) * attn[:, h:])
+    wrong_first = sdpa_heads[:h]
+    wrong_second = sdpa_heads[h:]
+    out_wrong = [
+        [
+            round(wrong_first[i][d] - lam_gates[i] * wrong_second[i][d], 4)
+            for d in range(len(sdpa_heads[0]))
+        ]
+        for i in range(h)
+    ]
+    return {&quot;out_correct&quot;: out_correct, &quot;out_wrong&quot;: out_wrong}
+
+
+def simulate_qwen3_gated_attention_sink_elimination(
+    attn_probs_per_head: List[List[float]],
+    values_per_head: List[List[List[float]]],
+    gate_logits_per_head: List[float],
+) -&gt; Dict[str, object]:
+    &quot;&quot;&quot;
+    对齐 qiuzh20/gated_attention `modeling_qwen3.py` 的 SDPA Output Gating (G1):
+    当某个注意力头处于无实质匹配而退化为向首 Token (idx=0) 倾泻权重的 Attention Sink 状态时，
+    Query-dependent Sigmoid 门控将该头的冗余激活与首 Token 异常大激活 (Massive Activation) 压零。
+    &quot;&quot;&quot;
+    num_heads = len(attn_probs_per_head)
+    head_dim = len(values_per_head[0][0])
+
+    ungated_heads = []
+    gated_heads = []
+    eff_sink_weights_ungated = []
+    eff_sink_weights_gated = []
+
+    for h in range(num_heads):
+        probs = attn_probs_per_head[h]
+        vals = values_per_head[h]
+        sdpa_out = [
+            sum(probs[t] * vals[t][d] for t in range(len(probs))) for d in range(head_dim)
+        ]
+        g = sigmoid(gate_logits_per_head[h])
+        gated_out = [x * g for x in sdpa_out]
+
+        ungated_heads.append(sdpa_out)
+        gated_heads.append(gated_out)
+        eff_sink_weights_ungated.append(probs[0])
+        eff_sink_weights_gated.append(probs[0] * g)
+
+    max_act_ungated = max(abs(x) for h_out in ungated_heads for x in h_out)
+    max_act_gated = max(abs(x) for h_out in gated_heads for x in h_out)
+
+    return {
+        &quot;gate_values&quot;: [round(sigmoid(z), 4) for z in gate_logits_per_head],
+        &quot;mean_eff_sink_ungated&quot;: round(sum(eff_sink_weights_ungated) / num_heads, 4),
+        &quot;mean_eff_sink_gated&quot;: round(sum(eff_sink_weights_gated) / num_heads, 4),
+        &quot;max_act_ungated&quot;: round(max_act_ungated, 4),
+        &quot;max_act_gated&quot;: round(max_act_gated, 4),
+    }
+
+
+# --- 1. 验证 Differential Attention V1 长上下文背景噪声抵消 ---
+q1_demo = [2.2, 0.0]
+q2_demo = [0.0, 2.2]
+keys1_demo = [[2.2, 0.0]] + [[0.4, 0.4] for _ in range(20)]
+keys2_demo = [[-1.5, 0.0]] + [[0.4, 0.4] for _ in range(20)]
+values_demo = [[1.0, 0.0]] + [[0.0, 1.0] for _ in range(20)]
+diff_v1_res = simulate_diff_attn_v1_vs_standard(
+    q1_demo,
+    q2_demo,
+    keys1_demo,
+    keys2_demo,
+    values_demo,
+    lambda_q1=[0.5, 0.0],
+    lambda_k1=[0.5, 0.0],
+    lambda_q2=[0.0, 0.0],
+    lambda_k2=[0.0, 0.0],
+    depth=2,
+)
+assert diff_v1_res[&quot;lambda_init&quot;] == 0.4707
+assert diff_v1_res[&quot;lambda_val&quot;] == 0.7547
+assert diff_v1_res[&quot;std_noise_mass&quot;] == 0.5487
+assert diff_v1_res[&quot;diff_noise_mass&quot;] == 0.1863
+assert diff_v1_res[&quot;cos_diff_to_needle&quot;] &gt; diff_v1_res[&quot;cos_std_to_needle&quot;]
+assert diff_v1_res[&quot;cos_std_to_needle&quot;] == 0.6352
+assert diff_v1_res[&quot;cos_diff_to_needle&quot;] == 0.9181
+
+# --- 2. 验证 DIFF V2 同 GQA Group 交错配对 (0::2 vs 1::2) vs 跨组错误切分 (:h vs h:) ---
+sdpa_v2_demo = [
+    [11.2, 10.8],  # Group 0, Q_even: 真实信号 [1.2, 0.8] + 共模 KV 噪声 [10.0, 10.0]
+    [10.0, 10.0],  # Group 0, Q_odd : 纯共模 KV 噪声 [10.0, 10.0]
+    [-7.5, -6.5],  # Group 1, Q_even: 真实信号 [0.5, 1.5] + 共模 KV 噪声 [-8.0, -8.0]
+    [-8.0, -8.0],  # Group 1, Q_odd : 纯共模 KV 噪声 [-8.0, -8.0]
+]
+v2_pair_res = verify_diff_v2_gqa_head_pairing(sdpa_v2_demo, lambda_logits=[12.0, 12.0])
+assert v2_pair_res[&quot;out_correct&quot;] == [[1.2001, 0.8001], [0.5, 1.5]]
+assert v2_pair_res[&quot;out_wrong&quot;] == [[18.7, 17.3], [18.0, 18.0]]
+
+# --- 3. 验证 Qwen3 Gated Attention (G1) 消除 Attention Sink 与 Massive Activations ---
+probs_demo = [
+    [0.92, 0.04, 0.04],
+    [0.05, 0.05, 0.90],
+]
+vals_demo = [
+    [[50.0, -40.0], [0.5, 0.5], [1.2, 1.8]],
+    [[50.0, -40.0], [0.4, 0.6], [1.5, 2.0]],
+]
+gate_res = simulate_qwen3_gated_attention_sink_elimination(
+    probs_demo, vals_demo, gate_logits_per_head=[-4.0, 3.5]
+)
+assert gate_res[&quot;gate_values&quot;] == [0.018, 0.9707]
+assert gate_res[&quot;mean_eff_sink_ungated&quot;] == 0.485
+assert gate_res[&quot;mean_eff_sink_gated&quot;] == 0.0325
+assert gate_res[&quot;max_act_ungated&quot;] == 46.068
+assert gate_res[&quot;max_act_gated&quot;] == 3.7566
+
+print(
+    f&quot;1. DIFF V1 Noise Cancellation: std_noise={diff_v1_res[&#x27;std_noise_mass&#x27;]:.4f} &quot;
+    f&quot;(cos={diff_v1_res[&#x27;cos_std_to_needle&#x27;]:.4f}) -&gt; diff_noise={diff_v1_res[&#x27;diff_noise_mass&#x27;]:.4f} &quot;
+    f&quot;(cos={diff_v1_res[&#x27;cos_diff_to_needle&#x27;]:.4f})&quot;
+)
+print(
+    f&quot;2. DIFF V2 GQA Head Pairing: correct(0::2-1::2)={v2_pair_res[&#x27;out_correct&#x27;]}, &quot;
+    f&quot;wrong(:h-h:)={v2_pair_res[&#x27;out_wrong&#x27;]}&quot;
+)
+print(
+    f&quot;3. Gated Attention (G1) Sink Mitigation: eff_sink={gate_res[&#x27;mean_eff_sink_ungated&#x27;]:.4f}-&gt;&quot;
+    f&quot;{gate_res[&#x27;mean_eff_sink_gated&#x27;]:.4f}, max_act={gate_res[&#x27;max_act_ungated&#x27;]:.4f}-&gt;&quot;
+    f&quot;{gate_res[&#x27;max_act_gated&#x27;]:.4f}&quot;
+)
+print(&quot;All Differential Transformer (V1/V2) and Gated Attention assertions passed!&quot;)
+</code></pre>
+<p>实际运行输出：</p>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">1. DIFF V1 Noise Cancellation: std_noise=0.5487 (cos=0.6352) -&gt; diff_noise=0.1863 (cos=0.9181)
+2. DIFF V2 GQA Head Pairing: correct(0::2-1::2)=[[1.2001, 0.8001], [0.5, 1.5]], wrong(:h-h:)=[[18.7, 17.3], [18.0, 18.0]]
+3. Gated Attention (G1) Sink Mitigation: eff_sink=0.4850-&gt;0.0325, max_act=46.0680-&gt;3.7566
+All Differential Transformer (V1/V2) and Gated Attention assertions passed!
+</code></pre>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“Differential Transformer V1 的差分公式是 $(\text{softmax}(A_1) - \lambda \text{softmax}(A_2))V$，既然是求两个查询的差异，直接算一次 $\text{softmax}(A_1 - \lambda A_2)V$ 不是更快而且数学等价吗？”</strong>
+事实：<strong>$\text{softmax}(A_1 - \lambda A_2)$ 与 $\text{softmax}(A_1) - \lambda \text{softmax}(A_2)$ 在数学和物理机制上完全不等价！</strong> 如果在 Softmax <strong>内部</strong>对 Logits 做减法，外面依然套着一层标准 Softmax，其输出概率仍然严格大于 $0$ 且总和恒等于 $1$，先前讨论的长序列非负背景噪声底噪和 Attention Sink 问题会原封不动地保留下来！唯有对<strong>两个已经分别归一化的 Softmax 概率分布做相减</strong>，才能让相同的共模背景概率正负抵消归零。</li>
+<li><strong>误区二：“在实现 Differential Transformer V2 时，既然 <code>q_proj</code> 投影出了 $2h$ 个头，拿到 <code>flash_attn_func(q, k, v)</code> 的输出后，直接用 <code>attn1, attn2 = attn.chunk(2, dim=2)</code> 对半切开相减就可以了。”</strong>
+事实：<strong>在 GQA（$h_{kv} &lt; h$）乃至 MHA（当每個 KV 头对应一对偶奇 Query 头）下，<code>attn.chunk(2, dim=2)</code>（即 <code>:h</code> 与 <code>h:</code> 相减）是官方 README 明确点名警告的致命 Bug！</strong> 因为 FlashAttention 要求属于同一个 GQA Group 的 Query 头在维度上连续排列，第 $2i$ 个头与第 $2i+1$ 个头才共享同一组 $(K_g, V_g)$；对半切开会导致前半区的头与后半区完全不同 KV Group 的头相减，不仅破坏了 $(A_1 - \lambda A_2)V_g$ 的公因式提取前提，还会引入严重的跨组特征串扰。正确写法必须是偶奇交错切片 <code>attn[:, :, 0::2] - sigmoid(lam) * attn[:, :, 1::2]</code>。</li>
+<li><strong>误区三：“Qwen3-Next 的 Gated Attention 之所以有效，仅仅是因为多加了一个线性投影矩阵增加了模型参数量；把门控加在 Value 投影后面（$G_2$）或者直接加在 FFN 里效果是一样的。”</strong>
+事实：<strong>参数量完全不是主因！</strong> 论文消融实验（Table 3 &amp; Table 4）严格对比了参数量完全相同的 Value 门控（$G_2$）、跨头共享门控、无输入依赖门控以及几乎零参数的 Head-wise SDPA 门控：把门控加在 Value 后（$G_2$）由于不感知当前 Query，无法关闭无匹配的注意力头，首 Token 沉没率仍高达 $29.7%$；唯有加在 <strong>SDPA 输出端（$G_1$）且具备 Query 依赖与 Head-specific 稀疏特性的 Sigmoid 门控</strong>，才能同时完成“打破 $W_V W_O$ 低秩映射”与“按需归零冗余头以消除 Attention Sink”这两件事。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/rohitg00/ai-engineering-from-scratch/blob/9a6608f11e6a9adc9649c0db1308267cbb8ef6bb/phases/10-llms-from-scratch/16-differential-attention-v2/docs/en.md" target="_blank" rel="noopener noreferrer">rohitg00/ai-engineering-from-scratch (<code>phases/10-llms-from-scratch/16-differential-attention-v2/docs/en.md</code>)</a>（固定 commit <code>9a6608f</code>）与 <a href="https://github.com/Ashside/LLM-HandCoding-Interview/blob/84ec36ea9e8906bfdbccb05d6c121b4b18904709/Attention/GatedAttention.py" target="_blank" rel="noopener noreferrer">Ashside/LLM-HandCoding-Interview (<code>Attention/GatedAttention.py</code>)</a>（固定 commit <code>84ec36e</code>），独立推导数学机制并扩展源码级对比。</li>
+<li>Ye et al., <a href="https://arxiv.org/abs/2410.05258" target="_blank" rel="noopener noreferrer">Differential Transformer</a>，ICLR 2025，及微软官方源码 <a href="https://github.com/microsoft/unilm/blob/31c5b904ca1bf2afb4c234a6675c683a4e5fc7cd/Diff-Transformer/multihead_diffattn.py" target="_blank" rel="noopener noreferrer">microsoft/unilm (<code>Diff-Transformer/multihead_diffattn.py</code>)</a>（固定 commit <code>31c5b90</code>）：双 Softmax 差分消噪、$\lambda_{\text{init}}(l)$ 指数重参数化、逐头 RMSNorm 与 $(1 - \lambda_{\text{init}})$ 梯度流对齐证明。</li>
+<li>Microsoft Research (Ye et al.), <a href="https://github.com/microsoft/unilm/blob/31c5b904ca1bf2afb4c234a6675c683a4e5fc7cd/Diff-Transformer/Diff-Transformer-V2/README.md" target="_blank" rel="noopener noreferrer">Differential Transformer V2 (DIFF V2)</a> 及官方实现 <a href="https://github.com/microsoft/unilm/blob/31c5b904ca1bf2afb4c234a6675c683a4e5fc7cd/Diff-Transformer/Diff-Transformer-V2/multihead_flashdiffv2.py" target="_blank" rel="noopener noreferrer"><code>multihead_flashdiffv2.py</code></a>（固定 commit <code>31c5b90</code>）：$2h$ Query 头对称维度设计、移除 SubLN、Sigmoid $\lambda$ 投影及同 GQA 组 <code>0::2</code> vs <code>1::2</code> 交错配对规范。</li>
+<li>Hugging Face Transformers, <a href="https://github.com/huggingface/transformers/blob/e7200cd9a98f0c874edcdf8f7263b7d19530b403/src/transformers/models/diffllama/modeling_diffllama.py" target="_blank" rel="noopener noreferrer"><code>modeling_diffllama.py</code></a>（固定 commit <code>e7200cd</code>）：<code>DiffLlamaAttention</code> 中针对非对称 Value 头维的双 SDPA 调用工程实现。</li>
+<li>Qiu et al. (Qwen Team), <a href="https://arxiv.org/abs/2505.06708" target="_blank" rel="noopener noreferrer">Gated Attention for Large Language Models: Non-linearity, Sparsity, and Attention-Sink-Free</a>，NeurIPS 2025 Best Paper，及官方源码 <a href="https://github.com/qiuzh20/gated_attention/blob/f4c2a5f6ffd6ec709e0c60072c95ed4f5ce5b5d2/modeling_qwen3.py" target="_blank" rel="noopener noreferrer">qiuzh20/gated_attention (<code>modeling_qwen3.py</code>)</a>（固定 commit <code>f4c2a5f</code>）：$W_V W_O$ 低秩映射分析、SDPA 输出端（$G_1$）Query 依赖稀疏门控与 Attention Sink 消除实证。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-11-16</strong>。仅执行标准库下 Differential Attention V1 背景噪声抵消、DIFF V2 GQA 奇偶交错配对校验及 Qwen3 Gated Attention 沉没抑制的数值验证，未运行百亿参数大模型预训练与长上下文 GPU 基准评测。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">为什么 Differential Transformer 和 Gated Attention 都能大幅降低隐藏层与注意力 Logits 的激活离群值（Activation Outliers），这对 INT4 / FP8 低比特训练与推理量化有什么直接工程价值？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么 Differential Transformer 和 Gated Attention 都能大幅降低隐藏层与注意力 Logits 的激活离群值（Activation Outliers），这对 INT4 / FP8 低比特训练与推理量化有什么直接工程价值？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>激活离群值在标准 Transformer 中的根源</strong>：
+正如 Sun et al.（<em>Massive Activations in Large Language Models</em>, 2024）与 Ye et al.（DIFF Transformer Section 3.7）所揭示，标准 Transformer 中的极端激活离群值（Top-1 Hidden State 高达 $3608.6$，Attention Logits 高达 $318.0$，而中位数仅为 $0.6$ 和 $5.4$）本质上是模型为了配合 Softmax 非负归一化而构造出的“全局静态偏置 / 注意力垃圾桶（Attention Sink）”。</li>
+<li><strong>两种机制如何从源头削峰</strong>：
+<ul>
+<li>在 <strong>Differential Transformer</strong> 中，由于 $A_1 - \lambda A_2$ 本身就能将无关位置的注意力权重相减归零，模型无需在首 Token 或特定标点符号上构造巨幅 Logits 来吸纳多余概率质量，实测 Attention Logits Top-1 峰值从 $318.0$ 暴降至 $38.8$（降低约 $8.2\times$），Hidden States Top-1 从 $3608.6$ 降至 $1688.2$；</li>
+<li>在 <strong>Gated Attention（Qwen3-Next）</strong> 中，SDPA 输出端的 $\sigma(X_i W_\theta)$ 直接为每个头提供了稀疏截断通道，使层间最大激活均值（M-Act）从 $1053$ 暴降至 $94$（降低超过 $11\times$）！</li>
+</ul>
+</li>
+<li><strong>对低比特量化的工程红利</strong>：
+在 PTQ（如 SmoothQuant / AWQ）或 FP8/INT4 原生量化训练中，动态范围由 $\max(|X|)$ 决定。消除了极端离群值后，激活张量的分布高度集中在窄区间内，不仅使得无需复杂旋转（如 Quarot/SpinQuant）的直接 Per-Tensor / Per-Token INT8/INT4 激活量化成为可能，还在 DIFF Transformer 原论文实验中实现了 $6\text{-bit}$ 注意力 Logits 量化零精度损失（而标准 Transformer 在 $6\text{-bit}$ 下准确率已严重劣化）。</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">在 Qwen3-Next 等生产级架构中，Gated Attention 的“逐头标量门控（Head-wise Gating）”与“逐元素门控（Element-wise Gating）”应如何选型？为什么门控函数必须选有界非负的 Sigmoid，而不能选无界的 SiLU 或零均值对称的 Non-Sparse Sigmoid？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：在 Qwen3-Next 等生产级架构中，Gated Attention 的“逐头标量门控（Head-wise Gating）”与“逐元素门控（Element-wise Gating）”应如何选型？为什么门控函数必须选有界非负的 Sigmoid，而不能选无界的 SiLU 或零均值对称的 Non-Sparse Sigmoid？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>Head-wise vs Element-wise 的参数与性能权衡</strong>：
+<ul>
+<li><strong>Element-wise Gate</strong> 在 <code>q_proj</code> 中额外投影出 $H \times d_{\text{head}}$ 维的门控张量（使 <code>q_proj</code> 参数量翻倍），允许对头内每一个特征维度独立开关，取得最低的困惑度（PPL $5.761$ vs 基线 $6.026$）和最强的稀疏度（均值 $0.116$）；</li>
+<li><strong>Head-wise Gate</strong> 每个注意力头仅需预测 $1$ 个门控标量（<code>q_proj</code> 仅额外增加 $H$ 个输出通道，例如 $d_{\text{model}}=4096, H=32$ 时仅增加 $131\text{K}$ 参数，占全模型参数不到 $0.01%$！），却能斩获 Element-wise 方案 $85%$ 以上的性能增益（PPL $5.792$，F-Attn 降至 $7.3%$，M-Act 降至 $98$），在对参数预算与算子带宽极度敏感的场景下性价比极高。</li>
+</ul>
+</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">为什么乘性门控激活函数必须用标准 Sigmoid $\sigma(x) \in (0, 1)$？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么乘性门控激活函数必须用标准 Sigmoid $\sigma(x) \in (0, 1)$？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ul>
+<li>若在乘性门控中使用无界的 $\text{SiLU}(x) = x \sigma(x)$，大激活值会与自身相乘产生二次方发散，反而加剧激活爆炸；</li>
+<li>若将 Sigmoid 改为故意压制稀疏性的非稀疏变体（如论文 Table 4 第 7 行的 $\text{NS-sigmoid}(x) = 0.5 + 0.5\sigma(x) \in (0.5, 1.0)$，使门控永远无法接近 $0$），实验发现首 Token 注意力沉没立刻反弹回 $45.1%$，最大激活飙升回 $892$，长上下文外推增益完全消失！这铁证如山地证明了：<strong>门控能够把输出压向 $0$ 的稀疏截断能力（Sparsity），是消除 Attention Sink 的充分必要条件</strong>。</li>
+</ul>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-4">
+          <div class="followup-label">追问 04</div><h3 id="followup-4">除了 Differential Transformer 和 Gated Attention，还有哪些不增加过多开销就能缓解 Softmax Attention Sink 的轻量级替代方案（例如 Softmax-1 / Learnable Sink Token / QK-Norm）？它们各自的局限是什么？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：除了 Differential Transformer 和 Gated Attention，还有哪些不增加过多开销就能缓解 Softmax Attention Sink 的轻量级替代方案（例如 Softmax-1 / Learnable Sink Token / QK-Norm）？它们各自的局限是什么？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>Softmax-1（安静注意力 Quiet Attention，$\text{softmax}_1(z)_i = \frac{\exp(z_i)}{1 + \sum_j \exp(z_j)}$）与可学习 Sink Token（Learnable Sink Key/Value）</strong>：
+通过在 Softmax 分母中显式加 $1$（等价于拼接一个固定得分为 $0$、Value 为全 $\mathbf{0}$ 向量的虚拟 Token），允许所有真实 Token 的注意力权重之和小于 $1$。这虽然能在一定程度上缓解向首 Token 倾泻权重的现象，但它<strong>依然没有打破 $W_V^k W_O^k$ 的低秩线性映射瓶颈</strong>，且需要修改底层 FlashAttention 内核中的在线 Softmax 归一化常数；</li>
+<li><strong>QK-Norm（对 Query 和 Key 施加 RMSNorm）</strong>：
+能够限制注意力 Logits $\frac{q^\top k}{\sqrt{d}}$ 的上界、防止训练后期因 Logits 过大导致熵坍缩（Entropy Collapse），但无法改变 Softmax 概率和必为 $1$ 的刚性约束，单独使用 QK-Norm 的模型依然存在明显的 Attention Sink。而在 <code>Qwen3Attention</code> 源码中，工业界最佳实践是将 <strong><code>use_qk_norm = True</code> 与 <code>SDPA Output Gating</code> 联合使用</strong>，兼得输入侧 Logits 有界与输出侧稀疏门控截断的双重红利。</li>
+</ol>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0044 · 单题笔记</span><a href="../questions/llm-0044-differential-transformer-gated-attention.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0044", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

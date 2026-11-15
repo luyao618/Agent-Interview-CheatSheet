@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：204** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：205** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -43,7 +43,7 @@
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
-| 🧠 大模型基础与原理 | 34 | [查看 ↓](#-大模型基础与原理) |
+| 🧠 大模型基础与原理 | 35 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 45 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 44 | [查看 ↓](#-工程化部署性能成本) |
@@ -53,7 +53,7 @@
 
 ## 🧠 大模型基础与原理
 
-<sub>分类 ID：`llm` ｜ 共 34 题</sub>
+<sub>分类 ID：`llm` ｜ 共 35 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -91,6 +91,7 @@
 | 32 | [偏好对齐进阶演进（SimPO、ORPO、IPO 与 KTO）是如何通过无参考长度归一化、单阶段优势比惩罚、二次有界目标与前景理论非配对损失突破 DPO 瓶颈的？](questions/llm-0041-simpo-orpo-kto-ipo-preference-optimization.md) | 🔴 困难 |
 | 33 | [大模型无训练权重合并（Task Arithmetic、TIES-Merging、DARE 与 SLERP）是如何通过任务向量算术、符号冲突消解、随机稀疏重缩放与超球面测地线插值实现多能力融合的？](questions/llm-0042-model-merging-task-arithmetic-ties-dare-slerp.md) | 🔴 困难 |
 | 34 | [大模型训练后剪枝与稀疏化（SparseGPT、Wanda、2:4 半结构化稀疏与 ShortGPT）是如何通过逆海森误差补偿、激活感知重要性与层影响力评估突破压缩瓶颈的？](questions/llm-0043-pruning-sparsegpt-wanda-2to4-shortgpt.md) | 🔴 困难 |
+| 35 | [差分注意力（Differential Transformer V1/V2）与门控注意力（Gated Attention）是如何通过双 Softmax 噪声相减、同 GQA 组交错配对与 SDPA 输出稀疏门控消除注意力沉没及激活离群值的？](questions/llm-0044-differential-transformer-gated-attention.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 

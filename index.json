@@ -4543,6 +4543,29 @@
       "language": "zh",
       "updated": "2026-11-15",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0044",
+      "title": "差分注意力（Differential Transformer V1/V2）与门控注意力（Gated Attention）是如何通过双 Softmax 噪声相减、同 GQA 组交错配对与 SDPA 输出稀疏门控消除注意力沉没及激活离群值的？",
+      "file": "llm-0044-differential-transformer-gated-attention.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "differential-transformer",
+        "gated-attention",
+        "attention-sink",
+        "activation-outliers",
+        "long-context",
+        "qwen3-next"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开注意力机制架构指南与手撕代码题库（rohitg00/ai-engineering-from-scratch / Ashside/LLM-HandCoding-Interview）扩展改编；Differential Transformer V1/V2（ICLR 2025 / Microsoft unilm）与 Gated Attention（NeurIPS 2025 Best Paper / Qwen3-Next）官方源码核实（见参考）",
+      "updated": "2026-11-16",
+      "answers_count": 1
     }
   ]
 }
