@@ -1598,6 +1598,17 @@
       "images": 0
     },
     {
+      "id": "llm-0045",
+      "file": "llm-0045-native-sparse-attention-nsa-moba.html",
+      "source": "questions/llm-0045-native-sparse-attention-nsa-moba.md",
+      "source_sha256": "0231168bbc5399ba64381b53ee5210354a274ccd94400ab226e30906d8761194",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
