@@ -4589,6 +4589,29 @@
       "language": "zh",
       "updated": "2026-11-18",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0046",
+      "title": "条件记忆（DeepSeek Engram）与流形约束超连接（mHC）是如何通过确定性多头哈希查表、U 型稀疏容量分配与 Birkhoff 双随机流形投影重塑大模型稀疏与残差拓扑的？",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "engram",
+        "conditional-memory",
+        "mhc",
+        "hyper-connections",
+        "moe",
+        "sinkhorn-knopp"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开大模型架构与推理系统指南（ForceInjection/AI-fundamentals 与 linkedin/Liger-Kernel）扩展改编；DeepSeek Engram 与 mHC 官方论文及源码核实（见参考）",
+      "file": "llm-0046-engram-conditional-memory-mhc.md",
+      "language": "zh",
+      "updated": "2026-11-19",
+      "answers_count": 1
     }
   ]
 }

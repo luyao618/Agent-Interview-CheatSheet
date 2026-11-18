@@ -1609,6 +1609,17 @@
       "images": 0
     },
     {
+      "id": "llm-0046",
+      "file": "llm-0046-engram-conditional-memory-mhc.html",
+      "source": "questions/llm-0046-engram-conditional-memory-mhc.md",
+      "source_sha256": "b9193de680d8741f6d4ee212a00db92049592fede1102e1ecc8a72ba7546777d",
+      "answers": 1,
+      "followups": 5,
+      "missing_followup_answers": 1,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
