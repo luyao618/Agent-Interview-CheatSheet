@@ -1620,6 +1620,17 @@
       "images": 0
     },
     {
+      "id": "llm-0047",
+      "file": "llm-0047-chunked-prefill-prefix-caching-radix-attention.html",
+      "source": "questions/llm-0047-chunked-prefill-prefix-caching-radix-attention.md",
+      "source_sha256": "80f7ea55cd64694c4574772b5b2da4c6850c84ba49aad946d0aad8d0c29ff5c0",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",

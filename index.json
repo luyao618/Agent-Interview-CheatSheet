@@ -4635,6 +4635,29 @@
       "language": "zh",
       "updated": "2026-11-24",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0047",
+      "title": "分块预填充（Chunked Prefill / Sarathi-Serve）与自动前缀缓存（vLLM APC vs SGLang RadixAttention）是如何通过统一 Token 预算调度、链式块哈希与基数树前缀复用消除推理停顿并降低首字延迟的？",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "chunked-prefill",
+        "prefix-caching",
+        "radix-attention",
+        "sarathi-serve",
+        "vllm",
+        "sglang"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开大模型推理系统源码导读与精读笔记（halfrost/Halfrost-Field 与 XiaYiHann/AIInfraGuide-ia-lab）扩展改编；Sarathi-Serve、SGLang 论文及 vLLM V1 / SGLang 官方源码核实（见参考）",
+      "file": "llm-0047-chunked-prefill-prefix-caching-radix-attention.md",
+      "language": "zh",
+      "updated": "2026-11-25",
+      "answers_count": 1
     }
   ]
 }
