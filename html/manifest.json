@@ -2278,6 +2278,17 @@
       "missing_followup_answers": 0,
       "code_blocks": 3,
       "images": 0
+    },
+    {
+      "id": "rag-0049",
+      "file": "rag-0049-splade-learned-sparse-hybrid-fusion-rrf-dbsf.html",
+      "source": "questions/rag-0049-splade-learned-sparse-hybrid-fusion-rrf-dbsf.md",
+      "source_sha256": "1d8749e2c0814dd6fbd3b5cee8a8f1e0344be91048f4c6ad67c9ebdd1d9f46db",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
     }
   ]
 }
