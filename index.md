@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：209** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：210** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -45,7 +45,7 @@
 | :--- | :---: | :--- |
 | 🧠 大模型基础与原理 | 38 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
-| 🔍 检索增强生成 | 46 | [查看 ↓](#-检索增强生成) |
+| 🔍 检索增强生成 | 47 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 44 | [查看 ↓](#-工程化部署性能成本) |
 | 📦 AI 产品与落地 | 15 | [查看 ↓](#-ai-产品与落地) |
 
@@ -175,7 +175,7 @@
 
 ## 🔍 检索增强生成
 
-<sub>分类 ID：`rag` ｜ 共 46 题</sub>
+<sub>分类 ID：`rag` ｜ 共 47 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -225,6 +225,7 @@
 | 44 | [如何让 Milvus 知识库从建表到更新删除都保持可查询、可追溯与幂等？](questions/rag-0044-milvus-data-lifecycle.md) | 🟡 进阶 |
 | 45 | [俄罗斯套娃嵌入（Matryoshka Embeddings, MRL）与二值量化（Binary Quantization）是如何协同实现百倍检索内存压缩与两阶段漏斗加速的？](questions/rag-0048-matryoshka-binary-quantization-funnel.md) | 🟡 进阶 |
 | 46 | [学习型稀疏检索（SPLADE / SPLADE-v3）与混合检索分数融合（RRF、DBSF 与 TM2C2）是如何通过 MLM 对数饱和扩展、FLOPS 倒排正则与跨路分布对齐突破词法-语义检索边界的？](questions/rag-0049-splade-learned-sparse-hybrid-fusion-rrf-dbsf.md) | 🔴 困难 |
+| 47 | [延迟分块（Late Chunking）与上下文增强检索（Contextual Retrieval）是如何分别通过注意力后区间池化与离线语境生成解决切片失语症的，跨窗拼接、Span Pooling 与入库成本该如何权衡？](questions/rag-0050-late-chunking-contextual-retrieval-span-pooling.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 

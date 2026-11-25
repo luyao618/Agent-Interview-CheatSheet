@@ -1,0 +1,865 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。延迟分块（Late Chunking）与上下文增强检索（Contextual Retrieval）是如何分别通过注意力后区间池化与离线语境生成解决切片失语症的，跨窗拼接、Span Pooling 与入库成本该如何权衡？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/rag-0050-late-chunking-contextual-retrieval-span-pooling.md">
+  <meta name="source-sha256" content="b7b271f7cf473254097dd3e1fe7447dabd9dce4094bafeb237b2b206948fc399">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>延迟分块（Late Chunking）与上下文增强检索（Contextual Retrieval）是如何分别通过注意力后区间池化与离线语境生成解决切片失语症的，跨窗拼接、Span Pooling 与入库成本该如何权衡？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">RAG-0050</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title">延迟分块（Late Chunking）与上下文增强检索（Contextual Retrieval）是如何分别通过注意力后区间池化与离线语境生成解决切片失语症的，跨窗拼接、Span Pooling 与入库成本该如何权衡？</h1>
+        <div class="question-meta"><span>检索增强生成</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>在长文档（财报、法律合同、技术手册）RAG 系统中，传统的“先切分再独立编码（Naive Chunking）”面临棘手的**切片语境丢失（Lost Context / Context Dilution）**难题：当首段交代主体（如 <code>ACME Corp Q2 2023</code>），而后续切片仅使用代词或省略主语（如 <code>It highlighted a 3% revenue growth</code> 或 <code>It costs $200/month</code>）时，孤立编码的切片既在向量空间偏离查询意图，又在词法索引中缺失实体关键词。针对这一痛点，工业界形成了以 **Jina AI 延迟分块（Late Chunking）**与 **Anthropic 上下文增强检索（Contextual Retrieval）**为代表的两大主流技术路线。请深入剖析以下三个核心问题：</p>
+<ol>
+<li><strong>Late Chunking 的计算图反转、特殊词元对齐与跨窗长文档扩展（Long Late Chunking）</strong>：Late Chunking 是如何反转“切分”与“Transformer 双向自注意力”的执行顺序，在不调用生成式 LLM 的前提下将全文指代消解注入单切片向量的？在工程实现中，字符级切分器边界如何精确映射为 Token 级区间（Span Annotations），并处理 <code>[CLS]</code>、任务指令前缀（Instruction Prefix）与 <code>[SEP]</code> 的索引偏移？当文档长度超出 Embedding 模型最大窗口 $l_{\max}$（如 8192 tokens）时，<strong>Long Late Chunking</strong> 如何通过宏块重叠（Macro-Chunk Overlap）与单侧裁剪拼接避免截断失真，以及 <strong>Span Pooling</strong> 微调损失如何消除“整篇池化预训练与局部区间池化推理”的分布失配？</li>
+<li><strong>Contextual Retrieval 的双索引增益机制与 Prompt Caching 成本核算</strong>：Anthropic 的 Contextual Retrieval 如何通过离线前置语境摘要同时赋能 <strong>Contextual Embeddings</strong> 与 <strong>Contextual BM25</strong>？为什么面对多切片长文档时必须配合 <strong>Prompt Caching（前缀缓存）</strong>，在并发调度、缓存 TTL、最小可缓存前缀门槛与超长上下文阶梯计价上存在哪些会导致成本反升数倍的生产陷阱？</li>
+<li><strong>架构选型矩阵与混合生产范式</strong>：对比 <strong>Naive Chunking、Parent-Child 父子索引、结构化标题前置（CCH）、Late Chunking（及原生上下文化切片嵌入模型）与 Contextual Retrieval</strong>，它们在入库算力成本、BM25 词法增益、增量局部更新、白盒可调试性以及“大海捞针（无关联背景噪声）”场景下各有什么优劣与失效边界？</li>
+</ol>
+<p>本题由公开面试题/系统设计整理扩展改编，不是已核实的企业真题；不采信脱离具体条件的性能收益承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-carbon</span><span>2026-11-26</span></p><div class="prose"><p><strong>解决 RAG“切片失语症”的本质，是在保持小粒度切片高语义判别力（避免整篇长向量过度压缩）的同时，为局部片段补齐跨段落全局依赖：（1）Late Chunking 在“表征层”反转流水线，先用长窗口双向 Transformer 对整篇文档执行一次前向传播产出上下文感知的词元序列 $(\vartheta_1, \dots, \vartheta_m)$，再将字符级切分边界通过 <code>offset_mapping</code> 二分映射为词元区间并平移吸收 <code>[CLS]</code>/指令前缀与 <code>[SEP]</code>，最后对各区间执行局部均值池化（Chunked Mean Pooling）；对超长文档采用步长 $l_{\max}-\omega$ 的重叠宏窗口编码并切除左侧 $\omega$ 个重叠词元以保证长度守恒，配合双向 InfoNCE 的 Span Pooling 训练进一步强化局部跨度表征，具有零生成式 LLM 调用、入库快且低成本的优势，但因不改写原文而对 BM25 词法检索零增益；（2）Contextual Retrieval 在“文本层”为每个切片离线调用小参数量 LLM 生成 $50\sim 100$ tokens 的文档定位说明并拼接到原文前，显式补齐缺失主语与专有名词，从而同时提升稠密向量与 BM25 倒排召回，但必须采用“单文档首块串行预热写缓存（$1.25\times$）+ 其余 $N-1$ 块在 TTL 内并发读缓存（$0.10\times$）”的调度协议，否则冷启动并发扇出会触发全量重复写缓存惩罚；（3）生产落地不应一刀切，推荐以“确定性章节标题链前置（CCH）赋能 BM25 + Late Chunking / 上下文化嵌入模型赋能稠密侧”作为高性价比基线，仅对黄金评测集上仍存在复杂隐式指代的非结构化核心文档按需启用 LLM Contextual Retrieval。</strong></p>
+<p>在展开算法推导与源码级对比前，建议结合题库内已有题目建立完整脉络：关于固定、语义与自适应切片的基础权衡及切片重叠设计，请参阅 <a href="rag-0001-chunking-strategies.html">rag-0001</a> 与 <a href="rag-0009-chunk-overlap-purpose.html">rag-0009</a>；关于通过“小块检索、大块回传”在读取期补齐生成上下文的父子索引机制，请参阅 <a href="rag-0002-parent-child-index.html">rag-0002</a>；关于查询端生成假设文档的 HyDE 及其与离线入库增强的对偶差异，请参阅 <a href="rag-0015-hyde-principle.html">rag-0015</a>；关于当原文存在过期或矛盾脏数据时上下文增强可能放大错误及如何引入信息质量排序信号，请参阅 <a href="rag-0038-contextual-retrieval-information-quality.html">rag-0038</a>；关于多路混合检索中的 RRF 与分布融合（DBSF / TM2C2），请参阅 <a href="rag-0049-splade-learned-sparse-hybrid-fusion-rrf-dbsf.html">rag-0049</a>。</p>
+<hr />
+<h3 id="1-late-chunking-原理特殊词元区间对齐跨窗拼接与-span-pooling">1. Late Chunking 原理、特殊词元区间对齐、跨窗拼接与 Span Pooling</h3>
+<p>许多开发者会产生疑问：既然如今的 Embedding 模型（如 <code>jina-embeddings-v3</code>、<code>bge-m3</code>、<code>nomic-embed-text-v1</code>）已经支持 $8192$ 甚至 $32\text{K}$ 上下文窗口，为什么不直接把整篇文档压成 1 个向量？Günther et al.（<code>arXiv:2409.04701</code>）指出，单一固定维度向量（如 $768$ 或 $1024$ 维）的信息容量有限，整篇池化会导致严重的<strong>语义过度压缩（Over-Compression）</strong>，细粒度事实被背景段落均值稀释；而传统 Naive Chunking 先按句子或固定长度切碎再独立送入 Transformer，又切断了跨块自注意力路径。</p>
+<pre tabindex="0" aria-label="文本代码或示意图"><code class="language-text">Naive Chunking（先切分、后孤立编码）：
+  Doc T ──► Chunker ──► [c_1], [c_2], ..., [c_n] ──► 各自独立过 Transformer + Mean Pool ──► e_1, ..., e_n（c_2 中代词 &quot;It&quot; 看不到 c_1 的主语）
+
+Late Chunking（先全文注意力编码、后区间池化）：
+  Doc T ─┬─► Tokenizer(T) ──► Long-Context Transformer ──► 全文语境词元表示 (ϑ_1, ..., ϑ_m) ─┐
+         └─► Chunker(T) + Offset Mapping ──► Token Spans [(s_1, e_1), ..., (s_n, e_n)] ──────┴─► Span Mean Pool + L2 Norm ──► e_1, ..., e_n
+</code></pre>
+<h4 id="11-字符到-token-边界映射与非正文特殊词元cls--指令前缀--sep对齐">1.1 字符到 Token 边界映射与非正文特殊词元（<code>[CLS]</code> / 指令前缀 / <code>[SEP]</code>）对齐</h4>
+<p>对照官方仓库 <code>jina-ai/late-chunking</code>（<code>chunked_pooling/chunking.py</code> 与 <code>mteb_chunked_eval.py</code>），任意外部切分策略 $S$（固定长度、句子边界或语义切分）产出的往往是字符级起止区间 $(char_start_i, char_end_i)$。Late Chunking 需将其精确转换为 Token 级半开区间 $(s_i, e_i)$：</p>
+<ol>
+<li><strong>Offset Mapping 二分对齐</strong>：调用 <code>tokenizer.encode_plus(text, return_offsets_mapping=True, add_special_tokens=False)</code> 获取每个词元对应的原文字符跨度 $(o_t^{\text{start}}, o_t^{\text{end}})$，利用 <code>bisect_left</code> 定位首个起点 $\ge char_start_i$ 的词元索引 $s_i$，利用 <code>bisect_right</code> 定位末个终点 $\le char_end_i$ 的词元索引 $e_i$。</li>
+<li><strong>非上下文特殊词元平移（<code>_extend_special_tokens</code>）</strong>：真实推理时，Tokenizer 会在序列首部插入 <code>[CLS]</code> 以及任务指令前缀（如 <code>Represent this passage for retrieval: </code>，设占 $L_{\text{inst}}$ 个词元，总左偏移 $\Delta_L = 1 + L_{\text{inst}}$），并在序列尾部追加 <code>[SEP]</code>。若直接拿无特殊词元的裸区间 $(s_i, e_i)$ 去切片 <code>model_output[0]</code>，所有切片都会向左错位 $\Delta_L$ 个位置！Jina 官方源码采用边界吸收平移策略（将前置 <code>[CLS]</code> 与指令词元并入第 $0$ 个切片，将末尾 <code>[SEP]</code> 并入最后一个切片 $n-1$）：
+$$(s'<em>i, e'<em>i) = \begin{cases} (0,; e_0 + \Delta_L), &amp; i = 0 \ (s_i + \Delta_L,; e_i + \Delta_L), &amp; 0 &lt; i &lt; n - 1 \ (s</em>{n-1} + \Delta_L,; e</em>{n-1} + \Delta_L + 1), &amp; i = n - 1 \end{cases}$$
+随后对每个扩展区间 $(s'_i, e'_i)$（且满足 $e'_i - s'_i \ge 1$）执行局部均值池化与 $L_2$ 归一化：
+$$\mathbf{u}_i = \frac{1}{e'_i - s'<em>i} \sum</em>{t = s'_i}^{e'_i - 1} \boldsymbol{\vartheta}_t, \qquad \mathbf{e}_i = \frac{\mathbf{u}_i}{|\mathbf{u}_i|_2}$$
+因为双向自注意力（无因果掩码）已让每个 $\boldsymbol{\vartheta}_t$ 聚合了整篇文档前后的指代实体与章节主题，局部池化既保留了短切片的锐利焦点，又消除了代词指代不明。</li>
+</ol>
+<h4 id="12-超长文档跨窗拼接long-late-chunking与-span-pooling-专项微调">1.2 超长文档跨窗拼接（Long Late Chunking）与 Span Pooling 专项微调</h4>
+<ul>
+<li><strong>Long Late Chunking（突破单窗口长度与 $\mathcal{O}(m^2)$ 显存墙）</strong>：当文档总词元数 $m &gt; l_{\max}$（或自注意力显存不可承受）时，源码 <code>_embed_with_overlap</code> 将全文按步长 $l_{\max} - \omega$ 切分为带重叠长度 $\omega$（如 $l_{\max}=8192, \omega=512$）的<strong>宏块（Macro-Chunks）</strong> $[k(l_{\max}-\omega),; \min(k(l_{\max}-\omega)+l_{\max}, m))$。第 $0$ 个宏块完整保留全部 $l_{\max}$ 个词元嵌入；对于第 $k \ge 1$ 个宏块，前 $\omega$ 个词元仅充当双向注意力的<strong>前文语境桥梁</strong>，编码完成后执行单侧切片 <code>window_output[:, overlap_size:]</code> 丢弃前 $\omega$ 个重复位，再沿序列维拼接（<code>torch.cat(..., dim=1)</code>）。如此拼接后的序列长度严格等于原始全文词元数 $m$，无需改动后续任何 Span 区间坐标。</li>
+<li><strong>Span Pooling 微调（消除训练-推理池化粒度失配）</strong>：常规 Embedding 模型在对比学习阶段是对整段文本做全局均值池化，词元特征可能倾向于将关键信息扩散到全局汇聚点（如 <code>[CLS]</code> 或句首）而非留在答案所在的局部词元上。Günther et al. 提出构造三元组 $(q_i, d_i, \langle s_i, e_i \rangle)$（如基于 TriviaQA / FEVER 证据跨度标注），前向编码整篇 $d_i$ 后仅对答案跨度 $\langle s_i, e_i \rangle$ 池化得到正例向量 $\mathbf{y}<em>i = \operatorname{MeanPool}(\boldsymbol{\vartheta}</em>{d_i}[s_i:e_i])$，结合批内 $K$ 个样本优化对称双向 InfoNCE 损失：
+$$\mathcal{L}<em>{\text{pairs}}(B) = -\sum</em>{i=1}^{K} \ln \frac{\exp(s(\mathbf{x}_i, \mathbf{y}<em>i)/\tau)}{\sum</em>{j=1}^{K} \exp(s(\mathbf{x}_i, \mathbf{y}<em>j)/\tau)} - \sum</em>{i=1}^{K} \ln \frac{\exp(s(\mathbf{y}_i, \mathbf{x}<em>i)/\tau)}{\sum</em>{j=1}^{K} \exp(s(\mathbf{y}_i, \mathbf{x}_j)/\tau)}$$
+迫使 Transformer 将全局上下文锚定信息精准浓缩回答案所在的局部词元区间内。</li>
+</ul>
+<hr />
+<h3 id="2-contextual-retrieval双路索引赋能与-prompt-caching-工程经济学">2. Contextual Retrieval：双路索引赋能与 Prompt Caching 工程经济学</h3>
+<p>与 Late Chunking 在隐式向量层融合上下文不同，Anthropic 提出的 <strong>Contextual Retrieval</strong> 选择在入库阶段改写切片文本本身：对文档 $D$ 切出的每个片段 $c_i$，将完整文档 <code>&lt;document&gt;{D}&lt;/document&gt;</code> 与目标切片 <code>&lt;chunk&gt;{c_i}&lt;/chunk&gt;</code> 一并送入轻量级 LLM，生成一段 $50 \sim 100$ tokens 的简明语境定位前缀 $p_i$（例如：<code>“本片段出自 ACME 公司 2023 年 Q2 财报第 4 节产品定价，说明标准版套餐费用。”</code>），再将拼接后的增强文本 $\tilde{c}_i = p_i \oplus \text{&quot;\n\n&quot;} \oplus c_i$ <strong>同时写入稠密向量库（Contextual Embeddings）与词法倒排索引（Contextual BM25）</strong>。</p>
+<h4 id="21-为什么显式文本增强能拿到-late-chunking-拿不到的收益">2.1 为什么“显式文本增强”能拿到 Late Chunking 拿不到的收益？</h4>
+<ol>
+<li><strong>直接打通 BM25 / 稀疏检索的精确词项盲区</strong>：Late Chunking 完全不改变原文字符串，对于仅包含 <code>&quot;It costs $200/month&quot;</code> 的切片，BM25 倒排表中依然不存在 <code>&quot;ACME&quot;</code> 或 <code>&quot;Standard plan&quot;</code> 的词项记录；而 Contextual Retrieval 将实体名、型号与章节归属显式写成自然语言词元拼入 $\tilde{c}_i$，使稠密检索与词法检索同步受益（在 Anthropic 内部跨领域基准上，Top-20 检索失败率从基线的 $5.7%$ 在仅用 Contextual Embeddings 时降至 $3.7%$，叠加 Contextual BM25 后降至 $2.9%$，再串联 Reranker 后降至 $1.9%$；注：具体降幅高度依赖语料碎片化程度，必须在自有评测集上复测）。</li>
+<li><strong>跨 Embedding 模型解耦与白盒可观测性</strong>：生成的语境字符串 $p_i$ 独立持久化在元数据表中，未来升级或更换 Embedding 模型时无需重新调用生成式 LLM，且工程师抽检 Badcase 时可直接肉眼阅读 $p_i$ 排查归因。</li>
+</ol>
+<h4 id="22-prompt-caching-成本公式与四大生产级计费陷阱">2.2 Prompt Caching 成本公式与四大生产级计费陷阱</h4>
+<p>若一篇文档长 $L_d = 10{,}000$ tokens、切分为 $N = 30$ 个切片，朴素调用需重复发送整篇文档 $30$ 次，输入总量高达 $N \cdot L_d = 300{,}000$ tokens，大规模建库成本极其高昂。利用 <strong>Prompt Caching</strong> 将 <code>&lt;document&gt;{D}&lt;/document&gt;</code> 设为静态可缓存前缀后，设单价为输入 $P_{\text{in}}$、输出 $P_{\text{out}}$，缓存写入倍率为 $\mu_w = 1.25$（5 分钟 TTL 档），缓存命中读取倍率为 $\mu_r = 0.10$（9 折减免），单块指令与切片长 $L_c$、生成前缀长 $L_o$，则单文档入库总成本从无缓存的 $C_{\text{raw}}$ 骤降至预热缓存后的 $C_{\text{warm}}$：</p>
+<p>$$C_{\text{raw}} = N(L_d + L_c)P_{\text{in}} + N L_o P_{\text{out}}, \qquad C_{\text{warm}} = \Big[\big(\mu_w + (N - 1)\mu_r\big)L_d + N L_c\Big]P_{\text{in}} + N L_o P_{\text{out}}$$</p>
+<p>当 $N=30$ 时，文档主体的等效计费系数从 $30 L_d$ 降至 $(1.25 + 29 \times 0.10)L_d = 4.15 L_d$，仅文档输入项即节省 <strong>$86.2%$</strong>！但在真实生产流水线中，以下<strong>四大工程陷阱</strong>极易使省钱变成烧钱：</p>
+<ol>
+<li><strong>并发冷扇出击穿（Cold Parallel Fan-Out）</strong>：若异步 Worker 池在同一毫秒对同一文档的 $30$ 个切片并发发起请求，此时首个请求的 KV Cache 尚未写盘生效，$30$ 个请求会<strong>全部缓存未命中并各自支付 $1.25\times$ 写入溢价</strong>，使文档输入成本反超无缓存基线 $25%$！正确协议必须是：<strong>先串行单发 <code>chunk[0]</code> 完成缓存预热，收到响应确认 <code>cache_creation_input_tokens &gt; 0</code> 后，再在 TTL 窗口内并发扇出剩余 <code>chunk[1..N-1]</code></strong>。</li>
+<li><strong>跨文档随机打散导致 TTL 过期</strong>：全局队列若按切片随机洗牌消费，同一文档的两个切片间隔超过缓存 TTL（默认 5 分钟），每次都会退化为重新写缓存；必须按**文档亲和性（Document-Affinity）**成组调度。</li>
+<li><strong>最小可缓存前缀门槛（Minimum Cacheable Tokens）</strong>：不同模型存在硬性前缀下限（如 $512$、$1024$ 或 $4096$ tokens），低于该长度的短文档标记了 <code>cache_control</code> 也会静默跳过缓存；上线必须监控 <code>cache_read_input_tokens</code> 命中率。</li>
+<li><strong>超长上下文阶梯涨价线与默认推理（Thinking）开销</strong>：部分模型在总 Prompt 突破阈值（如 $100\text{K}$ 或 $200\text{K}$ tokens）时会对整次请求翻倍计价，且带默认思考模式（Adaptive Thinking）的模型若未显式关闭或调低推理预算，会在短短 $75$ tokens 的语境生成前空耗数百个高价输出推理词元。</li>
+</ol>
+<hr />
+<h3 id="3-可运行-python-3-标准库仿真late-chunking-区间池化跨窗拼接与缓存成本核验">3. 可运行 Python 3 标准库仿真：Late Chunking 区间池化、跨窗拼接与缓存成本核验</h3>
+<p>下面使用零第三方依赖的 Python 3 标准库，完整复现 <code>jina-ai/late-chunking</code> 的特殊词元区间平移（<code>_extend_special_tokens</code>）、注意力后局部均值池化（<code>chunked_pooling</code>）、跨窗单侧裁剪拼接（<code>_embed_with_overlap</code>），并与 Naive Chunking、Contextual Retrieval 双路召回及 Prompt Cache 并发冷扇出计费模型进行定量对决：</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+from typing import Dict, List, Optional, Tuple
+
+
+def l2_normalize(vec: List[float]) -&gt; List[float]:
+    norm = math.sqrt(sum(x * x for x in vec))
+    assert norm &gt; 0.0
+    return [x / norm for x in vec]
+
+
+def cosine_sim(a: List[float], b: List[float]) -&gt; float:
+    na, nb = l2_normalize(a), l2_normalize(b)
+    return sum(x * y for x, y in zip(na, nb))
+
+
+def bidirectional_attention_encode(
+    tokens: List[str],
+    vocab_vecs: Dict[str, List[float]],
+    beta: float = 2.0,
+) -&gt; List[List[float]]:
+    &quot;&quot;&quot;模拟双向编码器自注意力层，捕获跨句实体指代消解 (Coreference Resolution)&quot;&quot;&quot;
+    dim = len(next(iter(vocab_vecs.values())))
+    embs = [list(vocab_vecs.get(t, [0.0] * dim)) for t in tokens]
+    pronouns = {&quot;it&quot;, &quot;its&quot;, &quot;they&quot;, &quot;company&quot;}
+    entities = {&quot;acme&quot;, &quot;q2_2023&quot;}
+    out: List[List[float]] = []
+    for i, tok_i in enumerate(tokens):
+        logits: List[float] = []
+        for j, tok_j in enumerate(tokens):
+            dot = sum(embs[i][d] * embs[j][d] for d in range(dim)) / math.sqrt(dim)
+            # 模拟训练好的指代注意力头：代词在双向可见范围内强关注前文主语实体
+            if tok_i in pronouns and tok_j in entities and j &lt; i:
+                dot += 1.6
+            logits.append(beta * dot)
+        m = max(logits)
+        exps = [math.exp(x - m) for x in logits]
+        denom = sum(exps)
+        ctx = [0.0] * dim
+        for w, emb_j in zip(exps, embs):
+            p = w / denom
+            for d in range(dim):
+                ctx[d] += p * emb_j[d]
+        out.append([0.5 * embs[i][d] + 0.5 * ctx[d] for d in range(dim)])
+    return out
+
+
+def extend_special_tokens(
+    annotations: List[Tuple[int, int]],
+    n_instruction_tokens: int = 0,
+    include_prefix: bool = True,
+    include_sep: bool = True,
+) -&gt; List[Tuple[int, int]]:
+    &quot;&quot;&quot;严格复现 jina-ai/late-chunking (_extend_special_tokens) 的 [CLS]/指令前缀与 [SEP] 边界平移&quot;&quot;&quot;
+    new_annotations: List[Tuple[int, int]] = []
+    for i, (start, end) in enumerate(annotations):
+        add_left_offset = 1 if (not include_prefix) or (i &gt; 0) else 0
+        left_offset = 1 + n_instruction_tokens
+        left = start + add_left_offset * left_offset
+        add_sep = 1 if include_sep and ((i + 1) == len(annotations)) else 0
+        right_offset = left_offset + add_sep
+        right = end + right_offset
+        new_annotations.append((left, right))
+    return new_annotations
+
+
+def chunked_mean_pooling(
+    token_embeddings: List[List[float]],
+    span_annotations: List[Tuple[int, int]],
+    max_length: Optional[int] = None,
+) -&gt; List[List[float]]:
+    &quot;&quot;&quot;严格复现 jina-ai/late-chunking (chunked_pooling) 的区间均值池化与最大长度裁剪&quot;&quot;&quot;
+    if max_length is not None:
+        span_annotations = [
+            (s, min(e, max_length - 1))
+            for s, e in span_annotations
+            if s &lt; (max_length - 1)
+        ]
+    dim = len(token_embeddings[0])
+    pooled: List[List[float]] = []
+    for start, end in span_annotations:
+        length = end - start
+        if length &gt;= 1:
+            vec = [
+                sum(token_embeddings[t][d] for t in range(start, end)) / length
+                for d in range(dim)
+            ]
+            pooled.append(l2_normalize(vec))
+    return pooled
+
+
+def long_late_chunking_stitch(
+    tokens: List[str],
+    vocab_vecs: Dict[str, List[float]],
+    embed_size: int,
+    overlap_size: int,
+) -&gt; List[List[float]]:
+    &quot;&quot;&quot;严格复现 jina-ai/late-chunking (_embed_with_overlap) 宏窗口重叠编码与单侧裁剪拼接&quot;&quot;&quot;
+    assert embed_size &gt; overlap_size &gt;= 0
+    n_tokens = len(tokens)
+    if n_tokens &lt;= embed_size:
+        return bidirectional_attention_encode(tokens, vocab_vecs)
+    step = embed_size - overlap_size
+    stitched: List[List[float]] = []
+    for start in range(0, n_tokens, step):
+        end = min(start + embed_size, n_tokens)
+        window_embs = bidirectional_attention_encode(tokens[start:end], vocab_vecs)
+        if start &gt; 0:
+            stitched.extend(window_embs[overlap_size:])
+        else:
+            stitched.extend(window_embs)
+    assert len(stitched) == n_tokens
+    return stitched
+
+
+def prompt_cache_contextual_cost(
+    doc_tokens: int,
+    num_chunks: int,
+    chunk_prompt_tokens: int,
+    ctx_out_tokens: int,
+    price_in_per_m: float = 1.0,
+    price_out_per_m: float = 5.0,
+    write_mult: float = 1.25,
+    read_mult: float = 0.10,
+    cold_parallel_fanout: bool = False,
+) -&gt; Tuple[float, float]:
+    &quot;&quot;&quot;核算 Anthropic Contextual Retrieval 的无缓存成本 vs Prompt Cache 成本（含并发冷击穿陷阱）&quot;&quot;&quot;
+    uncached_in = num_chunks * (doc_tokens + chunk_prompt_tokens)
+    out_total = num_chunks * ctx_out_tokens
+    uncached_cost = (uncached_in * price_in_per_m + out_total * price_out_per_m) / 1e6
+
+    if cold_parallel_fanout:
+        # 并发同时发出全部 chunk 请求，未等第 1 个写缓存返回，全部触发 1.25x Cache Write!
+        cached_doc_equiv = num_chunks * doc_tokens * write_mult
+    else:
+        # 先单发 chunk 0 预热缓存 (1.25x)，再并发剩余 N-1 个命中缓存读取 (0.10x)
+        cached_doc_equiv = doc_tokens * (write_mult + (num_chunks - 1) * read_mult)
+
+    cached_in_equiv = cached_doc_equiv + num_chunks * chunk_prompt_tokens
+    cached_cost = (cached_in_equiv * price_in_per_m + out_total * price_out_per_m) / 1e6
+    return uncached_cost, cached_cost
+
+
+# 构造 4 维正交语义基底: [0: 公司实体 ACME, 1: 财报周期 Q2_2023, 2: 营收增长指标, 3: 通用运营/噪声]
+vocab = {
+    &quot;[CLS]&quot;: [0.05, 0.05, 0.05, 0.0],
+    &quot;[INST]&quot;: [0.05, 0.05, 0.0, 0.0],
+    &quot;acme&quot;: [1.0, 0.0, 0.0, 0.0],
+    &quot;q2_2023&quot;: [0.0, 1.0, 0.0, 0.0],
+    &quot;filing&quot;: [0.1, 0.1, 0.0, 0.4],
+    &quot;it&quot;: [0.0, 0.0, 0.05, 0.1],
+    &quot;grew_3pct&quot;: [0.0, 0.0, 1.0, 0.0],
+    &quot;they&quot;: [0.0, 0.0, 0.0, 0.2],
+    &quot;efficiency&quot;: [0.0, 0.0, 0.1, 0.9],
+    &quot;noise&quot;: [0.0, 0.0, 0.0, 0.8],
+    &quot;[SEP]&quot;: [0.05, 0.05, 0.05, 0.0],
+}
+
+# 文档含 3 个切片: chunk 0 交代实体 ACME 与 Q2_2023; chunk 1 用代词 &quot;it&quot; 报告 3% 营收增长; chunk 2 谈运营效率
+raw_chunks = [
+    [&quot;acme&quot;, &quot;q2_2023&quot;, &quot;filing&quot;],
+    [&quot;it&quot;, &quot;grew_3pct&quot;],
+    [&quot;they&quot;, &quot;efficiency&quot;],
+]
+query_tokens = [&quot;acme&quot;, &quot;q2_2023&quot;, &quot;grew_3pct&quot;]
+q_emb = chunked_mean_pooling(
+    bidirectional_attention_encode(query_tokens, vocab), [(0, len(query_tokens))]
+)[0]
+
+# 1. Naive Chunking: 先切分再各自独立编码 -&gt; chunk 1 仅命中 1/3 查询语义维度，被命中 2/3 维度的 chunk 0 反超误召回!
+naive_embs = [
+    chunked_mean_pooling(
+        bidirectional_attention_encode([&quot;[CLS]&quot;] + ch + [&quot;[SEP]&quot;], vocab),
+        [(0, len(ch) + 2)],
+    )[0]
+    for ch in raw_chunks
+]
+naive_sims = [cosine_sim(q_emb, e) for e in naive_embs]
+assert naive_sims[0] &gt; naive_sims[1], &quot;Naive chunking ranks intro chunk 0 above answer chunk 1&quot;
+
+# 2. Late Chunking: 全文拼接 [CLS] + [INST] + tokens + [SEP] 先跑双向注意力，再按扩展边界区间池化
+raw_spans = [(0, 3), (3, 5), (5, 7)]
+ext_spans = extend_special_tokens(raw_spans, n_instruction_tokens=1, include_prefix=True, include_sep=True)
+full_tokens = [&quot;[CLS]&quot;, &quot;[INST]&quot;] + [t for ch in raw_chunks for t in ch] + [&quot;[SEP]&quot;]
+assert ext_spans == [(0, 5), (5, 7), (7, 10)] and ext_spans[-1][1] == len(full_tokens)
+
+full_tok_embs = bidirectional_attention_encode(full_tokens, vocab)
+late_embs = chunked_mean_pooling(full_tok_embs, ext_spans)
+late_sims = [cosine_sim(q_emb, e) for e in late_embs]
+assert late_sims[1] &gt; late_sims[0] and late_sims[1] &gt; naive_sims[1] + 0.15
+
+# 3. Contextual Retrieval: 离线前置实体说明文本，同时修复稠密检索与 BM25 词项召回
+ctx_chunk_1 = [&quot;acme&quot;, &quot;q2_2023&quot;] + raw_chunks[1]
+cr_emb_1 = chunked_mean_pooling(
+    bidirectional_attention_encode([&quot;[CLS]&quot;] + ctx_chunk_1 + [&quot;[SEP]&quot;], vocab),
+    [(0, len(ctx_chunk_1) + 2)],
+)[0]
+cr_sim_1 = cosine_sim(q_emb, cr_emb_1)
+bm25_hit_late = int(&quot;acme&quot; in set(raw_chunks[1]))     # Late Chunking 不改文本，BM25 词表仍漏召回
+bm25_hit_cr = int(&quot;acme&quot; in set(ctx_chunk_1))         # Contextual Retrieval 显式补词，BM25 命中
+assert cr_sim_1 &gt; late_sims[0] and bm25_hit_late == 0 and bm25_hit_cr == 1
+
+# 4. Long Late Chunking: 超出单窗口长度时，重叠宏窗口编码保证总 Token 数精确守恒并保留跨窗前文
+long_doc = [&quot;acme&quot;, &quot;q2_2023&quot;, &quot;noise&quot;, &quot;noise&quot;, &quot;it&quot;, &quot;grew_3pct&quot;, &quot;noise&quot;, &quot;they&quot;]
+stitched_embs = long_late_chunking_stitch(long_doc, vocab, embed_size=6, overlap_size=3)
+no_overlap_embs = long_late_chunking_stitch(long_doc, vocab, embed_size=4, overlap_size=0)
+long_late_chunk = chunked_mean_pooling(stitched_embs, [(4, 6)])[0]
+broken_win_chunk = chunked_mean_pooling(no_overlap_embs, [(4, 6)])[0]
+assert cosine_sim(q_emb, long_late_chunk) &gt; cosine_sim(q_emb, broken_win_chunk)
+
+# 5. Prompt Cache 成本核算 (10,000 token 文档切 30 个 chunk，每个提示 120 token、输出 75 token)
+uncached_usd, warm_cached_usd = prompt_cache_contextual_cost(10_000, 30, 120, 75, cold_parallel_fanout=False)
+_, cold_fanout_usd = prompt_cache_contextual_cost(10_000, 30, 120, 75, cold_parallel_fanout=True)
+saving_ratio = 1.0 - warm_cached_usd / uncached_usd
+assert saving_ratio &gt; 0.78 and cold_fanout_usd &gt; uncached_usd
+
+print(f&quot;Chunk-1 (&#x27;it grew 3%&#x27;) sim: Naive={naive_sims[1]:.4f} (rank 2) -&gt; Late={late_sims[1]:.4f} (rank 1) | CR={cr_sim_1:.4f}&quot;)
+print(f&quot;Extended spans with [CLS]+[INST]+[SEP]: {raw_spans} -&gt; {ext_spans}&quot;)
+print(f&quot;BM25 exact keyword hit on Chunk-1 (&#x27;acme&#x27;): LateChunking={bm25_hit_late} vs ContextualRetrieval={bm25_hit_cr}&quot;)
+print(f&quot;Long Late Chunking (len={len(stitched_embs)}): overlap sim={cosine_sim(q_emb, long_late_chunk):.4f} &gt; non-overlap={cosine_sim(q_emb, broken_win_chunk):.4f}&quot;)
+print(f&quot;Ingestion LLM cost (30 chunks): uncached=${uncached_usd:.4f} -&gt; warm_cache=${warm_cached_usd:.4f} (-{saving_ratio*100:.1f}%), cold_fanout=${cold_fanout_usd:.4f}&quot;)
+print(&quot;All Late Chunking, Span Extension, Contextual Retrieval, and Prompt Cache checks passed.&quot;)
+</code></pre>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">Chunk-1 (&#x27;it grew 3%&#x27;) sim: Naive=0.6595 (rank 2) -&gt; Late=0.8934 (rank 1) | CR=0.9969
+Extended spans with [CLS]+[INST]+[SEP]: [(0, 3), (3, 5), (5, 7)] -&gt; [(0, 5), (5, 7), (7, 10)]
+BM25 exact keyword hit on Chunk-1 (&#x27;acme&#x27;): LateChunking=0 vs ContextualRetrieval=1
+Long Late Chunking (len=8): overlap sim=0.8900 &gt; non-overlap=0.5500
+Ingestion LLM cost (30 chunks): uncached=$0.3149 -&gt; warm_cache=$0.0563 (-82.1%), cold_fanout=$0.3898
+All Late Chunking, Span Extension, Contextual Retrieval, and Prompt Cache checks passed.
+</code></pre>
+<hr />
+<h3 id="4-五大上下文保持方案横向选型矩阵与混合生产架构">4. 五大上下文保持方案横向选型矩阵与混合生产架构</h3>
+<p>近年以 <code>voyage-context-4</code>、<code>pplx-embed-v2-context</code> 等为代表的**原生上下文化切片嵌入模型（Contextualized Chunk Embedding Models）**进一步将 Late Chunking + Span Pooling 思想封装为端到端托管/开源双尺寸共享空间模型（例如离线入库用 9B 大模型全文档联合编码，线上查询用对齐在同一 1024 维空间的 0.6B 轻量模型编码）。在系统设计面试中，可按以下六维矩阵给出清晰取舍：</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align:left">方案维度</th>
+<th style="text-align:left">Naive Chunking</th>
+<th style="text-align:left">Parent-Child（父子索引）</th>
+<th style="text-align:left">结构化标题前置（CCH）</th>
+<th style="text-align:left">Late Chunking / 原生上下文化嵌入</th>
+<th style="text-align:left">LLM Contextual Retrieval</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>上下文补齐时机</strong></td>
+<td style="text-align:left">无补齐（孤立编码）</td>
+<td style="text-align:left"><strong>读取期</strong>（子块检索，回传父块给生成端）</td>
+<td style="text-align:left"><strong>入库期</strong>（规则拼接文档名+章节树）</td>
+<td style="text-align:left"><strong>嵌入期</strong>（双向自注意力隐式注入词元）</td>
+<td style="text-align:left"><strong>入库期</strong>（LLM 离线生成语境自然语言前缀）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>能否修复检索期失语</strong></td>
+<td style="text-align:left">否</td>
+<td style="text-align:left"><strong>部分受限</strong>（若子块自身缺主语，初筛仍漏召回）</td>
+<td style="text-align:left">仅能补齐显式章节标题，解不了段内代词指代</td>
+<td style="text-align:left"><strong>是</strong>（稠密向量捕获全文指代与跨段语义）</td>
+<td style="text-align:left"><strong>是</strong>（稠密向量与词法关键词同时补齐）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>对 BM25 词法检索增益</strong></td>
+<td style="text-align:left">基线</td>
+<td style="text-align:left">无（BM25 仍扫孤立子块）</td>
+<td style="text-align:left"><strong>高</strong>（章节实体词直接入倒排表）</td>
+<td style="text-align:left"><strong>无</strong>（原文未改写，倒排表无新增词项）</td>
+<td style="text-align:left"><strong>极高</strong>（隐式指代被显式翻译为可检索词项）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>离线建库算力成本</strong></td>
+<td style="text-align:left">$1\times$ 短块嵌入</td>
+<td style="text-align:left">$1\times$ 子块嵌入 + 父块存储</td>
+<td style="text-align:left">零额外算力（纯 AST/DOM 解析）</td>
+<td style="text-align:left">$1\times$ 长上下文嵌入（零生成式 LLM 费用）</td>
+<td style="text-align:left">最高（每块 1 次小模型调用，强依赖 Prompt Cache）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>文档局部修订代价</strong></td>
+<td style="text-align:left">仅重算变更块</td>
+<td style="text-align:left">仅重算对应父块下的子块</td>
+<td style="text-align:left">仅重算变更块</td>
+<td style="text-align:left">**需重算整篇文档（或所在宏块）**以刷新双向注意力</td>
+<td style="text-align:left">仅对变更块重调 LLM（历史未改块可复用缓存语境）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>无关联噪声抵抗力</strong></td>
+<td style="text-align:left"><strong>强</strong>（不被无关段落稀释）</td>
+<td style="text-align:left">强（子块粒度纯洁）</td>
+<td style="text-align:left">强</td>
+<td style="text-align:left"><strong>弱于孤立块</strong>（“大海捞针”无关背景会污染注意力）</td>
+<td style="text-align:left"><strong>强</strong>（LLM 可主动提炼核心归属而忽略无关杂音）</td>
+</tr>
+</tbody>
+</table></div>
+<ul>
+<li><strong>“大海捞针（Needle-in-a-Haystack）”与大切片反转现象</strong>：Günther et al. 在 LongEmbed（如 <code>Needle-8192</code>、<code>Passkey-8192</code>）上的消融实验证明，当关键短句被塞入完全不相关的随机拼接杂文，或者切片本身已经很大（接近整篇长度）时，Late Chunking 反而可能略逊于 Naive Chunking——因为周围段落全是无关噪声，双向自注意力混入全局信号只会拉偏局部向量的纯净度。Late Chunking 收益最大化的甜点区是**“高内聚长文档 + 小粒度切片（如 $64 \sim 256$ tokens）”**。</li>
+<li><strong>生产级分层默认架构（Tiered Hybrid Ingestion）</strong>：
+<ol>
+<li><strong>全量免费底座</strong>：解析 Markdown / HTML / PDF 版面树，为所有切片确定性前置 <code>Document Title &gt; Section Hierarchy</code>（CCH），零成本保障 BM25 与向量库的章节实体命中；</li>
+<li><strong>稠密侧主力</strong>：使用支持 Late Chunking 的长窗口双向编码器（或原生上下文化切片嵌入模型）生成稠密向量；</li>
+<li><strong>疑难语料按需升舱</strong>：仅针对缺乏标题层级、跨段指代密集（如法庭质证笔录、非结构化财报附注）且在黄金集上 Recall 仍未达标的文档子集，走“首块预热 Prompt Cache + Batch API 半价异步队列”执行 LLM Contextual Retrieval。</li>
+</ol>
+</li>
+</ul>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“Late Chunking 就是把切分步骤推迟到检索出来之后，先把整篇长文档变成 1 个大向量存进向量库，等用户搜到文档后再实时切块。”</strong>
+事实：<strong>Late Chunking 依然在离线入库期切分并按小切片粒度落库（一图多块，每块 1 个独立向量）！</strong> 所谓“Late（延迟）”，是指把池化切分点从 <strong>Transformer 输入前</strong> 推迟到 <strong>Transformer 最后一层词元输出后、Mean Pooling 之前</strong>，线上向量检索阶段与常规切片索引完全一致，没有任何查询期实时重切开销。</li>
+<li><strong>误区二：“给切片设置 $15% \sim 20%$ 的滑动窗口重叠（Chunk Overlap），就足以替代 Late Chunking 或 Contextual Retrieval。”</strong>
+事实：<strong>局部重叠只能挽救恰好跨在切分刀口上的半句话，对长距离依赖完全无效！</strong> 财报或合同的主体名称与核心定义往往出现在第 1 页导言，而具体金额条款在第 15 页，除非把 Overlap 设成整篇文档大小，否则固定重叠窗口根本传递不了跨页实体归属。</li>
+<li><strong>误区三：“上 Contextual Retrieval 时，为了极致的入库吞吐，直接用 <code>asyncio.gather</code> 把每篇文档的所有切片一次性并发打给大模型 API，再开个 <code>cache_control</code> 就能自动省下 $80%+$ 费用。”</strong>
+事实：<strong>冷缓存下的同文档全并发扇出会导致 $100%$ 缓存未命中！</strong> 因为前缀缓存在首个请求完成 Prefill 写盘前对同毫秒到达的兄弟请求不可见，盲目并发会让 $N$ 个切片全部按 $1.25\times$ 写缓存计费，账单不降反升；必须先单发首块完成 Warm-up，再并发其余块。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/aishwaryanr/awesome-generative-ai-guide/blob/3a067b647eba7022606c49056dfa5d167181e61f/interview_prep/roles/ai-engineer/questions.md" target="_blank" rel="noopener noreferrer">aishwaryanr/awesome-generative-ai-guide (<code>interview_prep/roles/ai-engineer/questions.md</code> Q45–Q46)</a>（固定 commit <code>3a067b6</code>）与 <a href="https://github.com/ombharatiya/ai-system-design-guide/blob/10bdeb25e7e461247d25634f2cc4a0800ae368f6/06-retrieval-systems/10-contextual-retrieval.md" target="_blank" rel="noopener noreferrer">ombharatiya/ai-system-design-guide (<code>06-retrieval-systems/02-chunking-strategies.md</code> &amp; <code>10-contextual-retrieval.md</code>)</a>（固定 commit <code>10bdeb2</code>），结合论文公式与官方源码重构推导。</li>
+<li>Günther et al., <a href="https://arxiv.org/abs/2409.04701" target="_blank" rel="noopener noreferrer">Late Chunking: Contextual Chunk Embeddings Using Long-Context Embedding Models</a>（<code>arXiv:2409.04701v3</code>），2024/2025，及官方实现仓库 <a href="https://github.com/jina-ai/late-chunking/blob/1d3bb02bf091becd0771455e4e7959463935e26c/chunked_pooling/mteb_chunked_eval.py" target="_blank" rel="noopener noreferrer">jina-ai/late-chunking (<code>chunked_pooling/__init__.py</code> &amp; <code>mteb_chunked_eval.py</code>)</a>（固定 commit <code>1d3bb02</code>）：Algorithm 1/2 区间均值池化、特殊词元偏移对齐、宏窗口重叠单侧裁剪拼接及 Span Pooling 双向 InfoNCE 训练。</li>
+<li>Anthropic, <a href="https://www.anthropic.com/news/contextual-retrieval" target="_blank" rel="noopener noreferrer">Introducing Contextual Retrieval</a>，2024，及官方示例仓库 <a href="https://github.com/anthropics/claude-cookbooks/blob/8ad5de647d4f0f50c95d74aabc8aa20a3f70cdd3/capabilities/contextual-embeddings/guide.ipynb" target="_blank" rel="noopener noreferrer">anthropics/claude-cookbooks (<code>capabilities/contextual-embeddings/guide.ipynb</code>)</a>（固定 commit <code>8ad5de6</code>）：Contextual Embeddings、Contextual BM25、Prompt Caching 成本模型与多阶段重排实验。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-11-26</strong>。仅执行标准库下双向指代注意力仿真、特殊词元区间扩展对齐、区间均值池化、跨窗重叠单侧拼接与 Prompt Cache 计费模型的数值验证，未运行大规模多语种检索基准评测与线上分布式入库压测。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">可以用 Decoder-only 架构的 Embedding 模型（如基于 Llama / Qwen 微调、带因果注意力掩码 Causal Mask 的模型）直接做零训练 Late Chunking 吗？如果实体主语出现在后文（Cataphora 后指），会发生什么？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：可以用 Decoder-only 架构的 Embedding 模型（如基于 Llama / Qwen 微调、带因果注意力掩码 Causal Mask 的模型）直接做零训练 Late Chunking 吗？如果实体主语出现在后文（Cataphora 后指），会发生什么？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>单向因果掩码（Causal Attention Mask）的天然缺陷</strong>：标准 Decoder-only 模型第 $t$ 个词元只能看到 $\le t$ 的前文，看不到 $&gt; t$ 的后文。虽然顺向指代（前文提 <code>ACME Corp</code>，后文说 <code>It</code>）在因果掩码下勉强可见，但如果文档采用倒装、文末落款署名或先列条款明细再在章末定义适用主体（后指关系），前部切片的词元表示将完全无法感知后文主体；且 Decoder-only 嵌入模型通常训练为将语义汇聚在序列最末的 <code>[EOS]</code> token 上（Last-Token Pooling），中间词元隐状态并未对齐到余弦检索空间。</li>
+<li><strong>工程改造路径</strong>：若要在 Decoder-only 骨干上落地 Late Chunking，必须移除因果下三角掩码（如 LLM2Vec 开启双向注意力）并配合 <strong>Span Pooling</strong> 或局部均值池化目标做对比微调，切忌直接对采用 <code>[EOS]</code> 池化训练的单向模型强套局部区间均值。</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">Parent-Child 父子索引（小块检索、大块送入 LLM）同样号称解决“切片太碎丢失上下文”，它和 Late Chunking / Contextual Retrieval 在本质上解决的是同一个阶段的故障吗？能否叠加使用？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：Parent-Child 父子索引（小块检索、大块送入 LLM）同样号称解决“切片太碎丢失上下文”，它和 Late Chunking / Contextual Retrieval 在本质上解决的是同一个阶段的故障吗？能否叠加使用？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>故障阶段正交（读取生成期 vs 索引召回期）</strong>：Parent-Child 解决的是**“召回成功之后，生成模型看不懂孤立短句”<strong>（Read-Time Context Restoration），前提是那个 $200$ tokens 的子块本身必须先被检索器命中！如果子块内容只有 <code>“本季度同比增长 3%”</code> 而完全不含公司名，它在第一阶段向量/BM25 召回时就会直接排到 Top-100 之外，连触发回传父块的机会都没有。而 Late Chunking 与 Contextual Retrieval 解决的正是</strong>“第一阶段根本搜不到孤立子块”**（Index-Time Context Injection）。</li>
+<li><strong>黄金组合方式</strong>：两者不仅不冲突，反而是极佳搭档——用 Late Chunking 或 Contextual Retrieval 编码高判别力的<strong>子块索引</strong>以最大化 Recall@K，命中后根据 <code>parent_id</code> 去重回传未截断的<strong>父块原文</strong>（或清洗掉冗余前缀后的干净父段落）喂给生成端 LLM，兼顾检索精度与阅读连贯性。</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">当采用 Contextual Retrieval 为每块前置了 $80$ tokens 的文档级背景说明后，同一篇文档下的 30 个切片都会共享高度相似的前缀描述，这会导致检索 Top-K 被同一篇文档刷屏（同源聚集）或污染生成上下文吗？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：当采用 Contextual Retrieval 为每块前置了 $80$ tokens 的文档级背景说明后，同一篇文档下的 30 个切片都会共享高度相似的前缀描述，这会导致检索 Top-K 被同一篇文档刷屏（同源聚集）或污染生成上下文吗？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>同源相似度抬升与多样性退化风险</strong>：如果生成的语境前缀过长（例如超过切片正文的 $50%$）且模板化复述全文摘要，同一文档所有切片在向量空间会向文档中心坍缩，导致某次宽泛查询的 Top-10 被同一篇财报的 10 个相邻切片塞满，挤占跨文档对比证据。</li>
+<li><strong>三层工程治理</strong>：（a）在语境生成 Prompt 中严格限制输出在 $50 \sim 100$ tokens 以内，且要求聚焦**“该切片在全篇中的具体差异化定位”**而非泛泛概括全文；（b）索引存储分离 <code>context_prefix</code> 与 <code>raw_chunk</code>，融合检索后按 <code>doc_id</code> 施加单文档配额上限（Per-Document Cap）或 MMR 多样性重排，并在送入生成端时按需聚合同一文档命中块、避免重复喂入 10 遍相同的文档背景头。</li>
+</ol>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>RAG-0050 · 单题笔记</span><a href="../questions/rag-0050-late-chunking-contextual-retrieval-span-pooling.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "rag-0050", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>
