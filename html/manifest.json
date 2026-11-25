@@ -2300,6 +2300,17 @@
       "missing_followup_answers": 0,
       "code_blocks": 3,
       "images": 0
+    },
+    {
+      "id": "rag-0050",
+      "file": "rag-0050-late-chunking-contextual-retrieval-span-pooling.html",
+      "source": "questions/rag-0050-late-chunking-contextual-retrieval-span-pooling.md",
+      "source_sha256": "b7b271f7cf473254097dd3e1fe7447dabd9dce4094bafeb237b2b206948fc399",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
     }
   ]
 }
