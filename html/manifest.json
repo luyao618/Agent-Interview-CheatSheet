@@ -2311,6 +2311,17 @@
       "missing_followup_answers": 0,
       "code_blocks": 3,
       "images": 0
+    },
+    {
+      "id": "rag-0051",
+      "file": "rag-0051-colpali-visual-document-retrieval-muvera-pooling.html",
+      "source": "questions/rag-0051-colpali-visual-document-retrieval-muvera-pooling.md",
+      "source_sha256": "302325f1c39fa2f46af193a61160b39dbfad0ba360883a8b0d88b7843089d78b",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
     }
   ]
 }
