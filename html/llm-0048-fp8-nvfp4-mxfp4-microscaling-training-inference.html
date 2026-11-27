@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="先独立回答，再展开参考答案与追答。超低比特微缩放浮点（FP8、MXFP4 与 NVFP4）是如何通过分块缩放、高精累加、二维权重一致性、随机 Hadamard 旋转与随机舍入打通大模型训练与推理的？">
+  <meta name="theme-color" content="#f4f6fb">
+  <meta name="source-file" content="questions/llm-0048-fp8-nvfp4-mxfp4-microscaling-training-inference.md">
+  <meta name="source-sha256" content="b7a7679df1566030717b97a7f6cb366eeb17cd98adf72d0fce41b4f4d0ff55f3">
+  <meta name="generator" content="scripts/gen_html.py">
+  <title>超低比特微缩放浮点（FP8、MXFP4 与 NVFP4）是如何通过分块缩放、高精累加、二维权重一致性、随机 Hadamard 旋转与随机舍入打通大模型训练与推理的？ · AI 题典</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCIgYXJpYS1oaWRkZW49InRydWUiPgogIDxyZWN0IHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCIgcng9IjExIiBmaWxsPSIjNDU2MmRlIi8+CiAgPHBhdGggZD0iTTIwIDEyYy00LTIuNS04LTMtMTItMXYxOGM0LTIgOC0xLjUgMTIgMSA0LTIuNSA4LTMgMTItMVYxMWMtNC0yLTgtMS41LTEyIDFabTAgMHYxOCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjZmZmIiBzdHJva2Utd2lkdGg9IjEuNyIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgogIDxwYXRoIGQ9Ik0xMS41IDE2aDRNMTEuNSAyMGg0IiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS42IiBzdHJva2UtbGluZWNhcD0icm91bmQiIG9wYWNpdHk9Ii43NSIvPgogIDxwYXRoIGQ9Ik0yMy41IDE2LjdjMC0yLjggNS0yLjggNS0uMiAwIDEuOC0yLjUgMS45LTIuNSAzLjYiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxjaXJjbGUgY3g9IjI2IiBjeT0iMjMiIHI9Ii45NSIgZmlsbD0iI2ZmZiIvPgo8L3N2Zz4K">
+  <style>
+:root {
+      --bg: #f4f6fb; --paper: #fff; --ink: #202d48; --muted: #606e86;
+      --blue: #4562de; --blue-dark: #3450c6; --wash: #e9eeff; --line: #dfe5ef;
+      --green: #247a70; --green-wash: #edf7f4; --amber: #986324; --amber-wash: #faf2e5;
+      --sans: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --display: "Avenir Next", "Trebuchet MS", var(--sans);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --shadow: 0 8px 28px #202d4805;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.85 var(--sans); -webkit-font-smoothing: antialiased; }
+    button, textarea { font: inherit; }
+    button, summary { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    button { color: inherit; }
+    a { color: var(--blue); text-underline-offset: 4px; text-decoration-color: #becaf3; }
+    a:hover { text-decoration-color: var(--blue); }
+    a, button, textarea, summary { outline-offset: 5px; }
+    :focus-visible { outline: 3px solid #7790f6; }
+    ::selection { background: #dce4ff; }
+    [hidden] { display: none !important; }
+    svg { flex-shrink: 0; }
+    .icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
+    .mono { font-family: var(--mono); }
+    .page { max-width: 956px; margin: 0 auto; padding: 0 38px; }
+    .page-header { padding: 29px 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--line); }
+    .page-id { color: var(--muted); font: 11px var(--mono); letter-spacing: .11em; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 14px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); color: var(--ink); font-size: 12px; line-height: 1.6; transition: background .15s, border-color .15s; }
+    .button:hover { background: var(--wash); border-color: #c2cef5; }
+    .button.primary { color: white; border-color: var(--blue); background: var(--blue); }
+    .button.primary:hover { background: var(--blue-dark); }
+    button:disabled { cursor: default; opacity: .4; }
+    .question { padding: 34px 0 29px; }
+    .question-label { display: flex; align-items: center; gap: 8px; color: var(--blue); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+    .question-label::before { content: ""; display: block; width: 5px; height: 13px; background: var(--blue); border-radius: 2px; }
+    h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 650; line-height: 1.48; letter-spacing: -1.25px; margin: 16px 0 17px; }
+    h1 em { color: var(--blue); font-family: var(--display); font-style: normal; font-weight: 700; font-size: 1.1em; letter-spacing: -1.5px; }
+    .question-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 11px; }
+    .meta-dot { width: 3px; height: 3px; border-radius: 50%; background: #9ba8c0; }
+    .question-instruction { font-size: 13px; color: var(--muted); margin: 21px 0 0; }
+    .draft { padding: 22px 24px 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 13px; }
+    .draft-header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+    .draft h2 { font-size: 17px; font-weight: 600; margin: 0; }
+    .draft-state { color: var(--muted); font-size: 10px; text-align: right; }
+    textarea { width: 100%; min-height: 138px; display: block; resize: vertical; background: #fbfcff; border: 1px solid var(--line); border-radius: 8px; padding: 15px 17px; color: var(--ink); font-size: 14px; line-height: 1.95; }
+    textarea::placeholder { color: #78859b; }
+    textarea:focus { border-color: #8c9eec; }
+    .draft-footer { display: flex; justify-content: space-between; gap: 16px; font-size: 10px; color: var(--muted); margin-top: 10px; }
+    .draft-footer p { margin: 0; }
+    .print-draft { display: none; }
+    details > summary { list-style: none; }
+    details > summary::-webkit-details-marker { display: none; }
+    .reference-answer { background: var(--paper); border: 1px solid var(--line); border-radius: 13px; margin-top: 22px; overflow: clip; }
+    .answer-summary { display: flex; align-items: center; gap: 16px; padding: 23px 24px; }
+    .answer-summary:hover { background: #f9faff; }
+    .answer-badge { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 9px; color: var(--blue); background: var(--wash); font-size: 16px; font-weight: 500; }
+    .answer-summary h2 { font-size: 18px; font-weight: 600; margin: 0; }
+    .answer-summary-description { font-size: 11px; color: var(--muted); margin: 3px 0 0; }
+    .disclosure-action { margin-left: auto; display: flex; align-items: center; gap: 7px; flex-shrink: 0; color: var(--blue); font-size: 12px; }
+    .chevron { width: 15px; height: 15px; transition: transform .2s; }
+    details[open] > summary .chevron { transform: rotate(180deg); }
+    .answer-body { border-top: 1px solid var(--line); padding: 28px 28px 30px; }
+    .answer-source { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin: 0 0 18px; }
+    .source-badge { border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; font-size: 9px; }
+    .answer-lead { background: #eff3ff; border-left: 3px solid var(--blue); padding: 20px 23px; border-radius: 0 8px 8px 0; margin: 0 0 28px; }
+    .answer-lead strong { display: block; font-size: 19px; line-height: 1.65; font-weight: 600; margin-bottom: 8px; }
+    .answer-lead p { margin: 0; font-size: 14px; line-height: 1.95; color: #536482; }
+    .answer-section + .answer-section { margin-top: 27px; }
+    .answer-section h3 { font-size: 17px; font-weight: 600; margin: 0 0 13px; }
+    .answer-section p { font-size: 14px; color: var(--muted); line-height: 1.95; margin: 0 0 17px; }
+    .answer-section strong { color: #344867; font-weight: 600; }
+    .answer-list { margin: 0; padding-left: 20px; display: grid; gap: 9px; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .answer-list code { font: .88em var(--mono); background: #eef2fa; color: #526893; padding: 2px 4px; border-radius: 3px; }
+    .answer-boundary { font-size: 12px; line-height: 1.9; color: #61718b; padding: 16px 18px; margin: 21px 0 0; border-radius: 7px; background: var(--bg); }
+    .references { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 17px; }
+    .references h3 { font-size: 12px; font-weight: 600; margin: 0 0 8px; }
+    .references a { display: block; font-size: 11px; line-height: 1.85; margin-top: 8px; overflow-wrap: anywhere; }
+    .source-note { color: var(--muted); font-size: 10px; margin: 15px 0 0; }
+    .followups { margin-top: 38px; }
+    .followups-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--line); }
+    .followups-heading h2 { font-size: 21px; font-weight: 600; margin: 0; }
+    .followups-heading p { color: var(--muted); font-size: 11px; margin: 0; }
+    .followup { padding: 23px 0; border-bottom: 1px solid var(--line); }
+    .followup-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; color: var(--muted); margin-bottom: 5px; }
+    .followup h3 { font-size: 17px; line-height: 1.75; font-weight: 550; margin: 0 0 10px; }
+    .followup-answer > summary { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 1.8; color: var(--blue); padding: 3px 0; }
+    .followup-answer > summary:hover { text-decoration: underline; text-underline-offset: 4px; }
+    .followup-response { border-left: 2px solid #b8c6ef; padding: 16px 21px; margin-top: 13px; background: #edf1fa; border-radius: 0 7px 7px 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+    .response-label { color: var(--blue); font-size: 11px; font-weight: 600; margin-bottom: 8px; }
+    .followup-response p { margin: 0 0 12px; }
+    .followup-response p:last-child { margin: 0; }
+    .comparison { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; margin: 15px 0; }
+    .comparison th, .comparison td { padding: 9px 11px; border-bottom: 1px solid #d7dfef; vertical-align: top; }
+    .comparison th { color: #4e6286; font-weight: 500; background: #e5ebf7; }
+    .comparison td:first-child { font-family: var(--display); font-weight: 600; color: #4e6286; }
+    .page-footer { padding: 24px 0 37px; display: flex; align-items: center; justify-content: space-between; gap: 20px; font-size: 10px; color: var(--muted); }
+    .page-footer a { color: var(--muted); }
+    .noscript { font-size: 12px; color: var(--muted); padding: 12px 0; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+    .lab{border:1px solid #dbe2f1;border-radius:14px;background:var(--paper);overflow:hidden;box-shadow:var(--shadow)}.lab-task{display:flex;justify-content:space-between;align-items:center;gap:12px;background:#fbfcff;border-bottom:1px solid var(--line);padding:16px 21px;font-size:11px}.task-text{display:flex;align-items:center;gap:10px;line-height:1.8}.task-label{flex-shrink:0;border:1px solid var(--line);background:white;border-radius:4px;font-size:9px;padding:1px 6px;color:var(--muted)}.demo-tag{font:9px var(--mono);color:#8994a8;white-space:nowrap}.lab-main{display:grid;grid-template-columns:1.13fr 1fr;min-height:268px}.loop-pane{padding:25px 21px 17px;display:flex;flex-direction:column;justify-content:center;position:relative}.loop-eyebrow{display:flex;align-items:center;gap:5px;font-size:9px;color:#8b96aa;margin-bottom:23px;letter-spacing:.04em}.loop-eyebrow .dot{width:5px;height:5px;background:#5e79e4;border-radius:50%}.nodes{display:flex;align-items:center;justify-content:space-between;gap:0}.node{padding:14px 5px 12px;flex:1;min-width:0;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--muted);position:relative;transition:background .18s,border-color .18s,box-shadow .18s}.node:hover{background:#f7f9ff;border-color:#b9c7f2}.node[aria-pressed="true"]{border-color:#788eeb;background:#eff3ff;box-shadow:0 0 0 3px #4562de0b;color:var(--blue)}.node[data-stage="observation"][aria-pressed="true"]{background:var(--amber-wash);border-color:#cbaa76;color:var(--amber);box-shadow:0 0 0 3px #98632409}.node-icon{display:flex;align-items:center;justify-content:center;margin:0 auto 11px;width:29px;height:29px;color:currentColor}.node-icon .icon{width:25px;height:25px;stroke-width:1.45}.node-name{font:600 11px var(--display);display:block}.node-cn{font-size:10px;margin-top:3px;display:block}.node-connector{flex:0 0 24px;color:#b8c4dc;text-align:center;font-size:16px}.loop-back{height:45px;margin:0 12%;position:relative;color:#a2b2d8}.loop-back svg{width:100%;height:100%;display:block;overflow:visible}.loop-back span{position:absolute;top:19px;left:50%;transform:translateX(-50%);padding:0 6px;white-space:nowrap;font-size:8px;color:#8190af;background:white}.loop-exit{display:flex;justify-content:center;align-items:center;gap:8px;font-size:9px;color:#8c97aa;padding-top:7px}.final-pill{padding:3px 8px;border:1px solid var(--line);border-radius:4px;font:9px var(--mono);color:#6f7c92}.loop-pane.is-final .final-pill{background:var(--green-wash);color:var(--green);border-color:#b8d9cf}.trace-pane{background:#f7f9fd;border-left:1px solid var(--line);padding:24px;min-width:0;display:flex;flex-direction:column}.trace-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.trace-kind{font:10px var(--mono);letter-spacing:.08em;color:var(--blue)}.round-label{font-size:9px;color:var(--muted);background:#eaf0fa;padding:2px 7px;border-radius:4px}.trace-pane h3{font-size:16px;margin:0 0 9px;font-weight:600;line-height:1.5}.trace-content{font-size:14px;color:#606e86;line-height:1.9;margin:0;overflow-wrap:anywhere}.trace-code{background:#edf1f8;border-radius:7px;padding:13px;font:11px/1.85 var(--mono);color:#466090;white-space:pre-wrap;overflow-wrap:anywhere;margin:5px 0 12px}.trace-note{margin-top:auto;padding-top:17px;font-size:10px;color:#63728d;display:flex;align-items:flex-start;gap:6px;line-height:1.8}.trace-note .icon{width:12px;height:12px;margin-top:2px}.lab-controls{padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line);background:#fff}.scenario-switch{display:flex;background:#f1f4f9;border-radius:6px;padding:3px}.scenario-switch button{font-size:10px;border:0;background:transparent;border-radius:4px;padding:5px 9px;color:#7c879b;white-space:nowrap}.scenario-switch button[aria-pressed="true"]{background:white;color:var(--ink);box-shadow:0 1px 4px #202d4810}.trace-controls{display:flex;align-items:center;gap:8px}.step-count{font:9px var(--mono);color:#7a879e;white-space:nowrap;margin-right:4px}.icon-button{background:transparent;border:1px solid var(--line);border-radius:6px;display:inline-flex;justify-content:center;align-items:center;width:29px;height:29px;color:var(--muted)}.icon-button:hover{background:var(--wash)}.icon-button .icon{width:13px;height:13px}.lab-controls .button{font-size:10px;padding:6px 11px;border-radius:6px}.lab-caption{font-size:11px;line-height:1.9;color:#7c889e;margin:11px 3px 0}.lab-caption b{font-weight:500;color:#536683}
+
+    .lab { box-shadow: none; }
+    .lab-task { font-size: 11px; }
+    .lab-main { grid-template-columns: 1.07fr 1fr; }
+    .loop-pane { padding: 23px 17px 18px; }
+    .node-connector { flex-basis: 19px; }
+    .trace-pane { padding: 22px 21px; }
+    .trace-pane h4 { font-size: 15px; font-weight: 600; line-height: 1.65; margin: 0 0 10px; }
+    .trace-content { font-size: 13px; }
+    .lab-caption { margin-bottom: 0; }
+    @media (max-width: 700px) {
+      .page { padding: 0 22px; }
+      .page-header { padding: 21px 0 17px; }
+      .question { padding-top: 28px; }
+      h1 { font-size: 34px; letter-spacing: -.8px; margin: 15px 0; }
+      .question-instruction { font-size: 12px; margin-top: 19px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 22px 24px; }
+      .node-connector { flex-basis: 24px; }
+      .trace-pane { border-left: 0; border-top: 1px solid var(--line); min-height: 210px; }
+      .trace-content { font-size: 14px; }
+      .demo-tag { display: none; }
+      .lab-controls { padding: 12px; gap: 13px; flex-wrap: wrap; }
+      .scenario-switch button { font-size: 10px; padding: 5px 7px; }
+      .trace-controls { gap: 6px; }
+      .step-count { font-size: 8px; margin-right: 0; }
+      .lab-controls .button { padding: 6px 9px; font-size: 10px; }
+      .followups-heading p { font-size: 10px; }
+    }
+    @media (max-width: 460px) {
+      .page { padding: 0 19px; }
+      .page-id { font-size: 10px; }
+      .page-header .button { padding: 7px 11px; font-size: 11px; }
+      h1 { font-size: 31px; }
+      .question-label { font-size: 11px; }
+      .question-meta { font-size: 10px; }
+      .question { padding-bottom: 24px; }
+      .draft { padding: 18px 17px 13px; }
+      .draft-header { gap: 10px; }
+      .draft h2 { font-size: 16px; }
+      .draft-state { font-size: 9px; }
+      textarea { min-height: 159px; font-size: 16px; padding: 12px 13px; line-height: 1.85; }
+      textarea::placeholder { font-size: 13px; }
+      .draft-footer { font-size: 9px; }
+      .reference-answer { margin-top: 18px; }
+      .answer-summary { padding: 19px 17px; gap: 11px; }
+      .answer-badge { width: 31px; height: 31px; border-radius: 7px; font-size: 14px; }
+      .answer-summary h2 { font-size: 16px; }
+      .answer-summary-description { display: none; }
+      .disclosure-action { font-size: 11px; gap: 4px; }
+      .answer-body { padding: 22px 16px; }
+      .answer-source { font-size: 9px; gap: 7px; }
+      .answer-lead { padding: 16px; }
+      .answer-lead strong { font-size: 17px; }
+      .answer-lead p { font-size: 13px; }
+      .answer-section h3 { font-size: 16px; }
+      .answer-section p, .answer-list { font-size: 13px; }
+      .answer-list { padding-left: 18px; }
+      .answer-boundary { font-size: 11px; padding: 13px; }
+      .lab-task { padding: 12px; font-size: 10px; }
+      .task-text { align-items: flex-start; gap: 6px; }
+      .task-label { font-size: 8px; margin-top: 3px; }
+      .loop-pane { padding: 21px 12px 17px; }
+      .node-connector { flex-basis: 16px; }
+      .node-name { font-size: 10px; }
+      .trace-pane { padding: 19px 17px; }
+      .trace-note { font-size: 9px; }
+      .lab-controls { justify-content: flex-start; padding: 11px; }
+      .trace-controls { width: 100%; justify-content: flex-end; }
+      .trace-controls .step-count { margin-right: auto; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 31px; }
+      .followups-heading { padding-bottom: 13px; gap: 14px; }
+      .followups-heading h2 { font-size: 19px; }
+      .followups-heading p { font-size: 9px; }
+      .followup { padding: 20px 0; }
+      .followup h3 { font-size: 16px; line-height: 1.8; }
+      .followup-response { padding: 14px 15px; font-size: 13px; }
+      .comparison th, .comparison td { padding: 8px 6px; font-size: 11px; }
+      .comparison td:first-child { overflow-wrap: anywhere; }
+      .page-footer { font-size: 9px; align-items: flex-start; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+    @media print {
+      @page { margin: 15mm; }
+      body { background: white; font-size: 11px; }
+      .page { padding: 0; max-width: none; }
+      .page-header { padding: 0 0 12px; }
+      .page-header .button, .question-instruction, textarea, .draft-state, .draft-footer, .disclosure-action, .chevron, .answer-summary-description, .followup-answer > summary, .lab-controls, .trace-pane, .noscript, .page-footer { display: none !important; }
+      .question { padding: 20px 0; }
+      h1 { font-size: 29px; margin: 10px 0; }
+      .draft { padding: 15px 18px; margin-bottom: 18px; break-inside: avoid; }
+      .print-draft { display: block; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; margin: 10px 0 0; }
+      .reference-answer { border: 0; margin-top: 20px; overflow: visible; }
+      .answer-summary { padding: 0 0 14px; }
+      .answer-summary h2 { font-size: 19px; }
+      .answer-body { padding: 19px 0 0; }
+      .answer-lead, .answer-section, .references, .followup { break-inside: avoid; }
+      .answer-lead { padding: 13px 17px; }
+      .answer-section + .answer-section { margin-top: 20px; }
+      .answer-section h3 { font-size: 15px; }
+      .answer-list, .answer-section p { font-size: 12px; }
+      .lab-main { grid-template-columns: 1fr; }
+      .loop-pane { padding: 20px 45px; }
+      .node { color: var(--ink) !important; background: white !important; border-color: var(--line) !important; box-shadow: none !important; }
+      .lab-caption { font-size: 10px; }
+      .followups { margin-top: 26px; }
+      .followups-heading p { display: none; }
+      .followup { padding: 17px 0; }
+      .followup h3 { font-size: 14px; }
+      .followup-response { font-size: 12px; margin-top: 10px; padding: 12px 16px; }
+    }
+
+/* Markdown content shares the approved single-question layout. */
+.question-context { margin-top: 19px; font-size: 14px; color: var(--muted); line-height: 1.95; }
+.question-context > :first-child { margin-top: 0; }
+.question-context > :last-child { margin-bottom: 0; }
+h1.long-title { font-size: clamp(27px, 3.3vw, 36px); line-height: 1.65; }
+.prose { min-width: 0; overflow-wrap: anywhere; font-size: 14px; line-height: 1.95; color: #53627a; }
+.prose > :first-child { margin-top: 0; }
+.prose > :last-child { margin-bottom: 0; }
+.prose h2, .prose h3, .prose h4, .prose h5, .prose h6 { color: var(--ink); font-weight: 600; line-height: 1.7; margin: 25px 0 12px; }
+.prose h2, .prose h3 { font-size: 18px; }
+.prose h4, .prose h5, .prose h6 { font-size: 16px; }
+.prose p { margin: 13px 0; }
+.prose strong { color: #344867; font-weight: 600; }
+.prose ul, .prose ol { padding-left: 24px; margin: 13px 0; }
+.prose li + li { margin-top: 5px; }
+.prose li > p { margin: 5px 0; }
+.prose code { font-family: var(--mono); font-size: .88em; background: #eef2fa; padding: 2px 5px; border-radius: 4px; color: #465d85; }
+.prose pre { max-width: 100%; min-width: 0; overflow-x: auto; overscroll-behavior-x: contain; padding: 18px; margin: 18px 0; border: 1px solid var(--line); border-radius: 8px; background: #f7f9fd; color: #435572; font: 12px/1.75 var(--mono); tab-size: 4; white-space: pre; overflow-wrap: normal; }
+.prose pre code { background: transparent; padding: 0; color: inherit; border-radius: 0; font: inherit; }
+.prose blockquote { padding: 11px 18px; border-left: 3px solid #aabbed; background: #f1f4fd; margin: 17px 0; border-radius: 0 6px 6px 0; }
+.prose blockquote p { margin: 4px 0; }
+.prose .table-wrap { max-width: 100%; overflow-x: auto; margin: 19px 0; border: 1px solid var(--line); border-radius: 7px; }
+.prose table { border-collapse: collapse; width: 100%; min-width: 430px; font-size: 12px; text-align: left; }
+.prose th, .prose td { padding: 11px 13px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.prose th { background: #eff3fb; font-weight: 600; color: #455b7f; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose img { max-width: 100%; height: auto; display: block; margin: 19px auto; }
+.prose .diagram { margin: 21px 0; }
+.prose .diagram img { width: 100%; margin: 0; }
+.prose hr { border: 0; border-top: 1px solid var(--line); margin: 24px 0; }
+.prose details { border: 1px solid var(--line); border-radius: 8px; padding: 13px 17px; margin: 18px 0; }
+.prose details > summary { list-style: disclosure-closed; display: list-item; color: var(--blue); font-size: 12px; }
+.prose details[open] > summary { list-style: disclosure-open; margin-bottom: 15px; }
+.answer-version + .answer-version, .supplementary-section { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 23px; }
+.answer-version h3.answer-author { margin: 0 0 14px; font-size: 17px; font-weight: 600; }
+.supplementary-section > h3 { font-size: 17px; font-weight: 600; margin: 0 0 14px; }
+.question-supplement { margin-top: 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+.missing-response { font-size: 12px; color: var(--muted); }
+.references-prose { font-size: 12px; }
+@media (max-width: 460px) {
+  .question-context, .prose { font-size: 13px; }
+  h1.long-title { font-size: 27px; }
+  .prose h2, .prose h3 { font-size: 16px; }
+  .prose h4, .prose h5, .prose h6 { font-size: 15px; }
+  .prose pre { padding: 13px; font-size: 11px; }
+  .prose details { padding: 12px; }
+  .prose ul, .prose ol { padding-left: 19px; }
+}
+@media print {
+  h1.long-title { font-size: 25px; }
+  .prose { font-size: 11px; }
+  .prose h2, .prose h3 { font-size: 15px; break-after: avoid; }
+  .prose pre { overflow: visible; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 8px; line-height: 1.5; }
+  .prose .table-wrap { overflow: visible; }
+  .prose table { min-width: 0; font-size: 9px; table-layout: fixed; }
+  .prose th, .prose td { padding: 6px 8px; overflow-wrap: anywhere; }
+  .prose pre code { overflow-wrap: anywhere; }
+  .prose img { max-height: 225mm; object-fit: contain; }
+  .prose .diagram { break-inside: avoid; }
+  .prose details { overflow: visible; }
+  .followup { break-inside: auto; }
+  .followup h3 { break-after: avoid; }
+}
+
+
+/* Large source images and diagrams remain readable without expanding the page. */
+.media-trigger { display: block; width: 100%; border: 0; background: transparent; padding: 0; text-align: center; cursor: zoom-in; }
+.media-trigger-label { display: block; font-size: 11px; color: var(--blue); margin: 8px 0 14px; }
+.prose .diagram .media-trigger img { max-height: 530px; object-fit: contain; width: 100%; }
+.media-dialog { width: min(1200px, calc(100vw - 32px)); max-width: none; max-height: calc(100dvh - 32px); padding: 0; border: 1px solid var(--line); border-radius: 12px; background: white; color: var(--ink); }
+.media-dialog::backdrop { background: #25355d70; backdrop-filter: blur(3px); }
+.media-dialog-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; gap: 15px; border-bottom: 1px solid var(--line); }
+.media-dialog-header h2 { font-size: 14px; font-weight: 500; margin: 0; }
+.media-scroll { max-height: calc(100dvh - 116px); overflow: auto; overscroll-behavior: contain; padding: 20px; background: #fbfcff; }
+.media-scroll img { display: block; max-width: none; width: auto; height: auto; margin: 0 auto; background: white; }
+@media print { .media-dialog, .media-trigger-label { display: none !important; } .media-trigger { cursor: default; } .prose .diagram .media-trigger img { max-height: 210mm; } }
+
+.question-page-location { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.standalone-home { color: var(--muted); font-size: 11px; text-decoration: none; }
+.standalone-home:hover { color: var(--blue); }
+.embedded-question .standalone-home { display: none; }
+@media print { .standalone-home { display: none; } }
+
+  </style>
+</head>
+<body>
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+    <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7zM16 11h1"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-5 2 4 4 0 0 0-1 7 4 4 0 0 0 4 6 3 3 0 0 0 5 1V4a3 3 0 0 0-3 0Zm6 0a3 3 0 0 1 5 2 4 4 0 0 1 1 7 4 4 0 0 1-4 6 3 3 0 0 1-5 1M8 8a3 3 0 0 0 4 3m4-3a3 3 0 0 1-4 3M6 14a3 3 0 0 1 3 3m9-3a3 3 0 0 0-3 3"/></symbol>
+    <symbol id="i-tool" viewBox="0 0 24 24"><path d="m8 4-6 8 6 8m8-16 6 8-6 8M14 3l-4 18"/></symbol>
+    <symbol id="i-observe" viewBox="0 0 24 24"><path d="M3 5h18v13H3zM7 22h10M12 18v4m-5-12 3 3 7-7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-11v1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 9M3 4v6h6"/></symbol>
+  </defs></svg>
+
+  <div class="page">
+    <header class="page-header">
+      <div class="question-page-location"><a class="standalone-home" href="index.html#home">← 学习主页</a><span class="page-id">LLM-0048</span></div>
+      <button type="button" class="button" id="print-page" title="打印题目、我的回答和全部参考答案"><svg class="icon" aria-hidden="true"><use href="#i-print"/></svg>打印</button>
+    </header>
+    <main>
+      <section class="question" aria-labelledby="question-title">
+        <div class="question-label">题目</div>
+        <h1 id="question-title" class="long-title">超低比特微缩放浮点（FP8、MXFP4 与 NVFP4）是如何通过分块缩放、高精累加、二维权重一致性、随机 Hadamard 旋转与随机舍入打通大模型训练与推理的？</h1>
+        <div class="question-meta"><span>大模型基础与原理</span><span class="meta-dot" aria-hidden="true"></span><span>困难</span><span class="meta-dot" aria-hidden="true"></span><span>工程师</span></div>
+<div class="question-context prose"><p>随着前沿大模型预训练迈入数十万亿 Token 与百亿亿次浮点运算规模，数据中心训练与在线推理精度正全面从 <strong>BF16</strong> 迁移至硬件原生 <strong>FP8</strong> 乃至 <strong>4-bit 微缩放浮点（MXFP4 与 NVFP4）</strong>。然而，单纯把浮点位宽砍半绝非“免费获得 $2\times \sim 4\times$ 吞吐加速”：在 Hopper 架构上直接做张量级 FP8 矩阵乘会遭遇激活离群值溢出与 Tensor Core 低位宽累加漂移；进一步下探到仅有 $1+2+1$ 位的 FP4（E2M1）时，朴素分块训练更会在早期直接发散；而在推理侧，盲目把线上服务从 BF16/FP8 切到 FP4 甚至可能因内核路径失配导致吞吐倒退。请深入剖析以下三个核心问题：</p>
+<ol>
+<li><strong>细粒度 FP8 训练范式（DeepSeek-V3 / DeepGEMM）</strong>：为什么传统张量级（Per-Tensor）延迟缩放与 <code>E4M3 + E5M2</code> 混合格式难以驯服百亿级 MoE 模型的特征离群值？DeepSeek-V3 是如何通过 <strong>$1 \times 128$ 激活 Tile 与 $128 \times 128$ 权重 Block 在线缩放</strong>实现全算子统一 <code>E4M3</code> 的？为什么 Hopper GPU 上的 FP8 WGMMA 必须每隔 $N_C = 128$ 个元素提升至 CUDA Core 做 FP32 累加，且激活梯度（Dgrad）绝对不能像权重那样采用二维 $128 \times 128$ 块量化？</li>
+<li><strong>微缩放 FP4 格式对决（OCP MXFP4 vs NVIDIA NVFP4）</strong>：在同为 <code>E2M1</code>（仅 $\pm{0, 0.5, 1, 1.5, 2, 3, 4, 6}$ 八档幅值）的数据位下，MXFP4（32 元素块 + <code>UE8M0</code> 2 的整数次幂缩放）为什么会在块最大值落入 $3 + \delta$ 等边界时白白浪费 $\pm 4, \pm 6$ 码点并损失近 1 个倍频程（Binade）的动态范围？NVFP4 是如何通过**两级微缩放（全局 FP32 量程对齐常数 $6 \times 448 = 2688$ + 每 16 元素 <code>UE4M3</code> 块缩放）**实现硬件 Block-Scaled MMA 零寄存器算术开销与更高有效精度的？</li>
+<li><strong>万亿 Token 级 NVFP4 预训练四大支柱与生产推理选型边界</strong>：在万亿 Token 预训练中，为什么前向与反向转置会导致一维块缩放破坏链式法则（$W_{\text{fprop}} \neq W_{\text{bprop}}$）？<strong>$16 \times 16$ 二维权重块缩放、仅作用于 Wgrad 的随机 Hadamard 变换（RHT）、仅作用于梯度的随机舍入（Stochastic Rounding）以及敏感尾部层高精保留</strong>各自解决了什么数值失效机制？线上推理从 FP8 迁移至 NVFP4/MXFP4 时应如何核查硬件、算子内核路径（如 Marlin vs CuTeDSL）与 KV Cache 配比？</li>
+</ol>
+<p>本题由公开面试题/系统设计整理扩展改编，不是已核实的企业真题；不采信脱离具体条件的性能收益承诺。</p>
+</div>
+        <p class="question-instruction">先试着回答，再展开下方的参考答案。</p>
+      </section>
+      <section class="draft" aria-labelledby="draft-title">
+        <div class="draft-header"><h2 id="draft-title"><label for="my-answer">我的回答</label></h2><span class="draft-state" id="draft-state" role="status" aria-live="polite">尚未记录</span></div>
+        <textarea id="my-answer" aria-describedby="draft-hint" placeholder="写下你的回答，或先口述，再记录要点……" spellcheck="false"></textarea>
+        <div class="draft-footer"><p id="draft-hint">仅保存在当前浏览器，刷新后保留。</p><span id="word-count">0 字</span></div>
+        <p class="print-draft" id="print-draft"></p>
+      </section>
+      <noscript><p class="noscript">参考答案和追答可以直接展开。启用 JavaScript 后可自动保存回答和打印全部答案。</p></noscript>
+      <details class="reference-answer" id="reference-answer">
+        <summary class="answer-summary">
+          <span class="answer-badge" aria-hidden="true">答</span>
+          <div><h2>参考答案</h2><p class="answer-summary-description">先独立思考，再点开对照。</p></div>
+          <span class="disclosure-action"><span id="answer-toggle-label">展开答案</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></span>
+        </summary>
+        <div class="answer-body">
+<section class="answer-version"><p class="answer-source"><span class="source-badge">AI 参考答案</span><span>gemini-4-carbon</span><span>2026-11-28</span></p><div class="prose"><p><strong>从 BF16 演进到 FP8 与微缩放 FP4（MXFP4 / NVFP4），核心本质是用“硬件原生消费的分块共享缩放因子 + 正交旋转/无偏舍入算法契约”弥补超窄尾数与指数位宽的信息熵坍缩：（1）在 FP8 训练层，DeepSeek-V3 摒弃滞后的全局张量级延迟缩放，对激活按 $1 \times 128$ Tile、对权重按 $128 \times 128$ Block 在线计算缩放因子，以组内共享指数换取全链路统一采用高精度 3 位尾数的 <code>E4M3</code>，同时每隔 $N_C = 128$ 个内积元素（4 次 WGMMA）将 Hopper Tensor Core 仅约 14 位有效精度的局部累加器搬回 CUDA Core FP32 寄存器做大数吃小数纠偏与块缩放反量化，并对跨 Token 极度不均衡的激活梯度坚持一维 Tile 量化以防发散；（2）在 4-bit 编码层，OCP MXFP4 受限于 <code>UE8M0</code> 纯 2 的幂次缩放向上取整防饱和，最坏情形下块内峰值截断在 $3.0$、丢弃整整 1 个 Binade 动态范围（实验需多训约 $36%$ Token 才能追平同等损失），而 NVFP4 借全局 FP32 缩放因子 $s_{\text{enc}} = 2688 / \text{amax}<em>x$ 将各 16 元素子块最大值精准映射入 <code>UE4M3</code> 尾数网格，使每块峰值元素（占 $6.25%$）逼近 FP8 精度且平均仅占 $4.5\text{ bit/elem}$；（3）在万亿 Token FP4 训练与在线推理层，必须联用 $16 \times 16$ 二维权重缩放消除前反向转置引发的链式法则失配（$W</em>{\text{fprop}} = W_{\text{bprop}}$）、对 Wgrad 两侧施加 $16 \times 16$ 随机符号 Hadamard 正交旋转摊平单点离群值、仅对梯度开启随机舍入消除亚格点下溢死锁（激活/权重坚持最近偶数舍入防噪声放大）并保留约 $15%$ 末层高精算子；而线上推理切换 <code>FP4 权重 + FP8 KV Cache</code> 前，必须实测具体 Batch/序列长度下的内核路径（如 CuTeDSL vs Marlin）而非盲信标称峰值算力。</strong></p>
+<p>在展开位域编码与训练/推理内核推导之前，建议结合题库内已有题目串联完整知识网：关于训练后整数权重量化（GPTQ Hessian 补偿、AWQ 显著通道缩放与 SmoothQuant）的原理，请参阅 <a href="llm-0035-ptq-gptq-awq-smoothquant.html">llm-0035</a>；关于量化模型静态显存核算与 MoE 总参数/激活参数边界，请参阅 <a href="llm-0016-quantization-local-memory-budget.html">llm-0016</a>；关于 KV Cache 专用非对称低比特压缩（KIVI / KVQuant），请参阅 <a href="llm-0038-kv-cache-quantization-kivi-kvquant.html">llm-0038</a>；关于 DeepSeek 架构中与 FP8/FP4 内核深度协同的 MLA 压缩注意力、Engram/mHC 拓扑及前缀缓存调度，请参阅 <a href="llm-0034-mla-multi-head-latent-attention-rope-absorption.html">llm-0034</a>、<a href="llm-0046-engram-conditional-memory-mhc.html">llm-0046</a> 与 <a href="llm-0047-chunked-prefill-prefix-caching-radix-attention.html">llm-0047</a>。</p>
+<hr />
+<h3 id="1-细粒度-fp8-混合精度训练分组共享指数与-n_c128-跨核提升累加">1. 细粒度 FP8 混合精度训练：分组共享指数与 $N_C=128$ 跨核提升累加</h3>
+<h4 id="11-为什么全-e4m3--细粒度在线分块优于传统per-tensor-延迟缩放--混合格式">1.1 为什么“全 <code>E4M3</code> + 细粒度在线分块”优于传统“Per-Tensor 延迟缩放 + 混合格式”？</h4>
+<p>标准 IEEE/OCP 8-bit 浮点分为 <strong><code>E4M3</code></strong>（1 符号 + 4 指数 + 3 尾数，最大正规数 $448$，组内相邻码点相对步长 $2^{-3} = 12.5%$ 至 $6.25%$）与 <strong><code>E5M2</code></strong>（1 符号 + 5 指数 + 2 尾数，最大正规数 $57344$，相对步长劣化至 $25%$）。早期框架（如初代 Transformer Engine Per-Tensor 方案）使用整张量单一缩放因子，并被迫在前向（Fprop）用 <code>E4M3</code>、反向（Dgrad/Wgrad）用 <code>E5M2</code> 以容纳梯度大动态范围，且依赖前若干步的历史峰值做<strong>延迟缩放（Delayed Scaling）</strong>。这在大规模 MoE 训练中有两大隐患：</p>
+<ol>
+<li><strong>单点离群值绑架整张量尾数</strong>：只要张量内某一个 Token 的某个激活通道出现尖峰（如幅值达正常值的 $100\times$），全局缩放因子就会把其余 $99.9%$ 的正常元素集体压向零点附近，触发灾难性下溢；若突发尖峰超出历史窗口预测，更会直接引发上溢 NaN。</li>
+<li><strong>细粒度在线分块（Tile &amp; Block-Wise Online Quantization）</strong>：DeepSeek-V3（<code>arXiv:2412.19437</code> §3.3.2）将缩放粒度沿矩阵乘内积轴 $K$ 切细——<strong>激活张量按 $1 \times 128$ Tile（单 Token 每 128 个通道）在线求 <code>amax</code>，权重张量按 $128 \times 128$ Block（每 128 输入通道 $\times$ 128 输出通道）在线求 <code>amax</code></strong>。由于局部子块内的数值跨度大幅收窄，元素间等效共享了块缩放因子的指数位，从而允许 <strong>Fprop、Dgrad、Wgrad 三大 GEMM 全部统一采用 3 位尾数的 <code>E4M3</code>（Mantissa over Exponents）</strong>，彻底省去延迟历史状态维护。</li>
+</ol>
+<h4 id="12-hopper-tensor-core-14-bit-累加器缺陷与双-warpgroup-流水掩盖">1.2 Hopper Tensor Core 14-bit 累加器缺陷与双 Warpgroup 流水掩盖</h4>
+<p>细粒度分块要求沿 GEMM 内积维度 $K$ 每隔 $128$ 个元素乘一次组缩放因子，而标准 Hopper H800/H100 FP8 Tensor Core 指令（<code>wgmma.mma_async</code>）原生只支持矩阵外围缩放；更致命的是，实测表明 <strong>Hopper FP8 WGMMA 硬件内部累加器仅保留约 $14\text{ bit}$（1 位隐式整数位 + 13 位小数尾数）有效尾数精度</strong>，远低于标准 FP32 的 24 位有效尾数！当模型隐藏层宽度或微批序列拉长（如 $K = 4096$）时，一旦前序局部和累积到较大基准值（如 $10.0$），后续数千个量级为 $4 \times 10^{-4}$ 的同号微小乘积在 <code>14-bit</code> 尾数对齐时会被直接截断归零（Swamping，大数吃小数），在随机矩阵测试中即可造成近 <strong>$2%$</strong> 的最大相对误差。</p>
+<p>DeepSeek-V3 与 <code>DeepGEMM</code> 通过 <strong>CUDA Core 周期性高精度提升（Promotion to CUDA Cores）</strong> 一箭双雕地同时解决了累加精度与内积轴块缩放：
+$$\text{Acc}<em>{\text{FP32}} \leftarrow \text{Acc}</em>{\text{FP32}} + s^A_{m, g} \cdot s^B_{n, g} \cdot \underbrace{\sum_{k = g N_C}^{(g+1)N_C - 1} \tilde{A}<em>{m, k} \tilde{B}</em>{n, k}}<em>{\text{Tensor Core 4 次 WGMMA 局部累加 } (N_C = 128)}$$
+每隔 $N_C = 128$ 个内积元素（恰好对应 $4$ 条 <code>wgmma</code> 指令与 $1 \times 128$ Tile 边界），就将 Tensor Core 局部累加结果拷贝到 CUDA Core 的完整 FP32 寄存器中乘上当前分块的缩放因子积 $s^A</em>{m,g} s^B_{n,g}$ 并累加；硬件调度上利用 H800 <strong>两个并发驻留 Warpgroup 乒乓重叠</strong>（一个 Warpgroup 在 CUDA Core 做 FP32 提升乘加，另一个 Warpgroup 满速发射下一组 WGMMA），在几乎不损失 Tensor Core 利用率（实测可达 $1550\text{ TFLOPS}$）的前提下消除了低位累加漂移。</p>
+<h4 id="13-为什么激活梯度dgrad严禁模仿权重使用-128-times-128-二维块量化">1.3 为什么激活梯度（Dgrad）严禁模仿权重使用 $128 \times 128$ 二维块量化？</h4>
+<p>训练时前向计算 $Y = X W^\top$ 沿通道维归约，反向计算权重梯度 $\nabla W = (\nabla Y)^\top X$ 却需要沿 <strong>Token 维度</strong> 归约，导致缓存的激活与激活梯度必须经历从 $1 \times 128$ 到 $128 \times 1$ 的跨维度重分组（DeepSeek-V3 对注意力输出投影前的敏感激活特制了 <code>E5M6</code> + 2 的整数次幂圆整缩放因子以实现转置无损保真）。看似省事的做法是把激活梯度也改成与权重相同的 $128 \times 128$ 二维块量化（转置即零开销复用）；但 DeepSeek-V3 附录 B.2 在 16B MoE 模型（300B Token）上的消融实验证实：<strong>对 Dgrad 采用 $128 \times 128$ 二维块量化会直接引发模型训练发散！</strong> 根本原因在于反向激活梯度在不同 Token 之间极度失衡（如个别特殊分隔符、推理转折词或高损失 Token 带有强烈的 <strong>Token-Correlated Outliers</strong>）；一旦跨 128 个连续 Token 共享同一个二维缩放因子，高梯度异常 Token 会瞬间抹平同块其余 127 个正常 Token 回传给浅层的梯度信号，经数十层残差链式反传放大后必然崩溃。</p>
+<hr />
+<h3 id="2-微缩放-4-bit-浮点对决ocp-mxfp4-vs-nvidia-nvfp4">2. 微缩放 4-bit 浮点对决：OCP MXFP4 vs NVIDIA NVFP4</h3>
+<p>当数据位宽从 8-bit 进一步腰斩至 4-bit <strong><code>E2M1</code></strong>（1 符号位、2 指数位、1 尾数位，指数偏置 $b=1$，无 Inf/NaN）时，其非负可表示码表仅剩稀疏的 <strong>8 个离散幅值点</strong>：
+$$\mathcal{G}_{\text{E2M1}}^{+} = {0,; 0.5,; 1.0,; 1.5,; 2.0,; 3.0,; 4.0,; 6.0}$$
+每个 2 的幂区间（Binade）内仅塞得下 <strong>2 个码点</strong>，区间下沿相对步长高达 <strong>$50%$</strong>（上沿 $25%$）。在 Blackwell / Rubin 与 AMD MI350+ 硬件生态中，围绕如何给 <code>E2M1</code> 配置块缩放因子形成了两大主流标准：</p>
+<div class="table-wrap" role="region" aria-label="表格" tabindex="0"><table>
+<thead>
+<tr>
+<th style="text-align:left">核心维度</th>
+<th style="text-align:left">OCP MXFP4（Open Compute Project 标准）</th>
+<th style="text-align:left">NVIDIA NVFP4（两级微缩放格式）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>元素编码与满量程</strong></td>
+<td style="text-align:left"><code>E2M1</code>（幅值集合 ${0 \dots 6.0}$）</td>
+<td style="text-align:left"><code>E2M1</code>（幅值集合 ${0 \dots 6.0}$）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>共享块大小（Block Size）</strong></td>
+<td style="text-align:left"><strong>32 个连续元素</strong>（$1 \times 32$）</td>
+<td style="text-align:left"><strong>16 个连续元素</strong>（$1 \times 16$，训练权重可用 $16 \times 16$）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>局部块缩放格式（Level-2）</strong></td>
+<td style="text-align:left">无符号 <strong><code>UE8M0</code></strong>（8 位纯指数，仅能表达 $2^k, k \in [-127, 127]$）</td>
+<td style="text-align:left">无符号 <strong><code>UE4M3</code></strong>（4 指数 + 3 尾数，最大 $448$，最小次正规 $2^{-9}$）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>全局张量缩放（Level-1）</strong></td>
+<td style="text-align:left">无（<code>UE8M0</code> 自身动态范围已覆盖 FP32 量级）</td>
+<td style="text-align:left"><strong>FP32 全局/行/列缩放</strong> $s_{\text{enc}} = \frac{6 \times 448}{\text{amax}_x} = \frac{2688}{\text{amax}_x}$</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>等效平均位宽（含元数据）</strong></td>
+<td style="text-align:left">$4 + 8 / 32 = \mathbf{4.25\text{ bits/elem}}$</td>
+<td style="text-align:left">$4 + 8 / 16 (+ 32/N) \approx \mathbf{4.50\text{ bits/elem}}$</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>块最大值映射与码表利用率</strong></td>
+<td style="text-align:left">向上圆整至 $2^k$ 防溢出，最坏丢失 $\pm 4, \pm 6$ 两档与 <strong>1 个 Binade</strong></td>
+<td style="text-align:left">峰值精准锚定至 $\approx 6.0$，每块至少 <strong>$6.25%$ 元素（1/16）达近 FP8 精度</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>原生硬件支持代表</strong></td>
+<td style="text-align:left">NVIDIA Blackwell (<code>SM100</code>+, 含 <code>UE8M0</code> 打包)、AMD MI350 / MI455X</td>
+<td style="text-align:left">NVIDIA Blackwell (<code>SM100</code>/<code>SM120</code>), Vera Rubin</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="21-mxfp4-的倍频程浪费陷阱binade-waste定量推导">2.1 MXFP4 的“倍频程浪费陷阱（Binade Waste）”定量推导</h4>
+<p>MXFP4 将块缩放因子限制为纯 2 的整数次幂 <code>UE8M0</code>。由于低精度训练中一旦发生饱和截断（Saturation）极易导致梯度爆炸发散，工程规范要求将理想解码缩放因子 $s_{\text{raw}} = \text{amax}<em>b / 6$ <strong>向上取整（Round Up）</strong> 到最近的 2 的幂：$s</em>{\text{ue8m0}} = 2^{\lceil \log_2(\text{amax}_b / 6) \rceil}$。
+考虑一个极具代表性的边界子块，其最大绝对值略微跨过阈值：$\text{amax}_b = 3 + \delta$（$\delta &gt; 0$ 极小）：</p>
+<ol>
+<li>理想缩放因子 $s_{\text{raw}} = (3 + \delta) / 6 = 0.5 + \delta / 6 &gt; 2^{-1}$，被迫向上圆整一整档至 $s_{\text{ue8m0}} = 2^0 = 1.0$；</li>
+<li>块内所有元素除以 $1.0$ 后，最大元素 $3 + \delta$ 在 <code>E2M1</code> 码表上四舍五入落到 <strong>$3.0$</strong>（因为距离 $3.0$ 远近于 $4.0$）；</li>
+<li><strong>灾难性后果</strong>：整块 32 个元素没有任何一个能触及 $\pm 4.0$ 与 $\pm 6.0$ 这四个最外层码点！实际利用的有效动态范围从满格 $\log_2(6 / 0.5) = 3.58\text{ binades}$ 暴跌至 $\log_2(3 / 0.5) = 2.58\text{ binades}$，白白损失整整 <strong>1 个倍频程</strong>。NVIDIA 在 8B Mamba-Transformer 1T Token 对比实验（<code>arXiv:2509.25149</code> §5 Fig.6）中实测：MXFP4 相对 BF16 的训练损失误差约为 $2.5%$（NVFP4 仅为 $1.5%$），<strong>MXFP4 必须额外多训练 $36%$ 的数据（$1.36\text{T}$ vs $1.0\text{T}$ Token）才能追平 NVFP4 的最终验证集困惑度！</strong></li>
+</ol>
+<h4 id="22-nvfp4-的两级折叠恒等式与硬件零算术开销">2.2 NVFP4 的两级折叠恒等式与硬件零算术开销</h4>
+<p>为什么 NVFP4 不能直接去掉全局 FP32 缩放、只留每 16 元素的 <code>UE4M3</code>？如 <code>LeetCUDA</code> 第 36 章与论文附录 B 所证，单级 <code>UE4M3</code> 面临<strong>下溢归零</strong>（最小正数 $2^{-9} \approx 0.001953$，一旦某组 $\text{amax}_b &lt; 6 \times 2^{-10} \approx 0.00586$，缩放因子舍入为 $0$ 会把整组 16 个元素彻底抹零）与<strong>量程浪费</strong>（最大仅 $448$）。因此 NVFP4 设计了严密的两级编码流水线：</p>
+<ol>
+<li><strong>Level-1 全局量程对齐</strong>：统计张量峰值 $\text{amax}<em>x = \max_i |x_i|$，令全局编码缩放 $s</em>{\text{enc}} = \frac{6 \times 448}{\text{amax}<em>x} = \frac{2688}{\text{amax}<em>x}$，解码缩放 $s</em>{\text{dec}} = 1 / s</em>{\text{enc}}$（存 FP32），把最大子块的局部缩放精准推到 <code>UE4M3</code> 满量程 $448$；</li>
+<li><strong>Level-2 局部高精度锚定与倒数重标定</strong>：对每个 16 元素子块 $b$，将局部解码缩放量化为 <code>UE4M3</code>：$s_{\text{dec}, b, \text{e4m3}} = \text{e4m3}!\left(\frac{\text{amax}<em>b}{6} \cdot s</em>{\text{enc}}\right)$；随后在 FP32 下<strong>以量化后的真实解码值反求局部编码缩放</strong> $s_{\text{enc}, b} = \frac{1}{\text{fp32}(s_{\text{dec}, b, \text{e4m3}}) \cdot s_{\text{dec}}}$，保证自洽恒等式 $s_{\text{enc}, b} \cdot s_{\text{dec}} \cdot s_{\text{dec}, b, \text{e4m3}} \approx 1$ 成立，最后将元素量化为 $\tilde{x}<em>i = q</em>{\text{e2m1}}(x_i \cdot s_{\text{enc}, b})$；</li>
+<li><strong>Blackwell Block-Scaled MMA 折叠</strong>：矩阵乘 $C_{m,n} = s_{\text{dec}}^A s_{\text{dec}}^B \sum_{b} s_{\text{dec}, b, \text{e4m3}}^A s_{\text{dec}, b, \text{e4m3}}^B \sum_{k \in b} \tilde{A}<em>{m,k} \tilde{B}</em>{n,k}$ 中，内层 <code>UE4M3</code> 局部缩放由 Tensor Core <code>block_scale</code> 硬件通路在 16 元素点积出口直接消费，<strong>不占用任何 CUDA Core 寄存器算术指令</strong>，外层标量 $s_{\text{dec}}^A s_{\text{dec}}^B$ 则在 Epilogue 一次性乘回（单侧正态输入理论与实测相对均方根误差约为 $10.2%$，双侧 GEMM 为 $\sqrt{2} \times 10.2% \approx 14.4%$）。</li>
+</ol>
+<hr />
+<h3 id="3-万亿-token-级-nvfp4-预训练四大支柱与生产推理选型边界">3. 万亿 Token 级 NVFP4 预训练四大支柱与生产推理选型边界</h3>
+<p>NVIDIA 在 12B Mamba-Transformer 模型上完成史无前例的 <strong>10 万亿（10T）Token NVFP4 预训练</strong>（MMLU-Pro 达 $62.58%$，紧贴 FP8 基线的 $62.62%$），证明若只用朴素 $1 \times 16$ 最近偶数舍入，模型在训练早期就会彻底发散。必须协同部署以下四项数值工程支柱：</p>
+<ol>
+<li><strong>支柱一：$16 \times 16$ 二维权重块缩放修复链式法则（Chain-Rule Consistency）</strong>：
+线性层的三个 GEMM 中，前向 $Y = X W^\top$ 沿权重的行（输入通道 $C_{\text{in}}$）做内积，反向激活梯度 $\nabla X = \nabla Y \cdot W$ 却对权重做了<strong>转置</strong>，改为沿列（输出通道 $C_{\text{out}}$）做内积！如果对权重采用标准 $1 \times 16$ 一维块缩放，同一个离群权重在行方向与列方向会拉高完全不同的 15 个邻居元素的缩放因子，导致前向生效权重 $W_{\text{fprop}}$ 与反向生效权重 $W_{\text{bprop}}$ <strong>不再是同一个矩阵（$W_{\text{fprop}} \neq W_{\text{bprop}}$）</strong>，反向传播求出的梯度不再对应前向真实计算的函数！将权重量化改为 <strong>$16 \times 16$ 二维对称块共享同一个 <code>UE4M3</code> 缩放因子</strong>（送入 Tensor Core 时将该因子复制给块内 16 条 $1 \times 16$ 行/列切片），即可严格保证转置前后表示恒等（$|W_{\text{fprop}} - W_{\text{bprop}}|_F \equiv 0$）；而激活与梯度仍保留更精细的 $1 \times 16$ 一维块缩放。</li>
+<li><strong>支柱二：仅作用于 Wgrad 输入的 $16 \times 16$ 随机 Hadamard 变换（RHT）</strong>：
+当单个 Token 出现剧烈激活尖峰（如 $x_0 = 24.0$，同组其余 15 个正常值为 $\pm 0.8$）时，局部缩放因子 $s_{\text{dec}, b} = 4.0$ 会将所有 $|x_i| &lt; 1.0$ 的同组元素全部量化归零，抹杀有效梯度内积。利用正交归一化随机符号 Hadamard 矩阵 $H = S_d H_d$（其中 $H_d = \frac{1}{\sqrt{2}} H_2 \otimes H_{d/2}$，$S_d = \text{diag}(\pm 1)$ 防结构化基对齐，取 $d = 16$ 平衡高斯化效果与访存开销），同时旋转 Wgrad 的两个输入张量：
+$$\nabla W = (\nabla Y^\top H)(H^\top X) = \nabla Y^\top (H H^\top) X = \nabla Y^\top X$$
+旋转将尖峰能量均匀摊平到 16 个坐标（幅值由 $24.0$ 降至 $\approx 6.0$），拯救被抹零的邻近信号！<strong>注意边界</strong>：RHT 绝不能施加于权重（否则再次破坏前反向转置一致性），消融实验也证实将其加到 Fprop 或 Dgrad 反而会因引入额外重分布量化噪声而劣化验证损失，故<strong>严格限定仅用于 Wgrad 两侧输入</strong>。</li>
+<li><strong>支柱三：非对称舍入策略——仅对梯度开启随机舍入（Stochastic Rounding, SR）</strong>：
+在稀疏的 <code>E2M1</code> 格点（最小非零步长 $0.5$）上，确定性最近偶数舍入（RTNE）会将所有缩放后幅值落在 $(0, 0.25)$ 内的梯度恒定截断为 $0$（造成参数更新死锁与系统性方向偏置）。<strong>随机舍入</strong>以距离反比概率跳变：对 $v \in [g_{\text{lo}}, g_{\text{hi}}]$，以 $p = \frac{v - g_{\text{lo}}}{g_{\text{hi}} - g_{\text{lo}}}$ 取 $g_{\text{hi}}$、以 $1-p$ 取 $g_{\text{lo}}$，数学期望严格无偏 $\mathbb{E}[q_{\text{SR}}(v)] = v$。但随机舍入的方差严格大于 RTNE——消融实验（<code>arXiv:2509.25149</code> Appendix E.3）表明：<strong>若对前向激活或权重开启随机舍入，放大的前向方差会直接导致训练发散！</strong> 因此铁律是“<strong>梯度用 SR 保无偏，权重与激活坚持用 RTNE 控方差</strong>”。</li>
+<li><strong>支柱四：尾部敏感层高精保留、末期精度回切与线上推理四大核查清单</strong>：
+<ul>
+<li><strong>训练层敏感度</strong>：网络最后若干个 Block 的线性层对 Wgrad 量化噪声极度敏感，全网强上 FP4 必发散；保留约 $&lt;15%$ 线性层（主要是末尾 4~8 个 Block，外加 Embedding、LM Head、Norm、MoE 路由门控、Attention Softmax/BMM 与 FP32 Master Weights）在 BF16/FP8 即可稳健收敛；且在学习率衰减开启前（如最后 $\sim 18%$ Token）切换回高精可进一步弥合残余损失间隙。</li>
+<li><strong>生产推理选型铁律（FP8 $\to$ NVFP4 / MXFP4）</strong>：数据中心主流推理配置为 <strong><code>FP4 权重 + FP8 KV Cache</code></strong>（兼顾权重减半与长上下文并发翻倍，SGLang 等引擎还支持加载时将 NVFP4 在线重量化为 MXFP4 跨厂迁移至 AMD GPU）。但面试与架构评审绝不能陷入“4-bit 一定比 8-bit/16-bit 快”的教条——公开基准（如 NVIDIA Dynamo 在 B200/GB200 上的 Nemotron 实测）显示，若落入未针对目标架构充分优化的反量化路径（如旧版 Marlin W4A16 甚至部分小 Batch CuTeDSL 内核），<strong>BF16 反而可能比 NVFP4 快 $12% \sim 80%$</strong>！上线前必须逐一核验：① 硬件原生 Tensor Core 代际（Blackwell <code>SM100</code> vs Hopper <code>SM90</code>）；② 精确引擎版本与算子内核后端（如 FlashInfer CuTeDSL vs Marlin）在真实并发与序列长度下的吞吐-延迟帕累托曲线；③ 推理/长思维链专项任务集（3-bit 及以下对复杂推理退化远甚于普通问答）；④ 长上下文下的 KV Cache 显存瓶颈重算。</li>
+</ul>
+</li>
+</ol>
+<pre tabindex="0" aria-label="文本代码或示意图"><code class="language-text">超低比特微缩放矩阵乘与训练稳定性闭环（NVFP4 Linear Layer）：
+
+  前向 Fprop:  X (1x16 E4M3 + RTNE) ──┐
+                                      ├─► Block-Scaled FP4 MMA ─► BF16/FP32 Y
+  权重 W:      16x16 2D E4M3 + RTNE ──┼── (转置严格一致 W_fprop == W_bprop!)
+                                      ├─► Block-Scaled FP4 MMA ─► BF16/FP32 dX
+  反向 Dgrad:  dY (1x16 E4M3 + SR)  ──┘
+
+  权重梯度 Wgrad:
+    dY^T ──► [16x16 RHT 正交旋转] ──► (1x16 E4M3 + SR)   ─┐
+                                                          ├─► FP4 MMA ─► FP32 Master Grad
+    X    ──► [16x16 RHT 正交旋转] ──► (1x16 E4M3 + RTNE) ─┘   (内部 H H^T = I 精确抵消!)
+</code></pre>
+<hr />
+<h3 id="4-可运行-python-3-标准库仿真mxfp4nvfp4-编码二维一致性rhtsr-与累加提升">4. 可运行 Python 3 标准库仿真：MXFP4/NVFP4 编码、二维一致性、RHT、SR 与累加提升</h3>
+<p>下面的零依赖 Python 3 标准库脚本逐比特构建了 <code>E2M1</code> 与 <code>UE4M3</code> 码表，定量验证并断言了上述五大核心机制：（1）MXFP4 在 $\text{amax}=3.10$ 时浪费 $\pm 4, \pm 6$ 码点，而 NVFP4 两级微缩放将重建误差降低逾一半；（2）权重 $1 \times 16$ 一维缩放在前向与反向转置间产生显著失配（$|W_f - W_b|_F &gt; 2.2$），$16 \times 16$ 二维缩放严格归零；（3）单点尖峰抹零同块 15 个正常 Token 导致 Wgrad 内积归零，经 $16 \times 16$ 随机 Hadamard 旋转大幅恢复；（4）亚格点梯度在 RTNE 下死锁为 $0$，而随机舍入无偏收敛；（5）Hopper $\sim 14\text{-bit}$ 累加器在 $K=4096$ 下发生 $14%$ 大数吃小数漂移，经 $N_C=128$ 周期提升至 FP32 后误差压降至 $&lt;0.5%$：</p>
+<pre tabindex="0" aria-label="python代码或示意图"><code class="language-python">import math
+import random
+from typing import List, Tuple
+
+# FP4 E2M1 positive grid (symmetric with sign bit): 8 levels in [0, 6]
+E2M1_POS = (0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0)
+
+
+def build_ue4m3_table() -&gt; List[float]:
+    &quot;&quot;&quot;Build unsigned FP8 E4M3 table (bias=7, max=448.0, min subnormal=2^-9).&quot;&quot;&quot;
+    vals = [0.0]
+    for exp_bits in range(16):
+        for mant_bits in range(8):
+            if exp_bits == 0 and mant_bits == 0:
+                continue
+            if exp_bits == 15 and mant_bits == 7:
+                continue  # NaN in E4M3
+            if exp_bits == 0:
+                val = (mant_bits / 8.0) * (2.0 ** -6)
+            else:
+                val = (1.0 + mant_bits / 8.0) * (2.0 ** (exp_bits - 7))
+            vals.append(val)
+    return sorted(vals)
+
+
+UE4M3_TABLE = build_ue4m3_table()
+
+
+def quantize_nearest(val: float, grid: Tuple[float, ...]) -&gt; float:
+    sign = -1.0 if val &lt; 0.0 else 1.0
+    ax = abs(val)
+    if ax &gt;= grid[-1]:
+        return sign * grid[-1]
+    best = min(grid, key=lambda g: (abs(ax - g), g))
+    return sign * best
+
+
+def quantize_e2m1_sr(val: float, rng: random.Random) -&gt; float:
+    &quot;&quot;&quot;Stochastic rounding onto signed E2M1 grid (unbiased inside [-6, 6]).&quot;&quot;&quot;
+    sign = -1.0 if val &lt; 0.0 else 1.0
+    ax = abs(val)
+    if ax &gt;= E2M1_POS[-1]:
+        return sign * E2M1_POS[-1]
+    for idx in range(len(E2M1_POS) - 1):
+        lo, hi = E2M1_POS[idx], E2M1_POS[idx + 1]
+        if lo &lt;= ax &lt;= hi:
+            prob_hi = (ax - lo) / (hi - lo)
+            picked = hi if rng.random() &lt; prob_hi else lo
+            return sign * picked
+    return 0.0
+
+
+def mxfp4_quant_dequant_block(block32: List[float]) -&gt; Tuple[List[float], float, float]:
+    &quot;&quot;&quot;OCP MXFP4: 32-element block, UE8M0 power-of-two scale rounded up to avoid saturation.&quot;&quot;&quot;
+    amax = max(abs(x) for x in block32)
+    if amax == 0.0:
+        return [0.0] * len(block32), 1.0, 0.0
+    s_raw = amax / 6.0
+    s_ue8m0 = 2.0 ** math.ceil(math.log2(s_raw))
+    q_vals = [quantize_nearest(x / s_ue8m0, E2M1_POS) for x in block32]
+    max_code_used = max(abs(q) for q in q_vals)
+    return [q * s_ue8m0 for q in q_vals], s_ue8m0, max_code_used
+
+
+def nvfp4_quant_dequant_tensor(flat: List[float], block_size: int = 16) -&gt; List[float]:
+    &quot;&quot;&quot;NVIDIA NVFP4: FP32 global scale (6*448/amax) + per-16 UE4M3 decode scale + E2M1.&quot;&quot;&quot;
+    amax_global = max(abs(x) for x in flat)
+    if amax_global == 0.0:
+        return [0.0] * len(flat)
+    s_enc_global = (6.0 * 448.0) / amax_global
+    s_dec_global = 1.0 / s_enc_global
+    out: List[float] = []
+    for s in range(0, len(flat), block_size):
+        blk = flat[s : s + block_size]
+        amax_b = max(abs(x) for x in blk)
+        if amax_b == 0.0:
+            out.extend([0.0] * len(blk))
+            continue
+        s_dec_b_e4m3 = min(UE4M3_TABLE, key=lambda g: abs(g - (amax_b / 6.0) * s_enc_global))
+        if s_dec_b_e4m3 == 0.0:
+            out.extend([0.0] * len(blk))
+            continue
+        s_enc_b = 1.0 / (s_dec_b_e4m3 * s_dec_global)
+        for x in blk:
+            q = quantize_nearest(x * s_enc_b, E2M1_POS)
+            out.append(q * s_dec_b_e4m3 * s_dec_global)
+    return out
+
+
+def quantize_weight_1d_vs_2d(w_16x16: List[List[float]]) -&gt; Tuple[float, float]:
+    &quot;&quot;&quot;Compare Fprop/Dgrad weight mismatch ||W_fprop - W_bprop||_F under 1x16 vs 16x16 scaling.&quot;&quot;&quot;
+    # 1D row-wise (Fprop: along input K) vs 1D col-wise (Dgrad: transposed along output N)
+    w_fprop_1d = [nvfp4_quant_dequant_tensor(row, block_size=16) for row in w_16x16]
+    cols = [[w_16x16[r][c] for r in range(16)] for c in range(16)]
+    cols_q = [nvfp4_quant_dequant_tensor(col, block_size=16) for col in cols]
+    w_bprop_1d = [[cols_q[c][r] for c in range(16)] for r in range(16)]
+
+    # 2D 16x16 block scaling: single shared scale across both dimensions -&gt; transpose invariant
+    flat_all = [w_16x16[r][c] for r in range(16) for c in range(16)]
+    q_2d_flat = nvfp4_quant_dequant_tensor(flat_all, block_size=256)
+    w_fprop_2d = [q_2d_flat[r * 16 : (r + 1) * 16] for r in range(16)]
+    cols_2d_flat = [w_16x16[r][c] for c in range(16) for r in range(16)]
+    q_2d_cols = nvfp4_quant_dequant_tensor(cols_2d_flat, block_size=256)
+    w_bprop_2d = [[q_2d_cols[c * 16 + r] for c in range(16)] for r in range(16)]
+
+    diff_1d = math.sqrt(sum((w_fprop_1d[r][c] - w_bprop_1d[r][c]) ** 2 for r in range(16) for c in range(16)))
+    diff_2d = math.sqrt(sum((w_fprop_2d[r][c] - w_bprop_2d[r][c]) ** 2 for r in range(16) for c in range(16)))
+    return diff_1d, diff_2d
+
+
+def hadamard_16(vec16: List[float], signs16: List[int]) -&gt; List[float]:
+    &quot;&quot;&quot;Normalized 16x16 Random Hadamard Transform y = (S_16 H_16)^T x (orthogonal).&quot;&quot;&quot;
+    v = [s * x for s, x in zip(signs16, vec16)]
+    step = 1
+    while step &lt; 16:
+        for i in range(0, 16, step * 2):
+            for j in range(i, i + step):
+                a, b = v[j], v[j + step]
+                v[j], v[j + step] = a + b, a - b
+        step *= 2
+    return [x / 4.0 for x in v]
+
+
+def simulate_low_mantissa_acc(prod_terms: List[float], interval_nc: int, mant_bits: int = 13) -&gt; float:
+    &quot;&quot;&quot;Simulate Hopper Tensor Core ~14-bit (1 implicit + 13 frac) accumulator vs CUDA Core promotion.&quot;&quot;&quot;
+    def round_low_mant(v: float) -&gt; float:
+        if v == 0.0:
+            return 0.0
+        m, e = math.frexp(v)  # m in [0.5, 1.0)
+        q_m = round(m * (1 &lt;&lt; (mant_bits + 1))) / (1 &lt;&lt; (mant_bits + 1))
+        return math.ldexp(q_m, e)
+
+    fp32_master = 0.0
+    tc_partial = 0.0
+    for idx, term in enumerate(prod_terms, 1):
+        tc_partial = round_low_mant(tc_partial + term)
+        if idx % interval_nc == 0:
+            fp32_master += tc_partial
+            tc_partial = 0.0
+    fp32_master += tc_partial
+    return fp32_master
+
+
+# 1) MXFP4 binade waste at amax = 3.10 (32-elem UE8M0) vs NVFP4 (16-elem UE4M3 + FP32 two-level scale)
+rng = random.Random(42)
+worst_blk = [3.10] + [rng.gauss(0.0, 0.8) for _ in range(15)] + [rng.gauss(0.0, 0.35) for _ in range(16)]
+mx_rec, mx_scale, mx_max_code = mxfp4_quant_dequant_block(worst_blk)
+nv_rec = nvfp4_quant_dequant_tensor(worst_blk, block_size=16)
+mx_rmse = math.sqrt(sum((a - b) ** 2 for a, b in zip(worst_blk, mx_rec)) / len(worst_blk))
+nv_rmse = math.sqrt(sum((a - b) ** 2 for a, b in zip(worst_blk, nv_rec)) / len(worst_blk))
+assert mx_scale == 1.0 and mx_max_code == 3.0  # ±4 and ±6 completely wasted in MXFP4!
+assert nv_rmse &lt; mx_rmse * 0.55 and abs(nv_rec[0] - 3.10) &lt; 0.05
+
+# 2) 1D vs 2D weight scaling chain-rule consistency (Fprop vs Dgrad transpose)
+w_mat = [[(12.0 if (r == 0 and c == 3) else rng.gauss(0.0, 0.8)) for c in range(16)] for r in range(16)]
+diff_1d, diff_2d = quantize_weight_1d_vs_2d(w_mat)
+assert diff_1d &gt; 0.5 and diff_2d == 0.0
+
+# 3) Random Hadamard Transform (d=16) rescuing non-outlier tokens wiped by a single block spike in Wgrad
+# Token 0 has an activation spike (24.0) with zero grad, while tokens 1..15 carry correlated normal signals (~0.8)
+x_spike = [24.0] + [0.85, -0.80, 0.75, -0.90, 0.70, -0.65, 0.88, -0.82, 0.78, -0.86, 0.72, -0.76, 0.84, -0.68, 0.80]
+dy_vec = [0.0] + list(x_spike[1:])
+true_dot = sum(a * b for a, b in zip(x_spike, dy_vec))
+qx_raw = nvfp4_quant_dequant_tensor(x_spike)
+zeroed_neighbors = sum(1 for v in qx_raw[1:] if v == 0.0)
+q_no_rht_dot = sum(a * b for a, b in zip(qx_raw, nvfp4_quant_dequant_tensor(dy_vec)))
+signs = [(-1 if i in (1, 2, 5, 7, 9, 11, 14, 15) else 1) for i in range(16)]
+rx, rdy = hadamard_16(x_spike, signs), hadamard_16(dy_vec, signs)
+assert abs(sum(a * b for a, b in zip(rx, rdy)) - true_dot) &lt; 1e-12  # Exact orthogonality (HH^T = I)
+q_rht_dot = sum(a * b for a, b in zip(nvfp4_quant_dequant_tensor(rx), nvfp4_quant_dequant_tensor(rdy)))
+err_no_rht, err_rht = abs(q_no_rht_dot - true_dot), abs(q_rht_dot - true_dot)
+assert zeroed_neighbors == 15 and q_no_rht_dot == 0.0 and err_rht &lt; err_no_rht * 0.30
+
+# 4) Sub-grid gradient update: deterministic RTNE stalls to 0 vs Stochastic Rounding unbiased
+sub_grad = 0.15  # Strictly below midpoint 0.25 of [0, 0.5] in E2M1
+rtne_mean = sum(quantize_nearest(sub_grad, E2M1_POS) for _ in range(4000)) / 4000.0
+sr_mean = sum(quantize_e2m1_sr(sub_grad, rng) for _ in range(4000)) / 4000.0
+assert rtne_mean == 0.0 and abs(sr_mean - sub_grad) &lt; 0.015
+
+# 5) Hopper WGMMA ~14-bit accumulation swamping at K=4096 vs N_C=128 CUDA Core FP32 promotion
+terms = [10.0] + [0.0004 for _ in range(4095)]  # Swamping 4095 small positives after an initial 10.0 partial sum
+exact_acc = sum(terms)
+err_tc_full = abs(simulate_low_mantissa_acc(terms, interval_nc=4096) - exact_acc) / exact_acc
+err_nc128 = abs(simulate_low_mantissa_acc(terms, interval_nc=128) - exact_acc) / exact_acc
+assert err_tc_full &gt; 0.12 and err_nc128 &lt; 0.01
+
+print(f&quot;MXFP4 vs NVFP4 (amax=3.10): MX max_code={mx_max_code:.1f}/6.0, RMSE={mx_rmse:.4f} vs NVFP4 RMSE={nv_rmse:.4f}&quot;)
+print(f&quot;Weight Fprop/Dgrad mismatch ||W_f - W_b||_F: 1D(1x16)={diff_1d:.4f} vs 2D(16x16)={diff_2d:.4f}&quot;)
+print(f&quot;Wgrad outlier-block dot (true={true_dot:.4f}): raw_zeroed={zeroed_neighbors}/15, no_RHT_err={err_no_rht:.4f} vs RHT_err={err_rht:.4f}&quot;)
+print(f&quot;Sub-grid grad (g=0.15) quantized mean: RTNE={rtne_mean:.4f} (underflow stall) vs SR={sr_mean:.4f}&quot;)
+print(f&quot;K=4096 low-mantissa acc rel error: full_TC={err_tc_full:.2%} vs N_C=128_promotion={err_nc128:.2%}&quot;)
+print(&quot;All FP8/MXFP4/NVFP4 microscaling, 2D scaling, RHT, and SR checks passed.&quot;)
+</code></pre>
+<pre tabindex="0" aria-label="text代码或示意图"><code class="language-text">MXFP4 vs NVFP4 (amax=3.10): MX max_code=3.0/6.0, RMSE=0.1346 vs NVFP4 RMSE=0.0640
+Weight Fprop/Dgrad mismatch ||W_f - W_b||_F: 1D(1x16)=2.2360 vs 2D(16x16)=0.0000
+Wgrad outlier-block dot (true=9.3463): raw_zeroed=15/15, no_RHT_err=9.3463 vs RHT_err=2.6460
+Sub-grid grad (g=0.15) quantized mean: RTNE=0.0000 (underflow stall) vs SR=0.1465
+K=4096 low-mantissa acc rel error: full_TC=14.07% vs N_C=128_promotion=0.43%
+All FP8/MXFP4/NVFP4 microscaling, 2D scaling, RHT, and SR checks passed.
+</code></pre>
+<hr />
+</div></section>
+
+<section class="supplementary-section"><h3>常见误区</h3><div class="prose"><ul>
+<li><strong>误区一：“把线上推理从 BF16/FP8 换成 NVFP4 权重，吞吐和首字延迟（TTFT）在任何 Batch Size 下都会自动提升 2 到 4 倍。”</strong>
+事实：<strong>数据类型位宽不等于实际算子速度！</strong> 在小 Batch 解码或特定模型形状下，若推理引擎选用了需要寄存器软件解包的反量化内核（如在 Blackwell 上误走旧版 Marlin W4A16 路径而非原生 Block-Scaled / FlashInfer CuTeDSL 路径，或张量维度未对齐硬件 Tile），反量化与缩放因子访存开销可能令 <strong>BF16 实测吞吐反而比 NVFP4 快 $12% \sim 80%$</strong>。低比特收益高度绑定“硬件代际 + 引擎版本 + 内核后端 + 负载算术强度”。</li>
+<li><strong>误区二：“既然随机舍入（Stochastic Rounding）在数学上是无偏估计，FP4 预训练就应该对权重、前向激活和反向梯度全部开启随机舍入以最大化精度。”</strong>
+事实：<strong>恰恰相反，对前向激活或权重开启随机舍入会导致训练直接发散！</strong> 随机舍入虽然消除了确定性舍入的方向偏置（$\mathbb{E}[q(x)] = x$），但其单次采样方差显著高于最近偶数舍入（RTNE）。前向传播注入的高方差量化噪声会在深层网络中逐层累积放大破坏特征表达；只有梯度张量需要在跨步累加中严格消除亚格点截断死锁，因此必须执行“梯度用 SR、权重与激活用 RTNE”的非对称策略。</li>
+<li><strong>误区三：“为了避免前反向转置时重新分组量化，激活和激活梯度（Dgrad）也应该像权重一样直接采用二维块（如 $128 \times 128$ 或 $16 \times 16$）共享缩放因子。”</strong>
+事实：<strong>权重可以做二维块缩放，激活梯度做二维块缩放会引发灾难性发散！</strong> 权重矩阵分布相对平稳且能在优化过程中自适应量化格点；而激活梯度在不同 Token 位置之间存在悬殊的突发尖峰（Token-Correlated Outliers）。一旦沿 Token 维度把几十上百个 Token 绑进同一个二维块缩放因子，单个异常 Token 就会把同块其余全部正常 Token 回传的浅层梯度冲刷归零。</li>
+</ul>
+<hr />
+</div></section>
+<section class="supplementary-section"><h3>参考</h3><div class="prose references-prose"><ul>
+<li>选题线索：<a href="https://github.com/ombharatiya/ai-system-design-guide/blob/10bdeb25e7e461247d25634f2cc4a0800ae368f6/03-training-and-adaptation/07-quantization-deep-dive.md" target="_blank" rel="noopener noreferrer">ombharatiya/ai-system-design-guide (<code>03-training-and-adaptation/07-quantization-deep-dive.md</code>)</a>（固定 commit <code>10bdeb2</code>）与 <a href="https://github.com/xlite-dev/LeetCUDA/blob/ee05341345c09d2029dc75d1de8a48310ae33595/kernels/interview/book/chapters/ch36-fp4-gemm-quant.tex" target="_blank" rel="noopener noreferrer">xlite-dev/LeetCUDA (<code>kernels/interview/book/chapters/ch36-fp4-gemm-quant.tex</code>)</a>（固定 commit <code>ee05341</code>），结合原论文与内核库源码对照核实。</li>
+<li>NVIDIA et al., <a href="https://arxiv.org/abs/2509.25149" target="_blank" rel="noopener noreferrer">Pretraining Large Language Models with NVFP4</a>（<code>arXiv:2509.25149v2</code>）：NVFP4 两级微缩放（<code>FP32</code> 全局 $2688/\text{amax}$ + <code>16-elem UE4M3</code>）与 MXFP4（<code>32-elem UE8M0</code> 倍频程损失与 $+36%$ Token 代价）对比、$16 \times 16$ 二维权重缩放、Wgrad 随机 Hadamard 变换与梯度随机舍入消融实验。</li>
+<li>DeepSeek-AI, <a href="https://arxiv.org/abs/2412.19437" target="_blank" rel="noopener noreferrer">DeepSeek-V3 Technical Report</a>（<code>arXiv:2412.19437v2</code> §3.3 &amp; Appendix B.2）：$1 \times 128$ 激活 Tile 与 $128 \times 128$ 权重 Block 在线 <code>E4M3</code> 量化、Hopper Tensor Core $\sim 14\text{-bit}$ 累加器缺陷、$N_C = 128$ CUDA Core FP32 提升及 Dgrad 二维块量化发散分析。</li>
+<li>官方内核源码 <a href="https://github.com/deepseek-ai/DeepGEMM/blob/09e7d8e7edfb12b84042526bff814844b2c1dbbf/README.md" target="_blank" rel="noopener noreferrer">deepseek-ai/DeepGEMM (<code>README.md</code>)</a>（固定 commit <code>09e7d8e</code>）与 Open Compute Project (OCP) <em>Microscaling Formats (MX) Specification v1.0</em>：<code>SM90</code> FP32 缩放 vs <code>SM100</code> 打包 <code>UE8M0</code> TMA 转置对齐规范。</li>
+</ul>
+<p>来源访问与示例核验日期：<strong>2026-11-28</strong>。仅执行标准库下 <code>E2M1</code>/<code>UE4M3</code>/<code>UE8M0</code> 逐格编码、二维权重转置一致性、$16 \times 16$ 随机 Hadamard 变换、随机舍入无偏性与低尾数累加提升的确定性数值验证，未在多卡 Hopper/Blackwell 物理集群上运行万亿 Token 训练或真实内核吞吐压测。</p>
+</div></section>
+        </div>
+      </details>
+<section class="followups" id="followups" aria-labelledby="followups-title"><div class="followups-heading"><h2 id="followups-title">追问</h2><p>每个追答均可单独展开。</p></div><article class="followup" aria-labelledby="followup-1">
+          <div class="followup-label">追问 01</div><h3 id="followup-1">为什么随机 Hadamard 变换（RHT）里的对角随机符号翻转矩阵 $S_d = \text{diag}(\pm 1)$ 在小模型短程实验里看不出差异，到了百亿参数长程预训练却不可或缺？为什么标准做法不在每个训练步重新采样新的随机矩阵？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：为什么随机 Hadamard 变换（RHT）里的对角随机符号翻转矩阵 $S_d = \text{diag}(\pm 1)$ 在小模型短程实验里看不出差异，到了百亿参数长程预训练却不可或缺？为什么标准做法不在每个训练步重新采样新的随机矩阵？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>防范“结构化离群值（Structured Outliers）”与固定 Hadamard 基共振</strong>：标准确定性 Walsh-Hadamard 矩阵 $H_d$ 的行向量是高度规则的方波正交基（如全 $+1$ 行、交替 $+1/-1$ 行）。在大规模模型长达数万亿 Token 的演化中，特征或激活梯度可能自发形成与某条确定性 Hadamard 基向量高度对齐的周期性/常数结构模式——此时 $H_d x$ 非但不能摊平能量，反而会把整块 16 个元素的能量重新汇聚成新的旋转空间尖峰！左乘随机符号翻转 $S_d$ 以极低代价打碎了确定性相位对齐，使任意固定方向的离群向量以高概率均匀弥散为近似高斯分布。</li>
+<li><strong>共享固定种子的工程零开销</strong>：NVIDIA 消融实验（<code>arXiv:2509.25149</code> §4.2 &amp; Appendix E.4.3）证实，<strong>全网所有线性层在整个训练周期内共享同一个固定随机符号向量</strong>，其收敛效果与每层/每步独立重采样完全相当，同时省去了跨流水线并行（PP）或重计算（Activation Checkpointing）阶段同步随机数发生器（RNG）状态的系统复杂度。</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-2">
+          <div class="followup-label">追问 02</div><h3 id="followup-2">在 Blackwell（<code>SM100</code>）架构的 <code>DeepGEMM</code> 与原生硬件指令中，缩放因子（Scaling Factors）的显存布局与 Hopper（<code>SM90</code>）软件分块方案相比发生了什么本质变化？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：在 Blackwell（SM100）架构的 DeepGEMM 与原生硬件指令中，缩放因子（Scaling Factors）的显存布局与 Hopper（SM90）软件分块方案相比发生了什么本质变化？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong><code>SM90</code>（Hopper）的外围软件乘加</strong>：Hopper Tensor Core 本身不懂组缩放，因此 <code>DeepGEMM</code> 在 <code>SM90</code> 上要求缩放因子以 <strong>FP32</strong> 格式存放，并在每隔 $N_C=128$ 步把累加器搬到 CUDA Core 时用 FFMA 指令显式乘回。</li>
+<li><strong><code>SM100</code>（Blackwell）的硬件 TMA 打包直喂与原子块交错布局</strong>：Blackwell 第五代 Tensor Core（<code>tcgen05.mma</code> Block-Scaled 指令）在硬件矩阵乘微架构内部原生集成了微缩放乘法器！如 <code>DeepGEMM</code> 文档与 <code>LeetCUDA</code> 所示，在 <code>SM100</code> 上 MX 路线必须将 <strong>4 个 <code>UE8M0</code> 缩放字节紧凑打包进单个 32-bit <code>int</code></strong>（NVFP4 则按 <code>512 B</code> 原子块交错排列 <code>UE4M3</code> 字节），且左矩阵缩放因子须预先满足 <strong>TMA（Tensor Memory Accelerator）对齐与转置布局</strong>——算子在量化前处理（Prologue / 前序算子融合）阶段就要一次性写好硬件专属的 Swizzled 缩放布局，否则额外的布局重排访存会瞬间吞噬 FP4 省下的算力红利。</li>
+</ol>
+</div></div></details>
+        </article>
+<article class="followup" aria-labelledby="followup-3">
+          <div class="followup-label">追问 03</div><h3 id="followup-3">当团队持有 NVIDIA Blackwell 训练出的官方 NVFP4 权重 Checkpoint，却需要跨异构算力池部署到只支持 OCP MXFP4 的 AMD MI350X 集群（或混合云）时，能否直接无损转换？会遇到什么精度折损？</h3>
+          <details class="followup-answer"><summary><span data-followup-label>展开追答</span><span class="sr-only">：当团队持有 NVIDIA Blackwell 训练出的官方 NVFP4 权重 Checkpoint，却需要跨异构算力池部署到只支持 OCP MXFP4 的 AMD MI350X 集群（或混合云）时，能否直接无损转换？会遇到什么精度折损？</span><svg class="icon chevron" aria-hidden="true"><use href="#i-chevron"/></svg></summary><div class="followup-response"><div class="response-label">追答</div><div class="prose"><ol>
+<li><strong>加载期在线重量化（On-Load Requantization）路径</strong>：两者的底层数据格点同为 <code>E2M1</code>，但缩放元数据不兼容（NVFP4 为 <code>16 元素 + UE4M3 + FP32</code>，MXFP4 为 <code>32 元素 + UE8M0</code>）。现代推理框架（如 SGLang）的做法是在加载权重时，先将相邻两个 16 元素 NVFP4 子块反量化回高精浮点拼成 32 元素块，再重新提取 <code>UE8M0</code> 2 的幂次缩放并二次量化回 <code>E2M1</code>。</li>
+<li><strong>二次量化折损边界</strong>：由于经历了“两个独立 16 元素精细格 $\to$ 合并 32 元素粗糙幂次格”的有损重映射，会引入双重量化舍入与潜在的 Binade 压缩；尽管在大型冗余 MoE 专家权重上公开测试通常能保留约 $97.5% \sim 100%$ 的数学基准（如 GSM8K）表现，但对极小参数密度模型或高敏推理层，优先推荐从原始 BF16/FP8 主权重直接导出目标硬件原生格式，而非对已量化的 4-bit 权重做链式二转。</li>
+</ol>
+<hr />
+</div></div></details>
+        </article></section>
+    </main>
+    <footer class="page-footer"><span>LLM-0048 · 单题笔记</span><a href="../questions/llm-0048-fp8-nvfp4-mxfp4-microscaling-training-inference.md" target="_blank" rel="noopener noreferrer">查看题目原文 ↗</a></footer>
+  </div>
+  <dialog class="media-dialog" id="media-dialog" aria-labelledby="media-title"><div class="media-dialog-header"><h2 id="media-title">图片与流程图</h2><button type="button" class="button" id="close-media">关闭</button></div><div class="media-scroll" id="media-content"></div></dialog>
+  <script type="application/json" id="page-data">{"questionId": "llm-0048", "language": "zh"}</script>
+  <script>
+(() => {
+  'use strict';
+  const $ = selector => document.querySelector(selector);
+  const $$ = selector => [...document.querySelectorAll(selector)];
+  const { questionId, language } = JSON.parse($('#page-data').textContent);
+  const embedded = window.parent !== window;
+  if (embedded) document.body.classList.add('embedded-question');
+  function notifyWorkspace(type, extra = {}) {
+    if (!embedded) return;
+    const targetOrigin = location.protocol === 'file:' ? '*' : location.origin;
+    window.parent.postMessage({ type, questionId, ...extra }, targetOrigin);
+  }
+  const suffix = language === 'zh' ? '' : `:${language}`;
+  const draftKey = `agent-interview:${questionId}${suffix}:answer:v2`;
+  const legacyKey = `agent-interview:${questionId}${suffix}:v1`;
+  const input = $('#my-answer');
+  let draft = { text: '', updatedAt: null };
+  let storageAvailable = true;
+  // Preserve an earlier prototype's draft without reviving its review controls.
+  try {
+    const stored = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (stored && typeof stored.text === 'string') {
+      draft = { text: stored.text, updatedAt: stored.updatedAt ?? null };
+    } else {
+      const legacy = JSON.parse(localStorage.getItem(legacyKey) || 'null');
+      if (legacy && typeof legacy.note === 'string') draft.text = legacy.note;
+    }
+  } catch { storageAvailable = false; }
+  input.value = draft.text;
+  function renderDraft() {
+    $('#word-count').textContent = `${Array.from(draft.text).length} 字`;
+    $('#draft-state').textContent = !storageAvailable ? '仅本次页面保留' : draft.text ? '已自动保存' : '尚未记录';
+    $('#draft-hint').textContent = storageAvailable ? '仅保存在当前浏览器，刷新后保留。' : '浏览器暂不支持保存，请自行复制回答以免丢失。';
+  }
+  input.addEventListener('input', () => {
+    draft = { text: input.value, updatedAt: Date.now() };
+    try { localStorage.setItem(draftKey, JSON.stringify(draft)); storageAvailable = true; }
+    catch { storageAvailable = false; }
+    renderDraft();
+    notifyWorkspace('interview:draft-saved');
+  });
+  renderDraft();
+  $('#reference-answer').addEventListener('toggle', event => {
+    $('#answer-toggle-label').textContent = event.target.open ? '收起答案' : '展开答案';
+  });
+  $$('.followup-answer').forEach(details => details.addEventListener('toggle', () => {
+    details.querySelector('[data-followup-label]').textContent = details.open ? '收起追答' : '展开追答';
+  }));
+  const mediaDialog = $('#media-dialog');
+  let mediaTrigger = null;
+  $$('[data-image-preview]').forEach(button => button.addEventListener('click', () => {
+    const source = button.querySelector('img');
+    const image = new Image();
+    image.src = source.src;
+    image.alt = source.alt;
+    $('#media-content').replaceChildren(image);
+    mediaTrigger = button;
+    mediaDialog.showModal();
+    document.body.style.overflow = 'hidden';
+    $('#close-media').focus();
+  }));
+  $('#close-media').addEventListener('click', () => mediaDialog.close());
+  mediaDialog.addEventListener('close', () => {
+    document.body.style.overflow = '';
+    mediaTrigger?.focus();
+  });
+  let printStates = null;
+  window.addEventListener('beforeprint', () => {
+    if (!printStates) printStates = $$('details').map(details => [details, details.open]);
+    $('#print-draft').textContent = input.value.trim() ? input.value : '（尚未作答）';
+    $$('details').forEach(details => { details.open = true; });
+  });
+  window.addEventListener('afterprint', () => {
+    printStates?.forEach(([details, open]) => { details.open = open; });
+    printStates = null;
+  });
+  $('#print-page').addEventListener('click', () => window.print());
+  if (embedded) document.addEventListener('click', event => {
+    const link = event.target.closest('a[href]');
+    if (!link || link.download || link.target === '_blank' || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const url = new URL(link.href, location.href);
+    if (url.origin !== location.origin) return;
+    const file = decodeURIComponent(url.pathname.split('/').pop());
+    if (/^(?:agent|llm|rag|engineering|product)-\d{4}-.+\.html$/.test(file)) {
+      event.preventDefault();
+      notifyWorkspace('interview:navigate', { file });
+    } else if (file === 'index.html') {
+      event.preventDefault();
+      notifyWorkspace('interview:home');
+    }
+  });
+  notifyWorkspace('interview:ready');
+})();
+
+  </script>
+
+</body>
+</html>

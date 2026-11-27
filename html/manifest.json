@@ -1631,6 +1631,17 @@
       "images": 0
     },
     {
+      "id": "llm-0048",
+      "file": "llm-0048-fp8-nvfp4-mxfp4-microscaling-training-inference.html",
+      "source": "questions/llm-0048-fp8-nvfp4-mxfp4-microscaling-training-inference.md",
+      "source_sha256": "b7a7679df1566030717b97a7f6cb366eeb17cd98adf72d0fce41b4f4d0ff55f3",
+      "answers": 1,
+      "followups": 3,
+      "missing_followup_answers": 0,
+      "code_blocks": 3,
+      "images": 0
+    },
+    {
       "id": "product-0001",
       "file": "product-0001-ai-scenario-prioritization.html",
       "source": "questions/product-0001-ai-scenario-prioritization.md",
