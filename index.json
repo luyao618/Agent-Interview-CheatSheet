@@ -4702,6 +4702,29 @@
       "source": "公开 AI 工程面试与系统设计题库（awesome-generative-ai-guide 与 ai-system-design-guide）扩展改编；Faysse et al. (ColPali) 官方源码与 Google MUVERA 论文核实（见参考）",
       "updated": "2026-11-27",
       "answers_count": 1
+    },
+    {
+      "id": "llm-0048",
+      "title": "超低比特微缩放浮点（FP8、MXFP4 与 NVFP4）是如何通过分块缩放、高精累加、二维权重一致性、随机 Hadamard 旋转与随机舍入打通大模型训练与推理的？",
+      "file": "llm-0048-fp8-nvfp4-mxfp4-microscaling-training-inference.md",
+      "language": "zh",
+      "category": "llm",
+      "category_label": "大模型基础与原理",
+      "tags": [
+        "fp8",
+        "nvfp4",
+        "mxfp4",
+        "microscaling",
+        "pretraining",
+        "tensor-core"
+      ],
+      "difficulty": "hard",
+      "role": "engineer",
+      "status": "published",
+      "contributor": "佚名",
+      "source": "公开 AI 系统面试指南与 CUDA 内核教材（ombharatiya/ai-system-design-guide 与 xlite-dev/LeetCUDA）扩展改编；DeepSeek-V3、NVIDIA NVFP4 Pretraining 论文及 DeepGEMM 官方源码核实（见参考）",
+      "updated": "2026-11-28",
+      "answers_count": 1
     }
   ]
 }

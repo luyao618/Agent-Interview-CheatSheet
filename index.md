@@ -2,7 +2,7 @@
 
 > 按**分类 + 序号**排列，点击题目标题即可跳转到对应题解。
 
-**题目总数：211** ｜ 索引来源：[`index.json`](index.json)
+**题目总数：212** ｜ 索引来源：[`index.json`](index.json)
 
 ## 按能力路径浏览
 
@@ -43,7 +43,7 @@
 
 | 分类 | 数量 | 快速跳转 |
 | :--- | :---: | :--- |
-| 🧠 大模型基础与原理 | 38 | [查看 ↓](#-大模型基础与原理) |
+| 🧠 大模型基础与原理 | 39 | [查看 ↓](#-大模型基础与原理) |
 | 🤖 Agent 架构与编排 | 66 | [查看 ↓](#-agent-架构与编排) |
 | 🔍 检索增强生成 | 48 | [查看 ↓](#-检索增强生成) |
 | ⚙️ 工程化、部署、性能、成本 | 44 | [查看 ↓](#-工程化部署性能成本) |
@@ -53,7 +53,7 @@
 
 ## 🧠 大模型基础与原理
 
-<sub>分类 ID：`llm` ｜ 共 38 题</sub>
+<sub>分类 ID：`llm` ｜ 共 39 题</sub>
 
 | # | 题目 | 难度 |
 | :---: | :--- | :---: |
@@ -95,6 +95,7 @@
 | 36 | [原生稀疏注意力（DeepSeek NSA）与块混合注意力（Moonshot MoBA）是如何通过层级块压缩选择、GQA 组内共享路由与 Online Softmax 合并实现可训练长上下文加速的？](questions/llm-0045-native-sparse-attention-nsa-moba.md) | 🔴 困难 |
 | 37 | [条件记忆（DeepSeek Engram）与流形约束超连接（mHC）是如何通过确定性多头哈希查表、U 型稀疏容量分配与 Birkhoff 双随机流形投影重塑大模型稀疏与残差拓扑的？](questions/llm-0046-engram-conditional-memory-mhc.md) | 🔴 困难 |
 | 38 | [分块预填充（Chunked Prefill / Sarathi-Serve）与自动前缀缓存（vLLM APC vs SGLang RadixAttention）是如何通过统一 Token 预算调度、链式块哈希与基数树前缀复用消除推理停顿并降低首字延迟的？](questions/llm-0047-chunked-prefill-prefix-caching-radix-attention.md) | 🔴 困难 |
+| 39 | [超低比特微缩放浮点（FP8、MXFP4 与 NVFP4）是如何通过分块缩放、高精累加、二维权重一致性、随机 Hadamard 旋转与随机舍入打通大模型训练与推理的？](questions/llm-0048-fp8-nvfp4-mxfp4-microscaling-training-inference.md) | 🔴 困难 |
 
 <div align="right"><a href="#-ai-题典--目录">↑ 返回顶部</a></div>
 
